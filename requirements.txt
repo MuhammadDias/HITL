@@ -1,0 +1,9 @@
+# requirements.txt untuk WSL / Linux (Dukungan CUDA Otomatis)
+tensorflow>=2.15.0
+numpy<2.0.0
+opencv-python
+matplotlib
+seaborn
+scikit-learn
+pillow
+tqdm

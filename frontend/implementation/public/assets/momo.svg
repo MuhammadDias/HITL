@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 300" role="img" aria-label="Momo, sahabat layang-layang hijau"><style>.lengan-kiri{transform-box:fill-box;transform-origin:right center;animation:arm-idle-l 2.5s ease-in-out infinite;}
+  .lengan-kanan{transform-box:fill-box;transform-origin:left center;animation:arm-idle-r 2.5s ease-in-out infinite;}
+  .ekor{transform-box:fill-box;transform-origin:top center;animation:tail-sway 3s ease-in-out infinite;}
+  .ekor-b{animation:tail-sway 3s ease-in-out .25s infinite;}
+  .ekor-c{animation:tail-sway 3s ease-in-out .5s infinite;}
+  .badan{transform-origin:center;animation:float-idle 3.5s ease-in-out infinite;}
+  .mata{transform-box:fill-box;transform-origin:center;animation:blink 5s step-end infinite;}
+
+  @keyframes float-idle{0%,100%{translate:0 0}50%{translate:0 -7px}}
+  @keyframes arm-idle-l{0%,100%{rotate:0deg}50%{rotate:-6deg}}
+  @keyframes arm-idle-r{0%,100%{rotate:0deg}50%{rotate:6deg}}
+  @keyframes tail-sway{0%,100%{rotate:-4deg}50%{rotate:4deg}}
+  @keyframes blink{0%,94%,100%{opacity:1}96%,98%{opacity:0}}
+
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+  <g class="badan">
+
+    <!-- EKOR 3 HELAI — SESUAI WARNA REFERENSI: KUNING · ORANYE · HITAM -->
+    <g class="ekor">
+      <rect x="96" y="182" width="10" height="60" fill="#E8B923" stroke="#000000" stroke-width="4"/>
+    </g>
+    <g class="ekor ekor-b">
+      <rect x="108" y="182" width="10" height="72" fill="#D96C3F" stroke="#000000" stroke-width="4"/>
+    </g>
+    <g class="ekor ekor-c">
+      <rect x="120" y="182" width="10" height="55" fill="#1A1A1A" stroke="#000000" stroke-width="4"/>
+    </g>
+
+    <!-- LENGAN — WARNA SAMA DENGAN BADAN -->
+    <g class="lengan-kiri">
+      <rect x="34" y="120" width="34" height="14" fill="#B8D47A" stroke="#000000" stroke-width="4"/>
+      <rect x="30" y="116" width="14" height="22" fill="#B8D47A" stroke="#000000" stroke-width="4"/>
+    </g>
+    <g class="lengan-kanan">
+      <rect x="152" y="120" width="34" height="14" fill="#B8D47A" stroke="#000000" stroke-width="4"/>
+      <rect x="176" y="116" width="14" height="22" fill="#B8D47A" stroke="#000000" stroke-width="4"/>
+    </g>
+
+    <!-- BADAN: HEXAGON — WARNA HIJAU SESUAI REFERENSI -->
+    <polygon 
+      points="110,55 162,90 162,160 110,195 58,160 58,90" 
+      fill="#B8D47A" 
+      stroke="#000000" 
+      stroke-width="5" 
+      stroke-linejoin="round"
+    />
+
+    <!-- Garis struktur -->
+    <line x1="110" y1="55" x2="110" y2="195" stroke="#000000" stroke-width="2" opacity=".15"/>
+    <line x1="58" y1="90" x2="162" y2="160" stroke="#000000" stroke-width="2" opacity=".1"/>
+    <line x1="162" y1="90" x2="58" y2="160" stroke="#000000" stroke-width="2" opacity=".1"/>
+
+    <!-- MATA KOTAK -->
+    <g class="mata">
+      <rect x="82" y="108" width="18" height="22" fill="#FFFFFF" stroke="#000000" stroke-width="4"/>
+      <rect x="120" y="108" width="18" height="22" fill="#FFFFFF" stroke="#000000" stroke-width="4"/>
+      <rect x="88" y="114" width="8" height="11" fill="#000000"/>
+      <rect x="126" y="114" width="8" height="11" fill="#000000"/>
+      <rect x="90" y="117" width="3" height="4" fill="#FFFFFF"/>
+      <rect x="128" y="117" width="3" height="4" fill="#FFFFFF"/>
+    </g>
+
+    <!-- MULUT -->
+    <polyline 
+      points="98,152 110,156 122,152" 
+      fill="none" 
+      stroke="#000000" 
+      stroke-width="4" 
+      stroke-linecap="round" 
+      stroke-linejoin="round"
+    />
+
+  </g>
+</svg>
