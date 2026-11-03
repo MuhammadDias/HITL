@@ -10,7 +10,7 @@ import { validatePredictionResponse } from "./validation";
  * - Timeout/abort, non-2xx handling, runtime response validation,
  *   Top-3 + confidence validation, explicit mapping to internal result.
  * - The wire schema is PARTNER-TBD: this adapter assumes the internal
- *   expectation documented in docs/FRONTEND_HANDOFF.md until
+ *   expectation documented in docs/PARTNER_PREDICTION_ADAPTER_SPEC.md until
  *   the real contract arrives. See that doc for INTERNAL vs EXAMPLE vs TBD.
  */
 export interface PartnerHttpPredictionProviderOptions {

@@ -1,5 +1,3 @@
-> Arsip implementasi lama. Bukan petunjuk atau hasil verifikasi versi sekarang. Lihat README.md dan docs/QA.md untuk revisi Next.js live demo.
-
 # IMPLEMENTATION AUDIT — TASK-RND-20260822-001
 
 **ROLE:** WORKER · **PARENT:** R&D · **Date:** 2026-08-22

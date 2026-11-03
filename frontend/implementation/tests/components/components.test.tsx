@@ -1,12 +1,131 @@
-import React from "react";
 import { describe, expect, it, vi, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { Top3Panel } from "@/src/components/prediction/Top3Panel";
 import { DecisionPanel } from "@/src/components/decision/DecisionPanel";
 import { PredictingScreen } from "@/src/components/prediction/PredictingScreen";
+import { GlobalCamera } from "@/src/components/camera/GlobalCamera";
+import { LevelRibbonBookmark } from "@/src/components/level/LevelRibbonBookmark";
+import { StudentRulerSelector } from "@/src/components/onboarding/StudentRulerSelector";
+import { DrawingScreen } from "@/src/components/drawing/DrawingScreen";
+import { LEVELS } from "@/src/domain/levels";
 import type { PredictionResult, LevelContext } from "@/src/domain/types";
 
+let mockHasInk = false;
+vi.mock("@/src/input", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/src/input")>();
+  return { ...actual, DrawingSurface: class {
+    constructor(_canvas: HTMLCanvasElement, _video: HTMLVideoElement, options: { onInkChange?: (value: boolean) => void; onStrokesChange?: () => void }) {
+      if (mockHasInk) {
+        options.onInkChange?.(true);
+        options.onStrokesChange?.();
+      }
+    }
+    isEmpty() { return !mockHasInk; }
+    toDrawingInput() { return { strokes: [[{ x: 0, y: 0 }, { x: 1, y: 1 }]], hasInk: mockHasInk, aspectRatio: 1 }; }
+    resizeForDpr() {}
+    dispose() {}
+    undo() { return true; }
+    clear() {}
+  } };
+});
+
 afterEach(cleanup);
+
+const livePrediction: PredictionResult = {
+  candidates: [
+    { label: "papan", confidence: 0.85 },
+    { label: "batu", confidence: 0.1 },
+    { label: "tangga", confidence: 0.05 },
+  ],
+};
+
+describe("DrawingScreen AI prediction probe", () => {
+  it("shows the empty-drawing fallback until ink exists", () => {
+    render(<DrawingScreen level={LEVELS[0]!} initialMode="pointer" feedback={null} surfaceOut={{ current: null }} onSubmit={() => {}} onExit={() => {}} predict={async () => livePrediction} />);
+    expect(screen.getByText("Mulai menggambar... AI siap menebak")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /#1 papan/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Kirim ke Momo" })).toBeNull();
+    expect(screen.getByRole("toolbar", { name: "Alat menggambar" }).contains(screen.getByRole("button", { name: "Undo Goresan" }))).toBe(true);
+    expect(screen.getByRole("button", { name: "Keluar Level" })).toBeTruthy();
+  });
+
+  it("shows provider candidates when the drawing surface reports ink and submits the chosen one", async () => {
+    mockHasInk = true;
+    const originalQuerySelector = document.querySelector.bind(document);
+    vi.stubGlobal("ResizeObserver", class {
+      observe() {}
+      disconnect() {}
+    });
+    vi.spyOn(document, "querySelector").mockImplementation(((selector: string) => {
+      if (selector === ".global-camera-host .camera-video") return document.createElement("video");
+      return originalQuerySelector(selector);
+    }) as typeof document.querySelector);
+    const ctx = { clearRect: vi.fn(), beginPath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), stroke: vi.fn() };
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(ctx as unknown as CanvasRenderingContext2D);
+    vi.spyOn(HTMLCanvasElement.prototype, "getBoundingClientRect").mockReturnValue({ width: 800, height: 450, top: 0, left: 0, right: 800, bottom: 450, x: 0, y: 0, toJSON: () => ({}) });
+
+    const predict = vi.fn(async () => livePrediction);
+    const onSubmit = vi.fn();
+    render(<DrawingScreen level={LEVELS[0]!} initialMode="pointer" feedback={null} surfaceOut={{ current: null }} onSubmit={onSubmit} onExit={() => {}} predict={predict} />);
+    const candidate = await screen.findByRole("button", { name: /#1 papan 85%/i });
+    expect(predict).toHaveBeenCalledTimes(1);
+    fireEvent.click(candidate);
+    expect(candidate.getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByText("Pilihanmu: papan")).toBeTruthy();
+    expect(onSubmit).toHaveBeenCalledWith("papan");
+  });
+});
+
+describe("StudentRulerSelector", () => {
+  it("shows the required instruction and saves/navigates with the chosen number", () => {
+    const stored = new Map<string, string>();
+    Object.defineProperty(window, "localStorage", {
+      configurable: true,
+      value: {
+        getItem: (key: string) => stored.get(key) ?? null,
+        setItem: (key: string, value: string) => stored.set(key, value),
+      },
+    });
+    const onConfirm = vi.fn();
+    render(<StudentRulerSelector onConfirm={onConfirm} />);
+
+    expect(screen.getByRole("heading", { name: "GESER PENGGARIS SESUAI NOMOR ABSENMU" })).toBeTruthy();
+    const slider = screen.getByRole("slider", { name: "Nomor absen" });
+    fireEvent.keyDown(slider, { key: "ArrowRight" });
+    expect(slider.getAttribute("aria-valuenow")).toBe("21");
+    expect(window.localStorage.getItem("sketchbook.studentNumber")).toBe("21");
+
+    fireEvent.click(screen.getByRole("button", { name: /Lanjut ke Tutorial/ }));
+    expect(onConfirm).toHaveBeenCalledWith(21, "");
+  });
+
+  it("class-link mode caps the ruler at the class size and requires a name", () => {
+    const onConfirm = vi.fn();
+    render(<StudentRulerSelector onConfirm={onConfirm} maxNumber={12} askName />);
+    const slider = screen.getByRole("slider", { name: "Nomor absen" });
+    expect(slider.getAttribute("aria-valuemax")).toBe("12");
+    expect(Number(slider.getAttribute("aria-valuenow"))).toBeLessThanOrEqual(12);
+    const confirm = screen.getByRole("button", { name: /Lanjut ke Tutorial/ });
+    expect((confirm as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.change(screen.getByLabelText("Nama kamu"), { target: { value: "  Andi " } });
+    fireEvent.click(confirm);
+    expect(onConfirm).toHaveBeenCalledWith(Number(slider.getAttribute("aria-valuenow")), "Andi");
+  });
+
+  it("announces a taken number", () => {
+    Object.defineProperty(window, "localStorage", {
+      configurable: true,
+      value: {
+        getItem: (key: string) => key === "sketchbook.studentNumber" ? "20" : null,
+        setItem: () => {},
+      },
+    });
+    render(<StudentRulerSelector onConfirm={() => {}} takenNumbers={[20]} />);
+    expect(screen.getByText("20").className).toContain("is-taken");
+    expect(screen.queryByText(/\/ 30/)).toBeNull();
+    expect(screen.getByRole("slider").getAttribute("aria-valuetext")).toContain("sudah diambil");
+  });
+});
 
 const RESULT: PredictionResult = {
   candidates: [
@@ -82,5 +201,80 @@ describe("PredictingScreen (TASK 13 states)", () => {
     expect(onRetry).toHaveBeenCalledTimes(1);
     expect(onRedraw).toHaveBeenCalledTimes(1);
     expect(screen.getByRole("alert").textContent).toContain("provider-unavailable");
+  });
+});
+
+describe("GlobalCamera (Persistent Floating Camera)", () => {
+  it("renders centered hero cover view when mode is cover", () => {
+    const onSkip = vi.fn();
+    render(<GlobalCamera mode="cover" modelUrl="/mock-model.task" onSkip={onSkip} />);
+    const widget = screen.getByTestId("global-camera-widget");
+    expect(widget.className).toContain("mode-cover");
+    expect(screen.getByText(/Jarimu Adalah Kuas Ajaibnya!/i)).toBeTruthy();
+    const skipBtn = screen.getByRole("button", { name: /Lewati & Pilih Nomor Absen/i });
+    expect(skipBtn).toBeTruthy();
+    fireEvent.click(skipBtn);
+    expect(onSkip).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders docked floating widget with toggle-card styling when mode is floating", () => {
+    render(<GlobalCamera mode="floating" modelUrl="/mock-model.task" />);
+    const widget = screen.getByTestId("global-camera-widget");
+    expect(widget.className).toContain("mode-floating");
+    expect(widget.className).toContain("camera-prototype-root");
+    const toggleCard = widget.querySelector(".toggle-card");
+    expect(toggleCard).toBeTruthy();
+  });
+
+  it("keeps the exact same card + <video> node across cover -> floating (no unmount)", () => {
+    const { rerender } = render(<GlobalCamera mode="cover" modelUrl="/mock-model.task" />);
+    const cardBefore = screen.getByTestId("camera-card");
+    const videoBefore = cardBefore.querySelector("video");
+    expect(videoBefore).toBeTruthy();
+
+    rerender(<GlobalCamera mode="floating" modelUrl="/mock-model.task" />);
+
+    const cardAfter = screen.getByTestId("camera-card");
+    expect(cardAfter).toBe(cardBefore);
+    expect(cardAfter.querySelector("video")).toBe(videoBefore);
+    expect(screen.getByTestId("global-camera-widget").className).toContain("mode-floating");
+  });
+
+  it("recesses on the drawing canvas without unmounting the camera card", () => {
+    const { rerender } = render(<GlobalCamera mode="floating" modelUrl="/mock-model.task" recessed />);
+    const cardBefore = screen.getByTestId("camera-card");
+    expect(screen.getByTestId("global-camera-widget").className).toContain("is-recessed");
+
+    rerender(<GlobalCamera mode="floating" modelUrl="/mock-model.task" />);
+
+    expect(screen.getByTestId("camera-card")).toBe(cardBefore);
+    expect(screen.getByTestId("global-camera-widget").className).not.toContain("is-recessed");
+  });
+
+  it("toggle switch changes camera active state", () => {
+    render(<GlobalCamera mode="floating" modelUrl="/mock-model.task" />);
+    const toggleSwitch = screen.getByTestId("btn-camera-toggle-switch");
+    expect(toggleSwitch.getAttribute("aria-checked")).toBe("false");
+    expect(screen.getByText("Nyalakan Kamera")).toBeTruthy();
+    fireEvent.click(toggleSwitch);
+    expect(toggleSwitch.getAttribute("aria-checked")).toBe("true");
+    expect(screen.getByText("Kamera Aktif")).toBeTruthy();
+  });
+});
+
+describe("LevelRibbonBookmark prototype shelf", () => {
+  it("renders three prototype swallowtail ribbons and heading", () => {
+    render(<LevelRibbonBookmark levels={LEVELS} onSelectLevel={vi.fn()} />);
+    const list = screen.getByTestId("level-list");
+    expect(list.querySelectorAll(".ribbon-slot")).toHaveLength(3);
+    expect(screen.getByText("Pilih Bab Cerita")).toBeTruthy();
+    expect(screen.getByText("Tarik pita Level 1 ke bawah untuk mulai menggambar")).toBeTruthy();
+    expect(screen.getByTestId("level-card-1").querySelector(".ribbon-outer")?.getAttribute("d")).toContain("L88 472L2 518");
+  });
+  it("marks the first level playable and later ribbons locked", () => {
+    render(<LevelRibbonBookmark levels={LEVELS} onSelectLevel={vi.fn()} />);
+    expect(screen.getByTestId("level-card-1").className).toContain("is-playable");
+    expect(screen.getByTestId("level-card-2").className).toContain("is-locked");
+    expect(screen.getByTestId("level-card-3").querySelector(".ribbon-play svg rect")).toBeTruthy();
   });
 });

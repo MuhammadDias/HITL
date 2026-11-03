@@ -1,9 +1,10 @@
-import type { LevelContext } from "./types";
+﻿import type { LevelContext } from "./types";
 
 /**
- * Three playable frontend demo levels. Prediction labels/confidence remain
- * fixtures until Dias is connected. Each approved drawing drives one attempt;
- * the same simulation supports KAPLAY and the Canvas fallback.
+ * DEV / PLACEHOLDER LEVEL DATA — temporary fixtures only.
+ * Per PRD FR-13 §17: no final object lists, confidence bands, traps,
+ * deception scripts, or story text are being invented or finalized here.
+ * Stage emphasis follows PRD progression framework.
  */
 
 function makeLevel(
@@ -15,7 +16,7 @@ function makeLevel(
       groundEndX: 340,
       gapStartX: 340,
       gapWidth: 150,
-      goalX: 882,
+      goalX: 700,
       ...partial.scene,
     },
   };
@@ -23,7 +24,7 @@ function makeLevel(
 
 export interface LevelDefinition extends LevelContext {
   title: string;
-  /** Student-facing task line for the live demo. */
+  /** Student-facing task line. Placeholder copy, not final story text. */
   task: string;
   stageEmphasis: string;
 }
@@ -34,33 +35,29 @@ const STAGE_1: LevelDefinition = makeLevel({
   stage: 1,
   cyclesRequired: 1,
   title: "Bab 1 · Jembatan Pertama",
-  task: "Gambar jembatan untuk celah ini. Setujui objekmu, lalu bawa stickman ke bendera.",
-  stageEmphasis: "Pelajari cara main: gambar → tebakan AI → keputusanmu → hasil.",
+  task: "Gambar satu objek untuk menyeberangi celah di buku.",
+  stageEmphasis: "Pahami alur dasar: gambar → tebakan AI → keputusanmu → konsekuensi.",
   behaviorMap: {
     papan: "solid",
     batu: "danger",
-    tangga: "solid",
-    jembatan: "solid",
   },
-  vocabulary: ["papan", "batu", "tangga", "jembatan"],
+  vocabulary: ["papan", "batu", "tangga"],
 });
 
 /** Stage 2 — Ambiguity/comparison: compare Top-3 + confidence before deciding. */
 const STAGE_2: LevelDefinition = makeLevel({
   levelId: "stage-2-ambiguity",
   stage: 2,
-  cyclesRequired: 1,
+  cyclesRequired: 2,
   title: "Bab 2 · Garis yang Mirip",
-  task: "Celah lebih lebar! Buat pijakan, bandingkan pilihan, lalu lompat menaiki dua anak tangga.",
-  stageEmphasis: "AI punya beberapa jawaban — bandingkan tingkat keyakinannya.",
+  task: "Celah lebih lebar. Bandingkan ketiga tebakan sebelum memutuskan.",
+  stageEmphasis: "AI punya beberapa kemungkinan jawaban — bandingkan confidence-nya.",
   behaviorMap: {
     papan: "solid",
     balok: "solid",
     duri: "danger",
-    tangga: "solid",
   },
   vocabulary: ["papan", "balok", "duri", "tangga"],
-  scene: { gapStartX: 285, groundEndX: 285, gapWidth: 250 },
 });
 
 /**
@@ -71,17 +68,16 @@ const STAGE_2: LevelDefinition = makeLevel({
 const STAGE_3: LevelDefinition = makeLevel({
   levelId: "stage-3-validation",
   stage: 3,
-  cyclesRequired: 1,
+  cyclesRequired: 2,
   title: "Bab 3 · Cek Dulu, Baru Percaya",
-  task: "Periksa pilihanmu: beberapa objek berbahaya. Seberangi celah dan lompati penghapus bergerak.",
-  stageEmphasis: "Kamu harus selalu memeriksa tebakan AI sebelum dipakai.",
+  task: "Di halaman ini beberapa gambar terlihat mirip. Validasi dulu tebakan AI.",
+  stageEmphasis: "Manusia perlu memvalidasi keluaran AI sebelum dipakai.",
   behaviorMap: {
     tali: "danger",
     papan: "solid",
     tangga: "solid",
   },
   vocabulary: ["papan", "tali", "tangga", "ember"],
-  scene: { gapStartX: 280, groundEndX: 280, gapWidth: 210 },
 });
 
 export const LEVELS: LevelDefinition[] = [STAGE_1, STAGE_2, STAGE_3];
@@ -92,7 +88,5 @@ export function getLevel(levelId: string): LevelDefinition | undefined {
 
 /** Labels the mock provider may emit for a level (Top-3 candidates ⊆ this set). */
 export function providerVocabulary(level: LevelDefinition): string[] {
-  // Only emit labels that have a defined behavior mapping — otherwise
-  // the behavior resolver produces "unresolved" and triggers error box.
-  return Object.keys(level.behaviorMap);
+  return [...new Set([...Object.keys(level.behaviorMap), ...level.vocabulary])];
 }

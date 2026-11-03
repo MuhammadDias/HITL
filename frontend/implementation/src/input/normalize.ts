@@ -1,12 +1,15 @@
-import type { DrawingInput, StrokePoint } from "../domain/types.js";
+import type { DrawingInput } from "../domain/types.js";
 
 /** Raw stroke as captured from pointer events (canvas pixel space). */
-export type RawStroke = StrokePoint[];
+export type RawStroke = Array<{ x: number; y: number }>;
 
 /**
- * Normalizes geometry into a centered unit square while preserving each point's
- * width relative to the source bbox. This keeps downstream illustration exports
- * visually faithful without leaking canvas pixels into model input.
+ * FR-01: interface-side preprocessing. Normalizes raw canvas strokes into a
+ * modality-independent DrawingInput:
+ * - drops tiny jitter strokes;
+ * - bbox-normalizes geometry to [0,1] preserving aspect ratio (letterboxed);
+ * - resamples points to reduce payload size.
+ * A MediaPipe/finger-tracking input source can produce the same shape later.
  */
 export function normalizeStrokes(
   strokes: RawStroke[],
@@ -14,57 +17,64 @@ export function normalizeStrokes(
 ): DrawingInput {
   const minPoints = options?.minPoints ?? 2;
   const minExtent = options?.minExtentPx ?? 3;
-  // Decimation already removed sub-3px movement during capture. Keep the
-  // remaining geometry for the world; a model adapter may explicitly resample.
-  const maxPoints = options?.maxPointsPerStroke ?? Infinity;
-  const kept = strokes.filter((stroke) => stroke.length >= minPoints);
-  if (kept.length === 0) return { strokes: [], hasInk: false, aspectRatio: 1 };
+  const maxPoints = options?.maxPointsPerStroke ?? 64;
 
+  const kept: RawStroke[] = [];
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
   let maxY = -Infinity;
-  for (const stroke of kept) for (const point of stroke) {
-    minX = Math.min(minX, point.x); minY = Math.min(minY, point.y);
-    maxX = Math.max(maxX, point.x); maxY = Math.max(maxY, point.y);
+
+  for (const stroke of strokes) {
+    if (stroke.length < minPoints) continue;
+    kept.push(stroke);
+    for (const p of stroke) {
+      if (p.x < minX) minX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y > maxY) maxY = p.y;
+    }
   }
-  const width = Math.max(maxX - minX, 1);
-  const height = Math.max(maxY - minY, 1);
-  const scale = Math.max(width, height);
+
+  if (kept.length === 0) {
+    return { strokes: [], hasInk: false, aspectRatio: 1 };
+  }
+
+  const w = Math.max(maxX - minX, 1);
+  const h = Math.max(maxY - minY, 1);
+  const scale = Math.max(w, h); // letterbox into the unit square
 
   const normalized = kept.map((stroke) => {
     const step = Math.max(1, Math.ceil(stroke.length / maxPoints));
-    const points: StrokePoint[] = [];
+    const pts: Array<{ x: number; y: number }> = [];
     for (let i = 0; i < stroke.length; i += step) {
-      const point = stroke[i]!;
-      points.push({
-        x: round4(centered(point.x - minX, width, scale)),
-        y: round4(centered(point.y - minY, height, scale)),
-        ...(typeof point.width === "number" ? { width: round4(point.width / scale) } : {}),
-        ...(typeof point.opacity === "number" ? { opacity: clamp01(point.opacity) } : {}),
-      });
+      const p = stroke[i]!;
+      const nx = extent(p.x - minX, w, scale);
+      const ny = extent(p.y - minY, h, scale);
+      // Skip degenerate strokes whose whole extent is below the noise floor.
+      pts.push({ x: round4(nx), y: round4(ny) });
     }
-    const last = stroke[stroke.length - 1];
-    if (last && points.length > 0 && points[points.length - 1] !== last) {
-      // Preserve the endpoint when resampling did not land on it.
-      const previous = points[points.length - 1]!;
-      if (previous.x !== round4(centered(last.x - minX, width, scale)) || previous.y !== round4(centered(last.y - minY, height, scale))) {
-        points.push({ x: round4(centered(last.x - minX, width, scale)), y: round4(centered(last.y - minY, height, scale)), ...(typeof last.width === "number" ? { width: round4(last.width / scale) } : {}), ...(typeof last.opacity === "number" ? { opacity: clamp01(last.opacity) } : {}) });
-      }
-    }
-    return points;
+    return pts;
   });
 
-  const meaningful = normalized.filter((stroke) => {
-    const xs = stroke.map((point) => point.x);
-    const ys = stroke.map((point) => point.y);
-    return Math.max(...xs) - Math.min(...xs) >= minExtent / scale || Math.max(...ys) - Math.min(...ys) >= minExtent / scale;
+  const meaningful = normalized.filter((s) => {
+    const xs = s.map((p) => p.x);
+    const ys = s.map((p) => p.y);
+    return Math.max(...xs) - Math.min(...xs) >= minExtent / scale || Math.max(...ys) - Math.min(...ys) >= minExtent / scale || s.length >= minPoints;
   });
-  return { strokes: meaningful, hasInk: meaningful.length > 0, aspectRatio: round4(width / height) };
+
+  return {
+    strokes: meaningful,
+    hasInk: meaningful.length > 0,
+    aspectRatio: round4(w / h),
+  };
 }
 
-function centered(delta: number, span: number, scale: number): number {
+function extent(delta: number, span: number, scale: number): number {
+  // Center letterbox: offset by half the leftover space.
   return (delta + (scale - span) / 2) / scale;
 }
-function round4(value: number): number { return Math.round(value * 10000) / 10000; }
-function clamp01(value: number): number { return Math.max(0, Math.min(1, value)); }
+
+function round4(n: number): number {
+  return Math.round(n * 10000) / 10000;
+}

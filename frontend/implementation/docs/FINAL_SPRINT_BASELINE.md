@@ -1,5 +1,3 @@
-> Arsip implementasi lama. Bukan petunjuk atau hasil verifikasi versi sekarang. Lihat README.md dan docs/QA.md untuk revisi Next.js live demo.
-
 # FINAL SPRINT BASELINE — TASK-RND-20260823-002
 
 **Date:** 2026-08-23 · **Worker:** Ox Alpha (ROLE: WORKER) · **Baseline of:** TASK-RND-20260822-001 result

@@ -1,161 +1,106 @@
 /**
- * 1€ Filter (One Euro Filter) — Speed-adaptive low-pass filter for noisy signals.
- * Based on Casiez, Roussel, & Vogel (CHI 2012):
- * "1€ Filter: A Simple Speed-based Low-pass Filter for Noisy Input with Jitter and Lag"
- *
- * Parameters for hand drawing:
- * - minCutoff (fc_min): 1.0 Hz (jitter reduction at low speeds)
- * - beta: 0.0 by default; consumers can opt into speed adaptation.
- * - dCutoff (fc_d): 1.0 Hz (derivative smoothing cutoff)
+ * TASK 05/06 — Stabilizer & smoothing for hand-tracked drawing.
+ * 1€ Filter (Casiez et al., CHI 2012) for adaptive jitter suppression.
+ * Backwards-compatible PointSmoother wrapper.
  */
 
-export interface OneEuroFilterOptions {
-  /** Minimum cutoff frequency in Hz (fc_min). Default: 1.0 */
-  minCutoff?: number;
-  /** Speed coefficient (beta). Default: 0.0 */
-  beta?: number;
-  /** Derivative cutoff frequency in Hz (fc_d). Default: 1.0 */
-  dCutoff?: number;
+export class OneEuroFilter {
+  private xPrev: number | null = null;
+  private dxPrev = 0;
+  private tPrev: number | null = null;
+
+  constructor(
+    public minCutoff = 0.8,
+    public beta = 0.015,
+    public dCutoff = 1.0,
+  ) {}
+
+  reset(): void {
+    this.xPrev = null;
+    this.dxPrev = 0;
+    this.tPrev = null;
+  }
+
+  filter(x: number, timestamp?: number): number {
+    const t = timestamp ?? performance.now();
+    if (this.xPrev === null || this.tPrev === null) {
+      this.xPrev = x;
+      this.dxPrev = 0;
+      this.tPrev = t;
+      return x;
+    }
+
+    const dt = Math.max((t - this.tPrev) / 1000, 0.001);
+    this.tPrev = t;
+
+    const dx = (x - this.xPrev) / dt;
+    const aD = alpha(this.dCutoff, dt);
+    const edx = aD * dx + (1 - aD) * this.dxPrev;
+    this.dxPrev = edx;
+
+    const cutoff = this.minCutoff + this.beta * Math.abs(edx);
+    const a = alpha(cutoff, dt);
+    const xFiltered = a * x + (1 - a) * this.xPrev;
+    this.xPrev = xFiltered;
+    return xFiltered;
+  }
 }
 
-class LowPassFilter {
-  private last: number | null = null;
+function alpha(cutoff: number, dt: number): number {
+  const tau = 1 / (2 * Math.PI * cutoff);
+  return 1 / (1 + tau / dt);
+}
+
+export class OneEuroFilter2D {
+  private xFilter: OneEuroFilter;
+  private yFilter: OneEuroFilter;
+
+  constructor(minCutoff = 0.8, beta = 0.015, dCutoff = 1.0) {
+    this.xFilter = new OneEuroFilter(minCutoff, beta, dCutoff);
+    this.yFilter = new OneEuroFilter(minCutoff, beta, dCutoff);
+  }
+
+  reset(): void {
+    this.xFilter.reset();
+    this.yFilter.reset();
+  }
+
+  filter(p: { x: number; y: number }, timestamp?: number): { x: number; y: number } {
+    return {
+      x: this.xFilter.filter(p.x, timestamp),
+      y: this.yFilter.filter(p.y, timestamp),
+    };
+  }
+}
+
+export class PointSmoother {
+  private last: { x: number; y: number } | null = null;
+  private oneEuro: OneEuroFilter2D | null = null;
+
+  constructor(private readonly alphaParam?: number) {
+    if (alphaParam === undefined) {
+      this.oneEuro = new OneEuroFilter2D(0.8, 0.015, 1.0);
+    }
+  }
 
   reset(): void {
     this.last = null;
+    this.oneEuro?.reset();
   }
 
-  lastValue(): number | null {
-    return this.last;
-  }
-
-  filter(val: number, alpha: number): number {
-    if (this.last === null) {
-      this.last = val;
-      return val;
+  smooth(p: { x: number; y: number }, timestamp?: number): { x: number; y: number } {
+    if (this.oneEuro) {
+      return this.oneEuro.filter(p, timestamp);
     }
-    const result = alpha * val + (1 - alpha) * this.last;
-    this.last = result;
-    return result;
-  }
-}
-
-function computeAlpha(dt: number, cutoff: number): number {
-  const tau = 1.0 / (2 * Math.PI * cutoff);
-  return 1.0 / (1.0 + tau / dt);
-}
-
-export class OneEuroFilter {
-  readonly minCutoff: number;
-  readonly beta: number;
-  readonly dCutoff: number;
-
-  private lastTime: number | null = null;
-  private xFilter = new LowPassFilter();
-  private yFilter = new LowPassFilter();
-  private dxFilter = new LowPassFilter();
-  private dyFilter = new LowPassFilter();
-
-  constructor(options: OneEuroFilterOptions = {}) {
-    this.minCutoff = options.minCutoff ?? 1.0;
-    this.beta = options.beta ?? 0;
-    this.dCutoff = options.dCutoff ?? 1.0;
-  }
-
-  reset(): void {
-    this.lastTime = null;
-    this.xFilter.reset();
-    this.yFilter.reset();
-    this.dxFilter.reset();
-    this.dyFilter.reset();
-  }
-
-  filter(p: { x: number; y: number }, timestampMs?: number): { x: number; y: number } {
-    const t = timestampMs !== undefined ? timestampMs / 1000 : (typeof performance !== "undefined" ? performance.now() : Date.now()) / 1000;
-
-    if (this.lastTime === null) {
-      this.lastTime = t;
-      return {
-        x: this.xFilter.filter(p.x, 1.0),
-        y: this.yFilter.filter(p.y, 1.0),
-      };
+    if (!this.last) {
+      this.last = { ...p };
+      return { ...p };
     }
-
-    const dt = Math.max(t - this.lastTime, 1e-4);
-    this.lastTime = t;
-
-    // 1. Compute discrete derivative (velocity) of raw signal
-    const prevX = this.xFilter.lastValue();
-    const prevY = this.yFilter.lastValue();
-    const rawDx = prevX !== null ? (p.x - prevX) / dt : 0;
-    const rawDy = prevY !== null ? (p.y - prevY) / dt : 0;
-
-    // 2. Filter derivative using fixed cutoff dCutoff
-    const alphaD = computeAlpha(dt, this.dCutoff);
-    const dx = this.dxFilter.filter(rawDx, alphaD);
-    const dy = this.dyFilter.filter(rawDy, alphaD);
-
-    // 3. Dynamic cutoff frequency based on filtered speed magnitude
-    const speed = Math.hypot(dx, dy);
-    const cutoff = this.minCutoff + this.beta * speed;
-    const alpha = computeAlpha(dt, cutoff);
-
-    // 4. Filter position with speed-adaptive alpha
-    return {
-      x: this.xFilter.filter(p.x, alpha),
-      y: this.yFilter.filter(p.y, alpha),
+    const a = this.alphaParam ?? 0.45;
+    this.last = {
+      x: this.last.x * (1 - a) + p.x * a,
+      y: this.last.y * (1 - a) + p.y * a,
     };
-  }
-
-  /** Backward-compatible alias for filter(). */
-  smooth(p: { x: number; y: number }, timestampMs?: number): { x: number; y: number } {
-    return this.filter(p, timestampMs);
-  }
-}
-
-/**
- * Backward-compatible PointSmoother backed by the 1€ Filter.
- */
-export class PointSmoother extends OneEuroFilter {
-  constructor(optionsOrAlpha?: OneEuroFilterOptions | number) {
-    if (typeof optionsOrAlpha === "number") {
-      super({ minCutoff: 1.0, beta: 0, dCutoff: 1.0 });
-    } else {
-      super(optionsOrAlpha);
-    }
-  }
-}
-
-export interface LandmarkCoordinate {
-  x: number;
-  y: number;
-}
-
-/**
- * Applies independent One Euro filters to the landmarks which control pinch
- * geometry and cursor placement. It leaves the input frame immutable so callers
- * can retain MediaPipe's original result for diagnostics when required.
- */
-export class LandmarkSmoother<T extends LandmarkCoordinate> {
-  private readonly filters = new Map<number, OneEuroFilter>();
-
-  constructor(
-    private readonly landmarkIndices: readonly number[] = [4, 8],
-    private readonly options: OneEuroFilterOptions = { minCutoff: 1.25, beta: 0.02, dCutoff: 1.0 },
-  ) {
-    for (const index of landmarkIndices) this.filters.set(index, new OneEuroFilter(options));
-  }
-
-  reset(): void {
-    this.filters.forEach((filter) => filter.reset());
-  }
-
-  filter(landmarks: readonly T[], timestampMs?: number): T[] {
-    return landmarks.map((landmark, index) => {
-      const filter = this.filters.get(index);
-      if (!filter) return landmark;
-      const point = filter.filter(landmark, timestampMs);
-      return { ...landmark, ...point };
-    });
+    return { ...this.last };
   }
 }

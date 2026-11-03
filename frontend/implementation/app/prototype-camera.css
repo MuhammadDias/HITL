@@ -1,0 +1,266 @@
+.camera-prototype-root{
+    --paper:#f5efe4;
+    --paper-light:#f7f5ea;
+    --ink:#23211d;
+    --ink-strong:#111111;
+    --muted:#4f5646;
+    --orange:#df6930;
+    --orange-deep:#ba4c10;
+    --green:#c5df9a;
+    --green-soft:#eff3db;
+    --green-strong:#4a8c1f;
+    --line:rgba(35,33,29,.14);
+    --shadow:
+      0 2px 2px rgba(55,31,13,.10),
+      0 8px 18px rgba(55,31,13,.12),
+      0 24px 46px rgba(55,31,13,.10);
+  }.camera-prototype-root *,.camera-prototype-root *::before,.camera-prototype-root *::after{box-sizing:border-box}.camera-prototype-root,.camera-prototype-root{width:100%;height:100%;margin:0}.camera-prototype-root{
+    position:relative;
+    min-height:100vh;
+    overflow:hidden;
+    color:var(--ink);
+    font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:var(--green-soft);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:geometricPrecision;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:32px 24px;
+  }.camera-prototype-root::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1728' height='1117' viewBox='0 0 1728 1117' fill='none'%3E%3Crect width='1728' height='1117' fill='%23EFF3DB'/%3E%3Cg filter='url(%23a)'%3E%3Ccircle cx='864' cy='-307' r='841' fill='%23C5DF9A'/%3E%3C/g%3E%3Cg filter='url(%23b)'%3E%3Ccircle cx='864' cy='1425' r='841' fill='%23C5DF9A'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='a' x='-199' y='-1370' width='2126' height='2126' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0'/%3E%3CfeBlend in='SourceGraphic'/%3E%3CfeGaussianBlur stdDeviation='111'/%3E%3C/filter%3E%3Cfilter id='b' x='-199' y='362' width='2126' height='2126' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0'/%3E%3CfeBlend in='SourceGraphic'/%3E%3CfeGaussianBlur stdDeviation='111'/%3E%3C/filter%3E%3C/defs%3E%3C/svg%3E");
+    background-size:cover;
+    background-position:center;
+  }.camera-prototype-root .content{
+    position:relative;
+    z-index:1;
+    width:min(100%,760px);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+  }.camera-prototype-root .eyebrow{
+    margin-bottom:72px;
+    color:var(--ink-strong);
+    font-size:13px;
+    font-weight:800;
+    letter-spacing:.02em;
+    text-transform:uppercase;
+    transition:opacity .2s ease;
+  }.camera-prototype-root .headline{
+    margin:0 0 20px;
+    color:var(--ink-strong);
+    font-size:clamp(40px,5vw,58px);
+    font-weight:800;
+    line-height:1.05;
+    letter-spacing:-.045em;
+    transition:opacity .2s ease;
+  }.camera-prototype-root .subtext{
+    max-width:520px;
+    margin:0 0 56px;
+    color:var(--ink-strong);
+    font-size:15px;
+    font-weight:600;
+    line-height:1.55;
+    transition:opacity .2s ease;
+  }/* Material kartu disamakan dengan kartu orange tutorial v13. */.camera-prototype-root .toggle-card{
+    position:relative;
+    width:min(290px,84vw);
+    padding:14px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    overflow:hidden;
+    user-select:none;
+    -webkit-user-select:none;
+    color:#fffaf0;
+    background:linear-gradient(160deg,var(--orange) 0%,var(--orange-deep) 100%);
+    border:2px solid var(--ink-strong);
+    border-radius:22px;
+    box-shadow:inset 0 0 0 6px rgba(255,255,255,.15),4px 4px 0 var(--ink-strong),var(--shadow);
+    outline:none;
+  }.camera-prototype-root .toggle-card::before{
+    content:"";
+    position:absolute;
+    inset:14px;
+    border:1.5px dashed rgba(255,250,240,.34);
+    border-radius:15px;
+    pointer-events:none;
+    z-index:0;
+  }.camera-prototype-root .toggle-card::after{
+    content:"";
+    position:absolute;
+    inset:20px;
+    border-radius:18px;
+    background:
+      radial-gradient(circle at 28% 26%,rgba(255,255,255,.16) 0 12px,transparent 13px),
+      radial-gradient(circle at 72% 32%,rgba(255,255,255,.11) 0 18px,transparent 19px),
+      radial-gradient(circle at 38% 72%,rgba(255,255,255,.12) 0 14px,transparent 15px),
+      linear-gradient(130deg,rgba(255,255,255,.10),rgba(255,255,255,0) 36%);
+    opacity:.9;
+    pointer-events:none;
+    z-index:0;
+  }.camera-prototype-root .video-wrap,.camera-prototype-root .toggle-row,.camera-prototype-root .camera-select-wrap{position:relative;z-index:2}.camera-prototype-root .video-wrap{display:block;
+    width:100%;
+    height:0;
+    overflow:hidden;
+    border-radius:12px;
+    border:0 solid var(--ink-strong);
+    background:transparent;
+    opacity:0;
+    pointer-events:none;
+    transition:
+      height .36s cubic-bezier(.16,1,.3,1),
+      border-width .12s ease,
+      opacity .18s ease;
+  }.camera-prototype-root .toggle-card.on .video-wrap{
+    display:block;
+    height:auto;
+    aspect-ratio:5 / 4 !important;
+    border-width:2px;
+    background:var(--ink);
+    opacity:1;
+    pointer-events:auto;
+  }
+  .camera-prototype-root .video-wrap,
+  .camera-prototype-root .camera-video{
+    aspect-ratio:5 / 4 !important;
+  }
+  .camera-prototype-root .video-wrap{overflow:hidden;border-radius:14px;}
+  .camera-prototype-root .camera-video{width:100%;height:100%;object-fit:cover;}
+  .camera-prototype-root .camera-video{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    transform:scaleX(-1);
+    opacity:0;
+    transition:opacity .25s ease;
+    background:#1e2126;
+  }.camera-prototype-root .toggle-card.on.has-stream .camera-video{opacity:1}.camera-prototype-root .video-inner{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    color:rgba(255,255,255,.42);
+    background:
+      radial-gradient(circle at 1px 1px,rgba(255,255,255,.06) 1px,transparent 1.2px) 0 0/18px 18px,
+      #1e2126;
+    opacity:0;
+    transition:opacity .28s ease .08s;
+  }.camera-prototype-root .toggle-card.on .video-inner{opacity:1}.camera-prototype-root .toggle-card.on.has-stream .video-inner{opacity:0;pointer-events:none}.camera-prototype-root .video-inner::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:repeating-linear-gradient(to bottom,transparent 0 2px,rgba(255,255,255,.035) 2px 4px);
+    pointer-events:none;
+  }.camera-prototype-root .rec-dot{
+    position:absolute;
+    top:10px;
+    right:12px;
+    display:flex;
+    align-items:center;
+    gap:5px;
+    color:#ff5b53;
+    font-size:8px;
+    font-weight:800;
+    letter-spacing:.14em;
+    opacity:0;
+    transition:opacity .22s ease .22s;
+  }.camera-prototype-root .toggle-card.on .rec-dot{opacity:1}.camera-prototype-root .toggle-card.on.has-stream .rec-dot{opacity:1}.camera-prototype-root .rec-dot::before{
+    content:"";
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:#ff5b53;
+    animation:recBlink 1.4s ease-in-out infinite;
+  }@keyframes recBlink{
+    0%,100%{opacity:1}
+    50%{opacity:.25}
+  }.camera-prototype-root .video-inner svg{width:38px;height:38px;opacity:.55}.camera-prototype-root .video-inner .label{
+    max-width:220px;
+    color:#ffffff;
+    font-size:11px;
+    font-weight:800;
+    line-height:1.4;
+    text-align:center;
+    padding:4px 10px;
+    border-radius:6px;
+    background:rgba(0,0,0,.4);
+  }.camera-prototype-root .toggle-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    min-height:34px;
+    padding:2px 2px 0;
+  }.camera-prototype-root .toggle-label{
+    color:#fffaf0;
+    font-size:15px;
+    font-weight:800;
+    letter-spacing:-.01em;
+    cursor:pointer;
+  }.camera-prototype-root .toggle-switch{
+    position:relative;
+    width:46px;
+    height:26px;
+    flex-shrink:0;
+    padding:0;
+    border:0;
+    border-radius:999px;
+    background:var(--ink);
+    cursor:pointer;
+    appearance:none;
+    -webkit-appearance:none;
+    transition:background .22s ease,transform .12s ease;
+  }.camera-prototype-root .toggle-switch:hover{transform:translateY(-1px)}.camera-prototype-root .toggle-switch:active{transform:translateY(1px)}.camera-prototype-root .toggle-switch:focus-visible{outline:2px solid #fffaf0;outline-offset:3px}.camera-prototype-root .toggle-switch::after{
+    content:"";
+    position:absolute;
+    top:4px;
+    left:4px;
+    width:18px;
+    height:18px;
+    border-radius:50%;
+    background:#fffaf0;
+    transition:transform .25s cubic-bezier(.16,1,.3,1);
+  }.camera-prototype-root .toggle-card.on .toggle-switch{background:var(--green-strong)}.camera-prototype-root .toggle-card.on .toggle-switch::after{transform:translateX(20px)}.camera-prototype-root .camera-select-wrap{
+    position:relative;
+    z-index:2;
+    width:100%;
+  }.camera-prototype-root .camera-select{
+    width:100%;
+    appearance:none;
+    -webkit-appearance:none;
+    padding:8px 34px 8px 10px;
+    border:2.5px solid var(--ink-strong);
+    border-radius:8px;
+    background:var(--paper-light);
+    color:var(--green-strong);
+    font:inherit;
+    font-size:11px;
+    font-weight:800;
+    line-height:1.15;
+    text-align:center;
+    cursor:pointer;
+    outline:none;
+    box-shadow:2px 2px 0 var(--ink-strong);
+  }.camera-prototype-root .camera-select-wrap::after{
+    content:"⌄";
+    position:absolute;
+    right:11px;
+    top:50%;
+    transform:translateY(-56%);
+    color:var(--ink-strong);
+    font-size:14px;
+    font-weight:900;
+    pointer-events:none;
+  }@media (max-width:640px){.camera-prototype-root{padding:24px 16px}.camera-prototype-root .eyebrow{margin-bottom:48px;font-size:12px}.camera-prototype-root .headline{font-size:clamp(38px,12vw,50px)}.camera-prototype-root .subtext{margin-bottom:42px;font-size:14px}}@media (prefers-reduced-motion:reduce){.camera-prototype-root *,.camera-prototype-root *::before,.camera-prototype-root *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}

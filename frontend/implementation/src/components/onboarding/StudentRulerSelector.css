@@ -1,0 +1,277 @@
+.student-number-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 38px 24px 44px;
+  background: #f7f2ea radial-gradient(#d9d0c3 1px, transparent 1px) 0 0/22px 22px;
+  color: #1a1a1a;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  user-select: none;
+}
+
+.student-number-content {
+  width: min(100%, 860px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.student-number-screen h1 {
+  max-width: 760px;
+  margin: 0;
+  font-size: clamp(25px, 4vw, 38px);
+  font-weight: 900;
+  line-height: 1.12;
+  letter-spacing: .025em;
+}
+
+.student-number-readout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  margin: 20px 0 23px;
+}
+
+.student-number-value {
+  min-width: 2ch;
+  font-size: clamp(108px, 15vw, 150px);
+  font-weight: 900;
+  line-height: 1;
+  color: #2f7442;
+  text-shadow: 4px 5px 0 #1a1a1a;
+  transition: color 0.15s ease;
+}
+
+.student-number-value.is-available {
+  color: #4a8c1f;
+  text-shadow: 4px 5px 0 #1a1a1a;
+}
+
+.student-number-value.is-taken {
+  color: #d9423a;
+  text-shadow: 4px 5px 0 #1a1a1a;
+}
+
+.student-number-value.is-bump {
+  animation: ruler-bump .3s ease;
+}
+
+@keyframes ruler-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.07); }
+  100% { transform: scale(1); }
+}
+
+.student-ruler-wrap {
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.student-ruler {
+  position: relative;
+  height: 150px;
+  overflow: hidden;
+  border: 2px solid #1a1a1a;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 85% 18%, rgba(255, 240, 220, .18) 0 26px, transparent 27px),
+    radial-gradient(circle at 12% 88%, rgba(255, 240, 220, .14) 0 20px, transparent 21px),
+    linear-gradient(160deg, #e47b45, #d0622a 55%, #bf5418);
+  box-shadow: 6px 8px 0 #1a1a1a;
+  cursor: grab;
+  touch-action: none;
+  outline-offset: 5px;
+}
+
+.student-ruler.is-grabbing {
+  cursor: grabbing;
+}
+
+.student-ruler::before {
+  position: absolute;
+  inset: 12px;
+  border: 1.5px dashed rgba(255, 230, 200, .45);
+  border-radius: 12px;
+  content: "";
+  pointer-events: none;
+}
+
+.student-ruler-tick {
+  position: absolute;
+  top: 25px;
+  left: 0;
+  width: 1px;
+  height: 74px;
+  border-left: 2px dashed rgba(255, 245, 225, .68);
+  pointer-events: none;
+}
+
+.student-ruler-tick.is-gap {
+  opacity: 0;
+}
+
+.student-ruler-tick.is-major {
+  height: 102px;
+  border-left: 3px solid #fffaf0;
+}
+
+.student-ruler-tick span {
+  position: absolute;
+  top: 108px;
+  left: 0;
+  transform: translateX(-50%);
+  color: #fffaf0;
+  font: 800 14px/1 Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.student-ruler-needle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 4px;
+  transform: translateX(-50%);
+  border-right: 2px solid #1a1a1a;
+  border-left: 2px solid #1a1a1a;
+  background: #fff2d7;
+  box-shadow: 0 0 0 4px rgba(255, 242, 215, .26);
+  pointer-events: none;
+}
+
+.student-number-confirm {
+  min-height: 54px;
+  padding: 12px 24px;
+  border: 2px solid #1a1a1a;
+  border-radius: 14px;
+  background: linear-gradient(160deg, #e47b45, #d0622a 55%, #bf5418);
+  box-shadow: 4px 5px 0 #1a1a1a;
+  color: #fffaf0;
+  font: 800 16px/1.2 Inter, ui-sans-serif, system-ui, sans-serif;
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s;
+}
+
+.student-number-confirm:hover {
+  transform: translate(-1px, -2px);
+  box-shadow: 5px 7px 0 #1a1a1a;
+}
+
+.student-number-confirm:active {
+  transform: translate(3px, 4px);
+  box-shadow: 1px 1px 0 #1a1a1a;
+}
+
+.student-number-confirm:focus-visible {
+  outline: 3px solid #1a1a1a;
+  outline-offset: 4px;
+}
+
+.student-number-confirm:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 4px 5px 0 #1a1a1a;
+}
+
+/* Class-link mode: name field + join error under the ruler. */
+.student-name-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(360px, 100%);
+  margin-bottom: 18px;
+  font: 700 14px/1.2 Inter, ui-sans-serif, system-ui, sans-serif;
+  color: #1a1a1a;
+  text-align: left;
+}
+
+.student-name-field input {
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 2px solid #1a1a1a;
+  border-radius: 12px;
+  background: #fffaf0;
+  box-shadow: 3px 3px 0 #1a1a1a;
+  font: 600 16px/1.2 Inter, ui-sans-serif, system-ui, sans-serif;
+  color: #1a1a1a;
+}
+
+.student-name-field input:focus-visible {
+  outline: 3px solid #e47b45;
+  outline-offset: 2px;
+}
+
+.student-number-error {
+  margin: 0 0 14px;
+  color: #b42318;
+  font: 700 14px/1.3 Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+@media (max-width: 600px) {
+  .student-number-screen {
+    min-height: 100svh;
+    padding: 30px 18px 34px;
+  }
+  .student-number-screen h1 {
+    max-width: 440px;
+    font-size: clamp(24px, 7vw, 34px);
+  }
+  .student-number-readout {
+    margin: 24px 0 26px;
+  }
+  .student-number-value {
+    font-size: clamp(100px, 31vw, 136px);
+  }
+  .student-ruler-wrap {
+    margin-bottom: 28px;
+  }
+  .student-ruler {
+    height: 132px;
+    border-radius: 18px;
+  }
+  .student-ruler-tick {
+    top: 17px;
+    height: 67px;
+  }
+  .student-ruler-tick.is-major {
+    height: 90px;
+  }
+  .student-ruler-tick span {
+    top: 96px;
+    font-size: 12px;
+  }
+  .student-number-confirm {
+    width: min(100%, 350px);
+    min-height: 56px;
+  }
+  /* Class-link mode adds a name field: tighten the readout and keep the
+     form clear of the floating camera PIP in the bottom-left corner. */
+  .student-number-screen.has-name {
+    align-items: flex-start;
+    padding-bottom: 170px;
+  }
+  .has-name .student-number-readout {
+    margin: 12px 0 14px;
+  }
+  .has-name .student-number-value {
+    font-size: clamp(76px, 22vw, 104px);
+  }
+  .has-name .student-ruler-wrap {
+    margin-bottom: 18px;
+  }
+  .has-name .student-name-field {
+    width: min(100%, 350px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .student-number-value.is-bump {
+    animation: none;
+  }
+  .student-number-confirm {
+    transition: none;
+  }
+}

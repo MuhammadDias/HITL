@@ -41,19 +41,17 @@ export function DecisionPanel({
   return (
     <aside className="side-panel">
       <div className="decision-actions">
-        {/* ✅ Accept — Verification Seal */}
         <button type="button" className="btn btn-accept" onClick={onAccept}>
-          ✅ Accept — Terima Peringkat 1
+          Accept — terima peringkat 1
         </button>
 
-        {/* 🔵 Correct — Revision Stylus */}
         <button
           type="button"
           className="btn btn-correct"
           aria-expanded={picker === "correct"}
           onClick={() => setPicker((p) => (p === "correct" ? "none" : "correct"))}
         >
-          🔵 Correct — Pilih Peringkat Lain
+          Correct — pilih peringkat lain
         </button>
         {picker === "correct" && (
           <div className="subpanel" data-testid="correct-picker">
@@ -76,14 +74,13 @@ export function DecisionPanel({
           </div>
         )}
 
-        {/* 🟡 Override — Override Stamp */}
         <button
           type="button"
           className="btn btn-override"
           aria-expanded={picker === "override"}
           onClick={() => setPicker((p) => (p === "override" ? "none" : "override"))}
         >
-          🟡 Override — Tolak Semua Tebakan
+          Override — tolak semua tebakan
         </button>
         {picker === "override" && (
           <div className="subpanel" data-testid="override-picker">
@@ -125,7 +122,7 @@ export function DecisionPanel({
 
       {/* Redraw = recovery route, deliberately outside the three decisions. */}
       <button type="button" className="btn btn-ghost redraw-link" onClick={onRedraw}>
-        ↩ Gambar Ulang (revisi)
+        Gambar ulang (revisi)
       </button>
     </aside>
   );

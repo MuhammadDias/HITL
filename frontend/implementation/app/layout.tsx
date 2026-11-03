@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { CameraProvider } from "@/src/components/camera/CameraProvider";
+import "./level-ribbon-bookmark.css";
 
 export const metadata: Metadata = {
-  title: "Sketchbook Universe — Gambar. Putuskan. Hidupkan.",
+  title: "Sketchbook Universe — DEV BUILD (author-side)",
   description:
-    "Buku sketsa interaktif: gambar dengan jarimu, periksa tebakan, dan hidupkan ciptaanmu bersama Momo.",
+    "Simulasi literasi AI Human-in-the-Loop untuk siswa SMP. DEV build: prediksi memakai provider mock/partner adapter, bukan model final.",
 };
 
 export const viewport: Viewport = {
@@ -16,7 +16,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id">
-      <body><CameraProvider>{children}</CameraProvider></body>
+      <body>{children}</body>
     </html>
   );
 }

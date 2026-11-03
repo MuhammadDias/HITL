@@ -32,14 +32,4 @@ describe("normalizeStrokes (FR-01)", () => {
     const raw = [[{ x: 5, y: 5 }, { x: 60, y: 40 }]];
     expect(normalizeStrokes(raw)).toEqual(normalizeStrokes(raw.map((s) => [...s])));
   });
-
-  it("retains detailed geometry for the approved world illustration", () => {
-    const stroke = Array.from({ length: 180 }, (_, i) => ({
-      x: i * 4, y: 60 + Math.sin(i / 8) * 40, width: 4, opacity: 0.8,
-    }));
-    const out = normalizeStrokes([stroke]);
-    expect(out.strokes[0]).toHaveLength(stroke.length);
-    expect(out.strokes[0]![179]!.x).toBe(1);
-    expect(out.strokes[0]![90]!.opacity).toBe(0.8);
-  });
 });

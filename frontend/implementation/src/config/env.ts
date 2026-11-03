@@ -9,20 +9,30 @@ import { providerVocabulary, type LevelDefinition } from "../domain/levels";
  */
 export const env = {
   get predictionMode(): "mock" | "partner" {
-    return (process.env.NEXT_PUBLIC_PREDICTION_MODE as "mock" | "partner") ?? "partner";
+    return (process.env.NEXT_PUBLIC_PREDICTION_MODE as "mock" | "partner") ?? "mock";
   },
   get predictionEndpoint(): string {
-    return process.env.NEXT_PUBLIC_PREDICTION_ENDPOINT ?? "http://localhost:8000/predict";
+    return process.env.NEXT_PUBLIC_PREDICTION_ENDPOINT ?? "";
   },
   get predictionTimeoutMs(): number {
     const n = Number(process.env.NEXT_PUBLIC_PREDICTION_TIMEOUT_MS);
     return Number.isFinite(n) && n > 0 ? n : 8000;
   },
   get defaultDrawInputMode(): InputModeId {
-    return (process.env.NEXT_PUBLIC_DRAW_INPUT_MODE as InputModeId) ?? "hand";
+    return (process.env.NEXT_PUBLIC_DRAW_INPUT_MODE as InputModeId) ?? "pointer";
   },
   get mediapipeModelUrl(): string {
     return process.env.NEXT_PUBLIC_MEDIAPIPE_MODEL_URL ?? "/models/hand_landmarker.task";
+  },
+  /** Backend base URL for class links/answers; defaults to the prediction endpoint's origin. */
+  get apiBaseUrl(): string {
+    const explicit = process.env.NEXT_PUBLIC_API_URL;
+    if (explicit) return explicit.replace(/\/+$/, "");
+    try {
+      return new URL(process.env.NEXT_PUBLIC_PREDICTION_ENDPOINT ?? "").origin;
+    } catch {
+      return "";
+    }
   },
   get testHooksEnabled(): boolean {
     return process.env.NEXT_PUBLIC_TEST_HOOKS === "1";

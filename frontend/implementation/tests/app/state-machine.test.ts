@@ -141,9 +141,8 @@ describe("FlowController — PRD §13 vertical slice (TASK 02/03)", () => {
   });
 
   it("AC-13 repeat cycles honor cyclesRequired until completion", async () => {
-    const c = makeFlow("stage-2-ambiguity");
-    // Exercise configurable repetition independently of the live demo's one-run levels.
-    c.flow.enterLevel({ ...c.level, cyclesRequired: 2 });
+    const c = makeFlow("stage-2-ambiguity"); // cyclesRequired = 2
+    c.flow.enterLevel(c.level);
     await c.flow.submitDrawing(INK);
     let top3 = c.flow.prediction!.candidates.map((x) => x.label);
     let alt = ["papan", "batu", "tangga", "tali"].find((v) => !top3.includes(v))!;

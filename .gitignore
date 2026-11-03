@@ -78,6 +78,8 @@ data/
 *.tsv
 *.json
 *.sqlite
+# ...except frontend config (package.json, tsconfig.json, etc.)
+!frontend/**/*.json
 
 # Model checkpoints / artifacts
 checkpoints/

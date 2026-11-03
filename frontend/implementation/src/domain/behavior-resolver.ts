@@ -2,7 +2,7 @@
 
 /**
  * FR-09: Maps a final human-decided label to level-context behavior.
- * Mapping is per-level and configurable — no object is globally Solid/Danger.
+ * Mapping is per-level and configurable â€” no object is globally Solid/Danger.
  */
 export function resolveBehavior(
   finalLabel: string,

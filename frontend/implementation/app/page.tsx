@@ -1,5 +1,5 @@
-import { LandingPage } from "@/src/components/landing/LandingPage";
+import { SketchbookApp } from "@/src/app/SketchbookApp";
 
 export default function Page() {
-  return <LandingPage />;
+  return <SketchbookApp />;
 }

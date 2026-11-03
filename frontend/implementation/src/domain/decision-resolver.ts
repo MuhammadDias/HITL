@@ -2,7 +2,7 @@
 
 /**
  * Resolves the student's explicit decision into a validated HumanDecision.
- * Pure logic — no DOM. Gameplay consumes this result, never raw rank-1 (FR-08).
+ * Pure logic â€” no DOM. Gameplay consumes this result, never raw rank-1 (FR-08).
  */
 export class DecisionError extends Error {
   constructor(message: string) {
@@ -45,7 +45,7 @@ export function correctDecision(
 /**
  * FR-06: Override rejects all Top-3 candidates; the alternative becomes final.
  * Empty/whitespace labels are rejected. A label equal to one already present
- * in Top-3 is rejected — that would be Correct's job, not Override's.
+ * in Top-3 is rejected â€” that would be Correct's job, not Override's.
  */
 export function overrideDecision(
   rawLabel: string,
@@ -57,7 +57,7 @@ export function overrideDecision(
   }
   if (result.candidates.some((c) => c.label === label)) {
     throw new DecisionError(
-      `Label "${label}" ada di Top-3 — gunakan Correct untuk memilihnya.`,
+      `Label "${label}" ada di Top-3 â€” gunakan Correct untuk memilihnya.`,
     );
   }
   return { type: "override", finalLabel: label };

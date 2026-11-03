@@ -22,10 +22,6 @@ export interface PredictionResult {
 export interface StrokePoint {
   x: number;
   y: number;
-  /** Optional ink diameter. Raw strokes use CSS pixels; normalized strokes use bbox-relative units. */
-  width?: number;
-  /** Optional ink alpha in [0,1]. */
-  opacity?: number;
 }
 
 /**
