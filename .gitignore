@@ -84,8 +84,17 @@ data/
 # Model checkpoints / artifacts
 checkpoints/
 models/
+# ...except the MediaPipe hand model the game serves to the browser
+!frontend/implementation/public/models/
 *.pth
 *.pt
+
+# Local tools / binaries (download cloudflared separately, see backend/README.md)
+cloudflared.exe
+cloudflared
+
+# Browser test recordings from the frontend's E2E runs (kept in the hitl-momo repo)
+frontend/implementation/docs/evidence/videos/
 
 # Temporary files
 *.tmp
