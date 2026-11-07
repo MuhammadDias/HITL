@@ -246,12 +246,16 @@ Panduan lengkap (peran superadmin vs guru, arti Menerima/Merevisi/Menolak, akses
 
 ### 🤖 Training (opsional)
 
-Lewati langkah ini kalau `weights/` sudah berisi model.
+Lewati langkah ini kalau `weights/` sudah berisi model. Training sebaiknya di mesin dengan GPU (mis. server);
+panduan lengkapnya, termasuk backup model dan cara memakai model baru, ada di
+[DEPLOY.md → Training model di server](DEPLOY.md#training-model-di-server-gpu).
 
 ```bash
+venv/bin/pip install -r train/requirements.txt
+export PYTHONPATH=.             # script di train/ meng-import config.py dari root
 venv/bin/python train/01_download_dataset.py
 venv/bin/python train/02_preprocess_data.py
-venv/bin/python train/06_train_mobilenetv2.py   # menghasilkan model yang dipakai backend
+venv/bin/python train/06_train_mobilenetv2.py   # menimpa weights/model_4_mobilenetv2_best.keras, backup dulu
 ```
 
 ---

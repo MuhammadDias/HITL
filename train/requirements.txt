@@ -1,0 +1,7 @@
+# Training on a GPU server. Install in its own venv (not the Docker backend):
+#   python3 -m venv venv-train && venv-train/bin/pip install -r train/requirements.txt
+# TensorFlow/Keras match backend/requirements.txt so trained .keras files load in the backend.
+tensorflow[and-cuda]==2.21.0
+keras==3.15.1
+numpy==2.5.3
+scikit-learn

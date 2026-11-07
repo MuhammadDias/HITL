@@ -18,6 +18,22 @@ git checkout main        # kembali ke versi terbaru
 
 ---
 
+## [v0.4.1] - 2026-11-08
+
+### Ditambahkan
+- Panduan **training model di server dengan GPU** di `DEPLOY.md`: cek GPU, environment training, backup model,
+  menjalankan training di `tmux`, memakai model baru, dan kembali ke model lama.
+- `train/requirements.txt` untuk training (TensorFlow dengan CUDA, versi sama dengan backend).
+- Panduan **alur mengubah kode** (laptop → GitHub → server) di `DEPLOY.md`.
+
+### Diubah
+- Backend di Docker membaca model langsung dari folder `weights/` di server. Ganti model cukup
+  `docker compose restart backend` (atau `MODEL_FILE` di `.env` + `docker compose up -d backend`), tanpa build ulang.
+- `MODEL_PATH` di `.env` diganti `MODEL_FILE` (cukup nama file di `weights/`).
+
+### Diperbaiki
+- Perintah training di README tidak jalan (`No module named 'config'`); sekarang memakai `PYTHONPATH=.`.
+
 ## [v0.4.0] - 2026-11-08
 
 ### Ditambahkan
@@ -86,6 +102,7 @@ digabung tanpa menghilangkan fitur kelas dan dashboard.
 - Backend FastAPI dengan endpoint `POST /predict` (Top-3 + confidence).
 - Frontend game awal (`frontend/implementation`).
 
+[v0.4.1]: https://github.com/MuhammadDias/HITL/compare/v0.4.0...v0.4.1
 [v0.4.0]: https://github.com/MuhammadDias/HITL/compare/v0.3.0...v0.4.0
 [v0.3.0]: https://github.com/MuhammadDias/HITL/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/MuhammadDias/HITL/compare/v0.1.0...v0.2.0

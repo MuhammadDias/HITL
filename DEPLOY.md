@@ -167,8 +167,23 @@ docker compose up -d --build
 
 ### Ganti model AI
 
-Taruh file `.keras` di `weights/`, isi `MODEL_PATH=/app/weights/nama_model.keras` di `.env`, lalu
-`docker compose up -d --build backend`.
+Backend membaca model langsung dari folder `weights/` di server, jadi ganti model **tidak perlu build ulang**.
+
+- **Pakai file model lain:** taruh file `.keras` di `weights/`, isi nama filenya di `.env`, lalu jalankan backend lagi
+  (pakai `up -d`, bukan `restart`, supaya isi `.env` terbaca):
+
+  ```bash
+  echo "MODEL_FILE=model_4_mobilenetv2_2026-11-20.keras" >> .env
+  docker compose up -d backend
+  ```
+
+- **File yang sama ditimpa** (mis. hasil training baru di `model_4_mobilenetv2_best.keras`): cukup
+
+  ```bash
+  docker compose restart backend
+  ```
+
+Cek model yang sedang dipakai: `docker compose logs backend | grep "Loading model"`.
 
 ### Mematikan semua
 
@@ -177,6 +192,109 @@ docker compose down          # data tetap aman di volume
 ```
 
 > **Jangan** jalankan `docker compose down -v`: opsi `-v` **menghapus database** dan sertifikat HTTPS.
+
+---
+
+## Alur mengubah kode
+
+Ubah kode **di laptop**, bukan di server. GitHub jadi satu-satunya sumber kode, server hanya mengambil dari sana:
+
+```
+Laptop : ubah kode → tes → git commit → git push (+ tag kalau rilis, lihat CHANGELOG.md)
+Server : git pull → docker compose up -d --build
+```
+
+Kode dibungkus ke dalam image Docker, jadi perubahan di server baru terpakai setelah `--build`.
+
+Kalau terpaksa memperbaiki langsung di server (mis. bug mendesak saat kelas berjalan), setelahnya langsung
+`git commit` + `git push` **dari server**, lalu `git pull` di laptop, supaya laptop, GitHub, dan server tetap sama.
+
+---
+
+## Training model di server (GPU)
+
+Training butuh GPU supaya cepat, jadi lakukan di server. Training berjalan **di luar Docker**, di virtualenv sendiri;
+backend di Docker cukup memakai CPU untuk menebak gambar.
+
+### 1. Cek GPU (sekali)
+
+```bash
+nvidia-smi                       # harus menampilkan GPU dan versi driver
+```
+
+### 2. Siapkan environment training (sekali)
+
+```bash
+cd ~/HITL
+python3 -m venv venv-train
+venv-train/bin/pip install -r train/requirements.txt
+venv-train/bin/python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
+```
+
+Baris terakhir harus menampilkan GPU, mis. `[PhysicalDevice(name='/physical_device:GPU:0', device_type='GPU')]`.
+Kalau hasilnya `[]`, training akan jalan di CPU dan sangat lambat. Biasanya penyebabnya driver NVIDIA belum terpasang.
+
+> Versi TensorFlow/Keras di `train/requirements.txt` sengaja disamakan dengan backend. Model hasil training dengan
+> versi lain bisa gagal dimuat oleh backend.
+
+### 3. Backup model yang sedang dipakai
+
+Training **menimpa** `weights/model_4_mobilenetv2_best.keras`, file yang dipakai backend. Simpan dulu salinannya:
+
+```bash
+mkdir -p weights/backup
+cp weights/model_4_mobilenetv2_best.keras weights/backup/model_4_mobilenetv2_$(date +%F).keras
+```
+
+### 4. Jalankan training di `tmux`
+
+Training bisa berjam-jam. Jalankan di `tmux` supaya tidak mati kalau koneksi SSH putus, dan sebaiknya **di luar
+jam kelas** (training memakai banyak CPU, RAM, dan disk).
+
+```bash
+tmux new -s training
+cd ~/HITL
+export PYTHONPATH=.             # script di train/ meng-import config.py dari root
+venv-train/bin/python train/01_download_dataset.py     # sekali saja; dataset disimpan di data/
+venv-train/bin/python train/02_preprocess_data.py      # sekali saja, atau setelah ganti kategori/jumlah sampel
+venv-train/bin/python train/06_train_mobilenetv2.py
+```
+
+- Lepas dari tmux tanpa menghentikan training: tekan `Ctrl+B` lalu `D`. Masuk lagi: `tmux attach -t training`.
+- Training **melanjutkan** dari model yang sudah ada (`_latest` / `_best`) kalau file itu ada. Untuk training dari nol,
+  pindahkan dulu `weights/model_4_mobilenetv2_latest.keras` dan `weights/model_4_mobilenetv2_best.keras` ke
+  `weights/backup/`.
+- Pengaturan kategori, jumlah sampel, epoch, dan batch size ada di `config.py` (ubah di laptop, push, lalu `git pull`).
+
+### 5. Pakai model baru
+
+Model terbaik tersimpan di `weights/model_4_mobilenetv2_best.keras`. Muat ulang backend:
+
+```bash
+docker compose restart backend
+docker compose logs backend | grep "Loading model"
+```
+
+Coba gambar beberapa objek di game. Kalau hasilnya lebih buruk, **kembalikan model lama**:
+
+```bash
+cp weights/backup/model_4_mobilenetv2_2026-11-08.keras weights/model_4_mobilenetv2_best.keras
+docker compose restart backend
+```
+
+### 6. Simpan model ke GitHub (opsional)
+
+Folder `weights/` ikut tersimpan di git. Kalau model baru sudah dipastikan bagus, commit dari server supaya laptop
+dan GitHub punya model yang sama:
+
+```bash
+git add weights/model_4_mobilenetv2_best.keras
+git commit -m "chore(model): retrain MobileNetV2 (akurasi XX%)"
+git push
+```
+
+Folder `weights/backup/` sudah diabaikan git, jadi hanya tersimpan di server. Simpan juga salinannya di tempat lain
+(mis. Google Drive) kalau model lama penting.
 
 ---
 

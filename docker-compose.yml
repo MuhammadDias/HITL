@@ -12,8 +12,11 @@ services:
     restart: unless-stopped
     volumes:
       - backend-data:/app/backend/data
+      # Models are read from the server's weights/ folder, so a newly trained
+      # model only needs `docker compose restart backend`, not a rebuild.
+      - ./weights:/app/weights:ro
     environment:
-      MODEL_PATH: ${MODEL_PATH:-/app/weights/model_4_mobilenetv2_best.keras}
+      MODEL_PATH: /app/weights/${MODEL_FILE:-model_4_mobilenetv2_best.keras}
 
   admin:
     build:

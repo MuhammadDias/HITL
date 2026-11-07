@@ -88,6 +88,8 @@ models/
 !frontend/implementation/public/models/
 *.pth
 *.pt
+# Model backups made before retraining (see DEPLOY.md)
+weights/backup/
 
 # Local tools / binaries (download cloudflared separately, see backend/README.md)
 cloudflared.exe
