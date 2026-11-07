@@ -18,6 +18,20 @@ git checkout main        # kembali ke versi terbaru
 
 ---
 
+## [v0.4.0] - 2026-11-08
+
+### Ditambahkan
+- **Deploy dengan Docker Compose** (`docker-compose.yml`, panduan di `DEPLOY.md`): backend, dashboard, dan game
+  berjalan di balik satu reverse proxy Caddy dengan HTTPS otomatis.
+  - `/` → game murid, `/admin` → dashboard, `/api` · `/predict` · `/health` → backend.
+  - Cukup atur `PUBLIC_URL` dan `SITE_ADDRESS` di `.env`.
+  - Database SQLite disimpan di volume `backend-data`, jadi tidak hilang saat update.
+- `backend/requirements.txt` berisi dependensi server saja, dengan versi yang dikunci.
+
+### Diubah
+- Dashboard admin bisa dijalankan di bawah sub-path (`NEXT_BASE_PATH`, dipakai `/admin` di Docker) dan
+  di-build sebagai server standalone. Menjalankan lokal dengan `npm run dev` tidak berubah.
+
 ## [v0.3.0] - 2026-11-08
 
 Update gameplay dari repo tim (`lustresense/hitl-momo`, branch `feat/gameplay-first-e2e-verified`),
@@ -72,6 +86,7 @@ digabung tanpa menghilangkan fitur kelas dan dashboard.
 - Backend FastAPI dengan endpoint `POST /predict` (Top-3 + confidence).
 - Frontend game awal (`frontend/implementation`).
 
+[v0.4.0]: https://github.com/MuhammadDias/HITL/compare/v0.3.0...v0.4.0
 [v0.3.0]: https://github.com/MuhammadDias/HITL/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/MuhammadDias/HITL/compare/v0.1.0...v0.2.0
 [v0.1.0]: https://github.com/MuhammadDias/HITL/releases/tag/v0.1.0

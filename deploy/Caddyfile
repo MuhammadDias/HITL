@@ -1,0 +1,28 @@
+# One entry point for everything:
+#   /            -> game (static export, built into this image)
+#   /admin       -> admin dashboard (Next.js)
+#   /api, /predict, /health -> backend (FastAPI)
+#
+# SITE_ADDRESS (from .env):
+#   - a domain like "momominum.tech"  -> automatic HTTPS (Let's Encrypt)
+#   - ":80"                           -> plain HTTP, e.g. when using a server IP
+{$SITE_ADDRESS::80} {
+	encode zstd gzip
+
+	@backend path /api/* /predict /health
+	handle @backend {
+		reverse_proxy backend:8000
+	}
+
+	handle /admin* {
+		reverse_proxy admin:3002
+	}
+
+	handle {
+		root * /srv/game
+		# Exported pages are /level1.html, /onboarding/cam.html, ...; unknown
+		# paths fall back to the app shell, which resolves its own routes.
+		try_files {path} {path}.html {path}/index.html /index.html
+		file_server
+	}
+}

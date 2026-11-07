@@ -1,0 +1,8 @@
+# Root build context is only used by backend/Dockerfile: send just what it needs.
+*
+!config.py
+!weights/
+!backend/
+backend/data/
+**/__pycache__/
+**/*.pyc

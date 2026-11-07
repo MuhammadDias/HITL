@@ -1,0 +1,60 @@
+# Production stack: one public address for game, dashboard and API.
+# Setup: cp .env.example .env, edit it, then `docker compose up -d --build`.
+# Full guide: DEPLOY.md
+name: hitl
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: hitl-backend
+    restart: unless-stopped
+    volumes:
+      - backend-data:/app/backend/data
+    environment:
+      MODEL_PATH: ${MODEL_PATH:-/app/weights/model_4_mobilenetv2_best.keras}
+
+  admin:
+    build:
+      context: frontend/admin
+      args:
+        NEXT_PUBLIC_API_URL: ${PUBLIC_URL:?set PUBLIC_URL in .env}
+        NEXT_PUBLIC_GAME_URL: ${PUBLIC_URL}
+        NEXT_BASE_PATH: /admin
+    image: hitl-admin
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+  web:
+    build:
+      context: frontend/implementation
+      args:
+        NEXT_PUBLIC_PREDICTION_MODE: partner
+        NEXT_PUBLIC_PREDICTION_ENDPOINT: ${PUBLIC_URL:?set PUBLIC_URL in .env}/predict
+        NEXT_PUBLIC_DRAW_INPUT_MODE: ${DRAW_INPUT_MODE:-pointer}
+    image: hitl-web
+    restart: unless-stopped
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+      - "${HTTPS_PORT:-443}:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      backend:
+        condition: service_healthy
+      admin:
+        condition: service_started
+
+volumes:
+  # SQLite database: schools, accounts, classes, students, answers. Back this up.
+  backend-data:
+  # HTTPS certificates issued by Caddy.
+  caddy-data:
+  caddy-config:

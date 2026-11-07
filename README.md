@@ -21,6 +21,8 @@ User menggambar di canvas → model mengenali gambar real-time → hasilnya dipa
 
 Riwayat versi dan isi setiap rilis ada di **[CHANGELOG.md](CHANGELOG.md)**. Setiap versi punya tag git (`v0.1.0`, `v0.2.0`, …).
 
+Mau dipasang di server? Ikuti **[DEPLOY.md](DEPLOY.md)** (Docker Compose, satu alamat untuk game, dashboard, dan API).
+
 ---
 
 ## 🗂️ Struktur Folder
