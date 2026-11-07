@@ -19,6 +19,8 @@
 Pipeline lengkap dari **training model klasifikasi sketsa** sampai **demo game interaktif**.  
 User menggambar di canvas → model mengenali gambar real-time → hasilnya dipakai dalam dunia game.
 
+Riwayat versi dan isi setiap rilis ada di **[CHANGELOG.md](CHANGELOG.md)**. Setiap versi punya tag git (`v0.1.0`, `v0.2.0`, …).
+
 ---
 
 ## 🗂️ Struktur Folder
@@ -214,7 +216,7 @@ Buka http://localhost:3002, lalu login dengan akun superadmin dari langkah A4.
 |---|---|
 | **Superadmin** | Menu **Sekolah** → *Daftarkan sekolah* → buka sekolahnya → *Buat akun guru* → berikan email & password ke guru. Export data per kelas lewat tombol **CSV/ZIP**. |
 | **Guru (admin)** | Login dengan akun dari superadmin → **Kelas Saya** → *Buat kelas* (nama + jumlah murid) → **Salin** link kelas → bagikan ke murid → klik **Buka** untuk melihat persentase dan gambar jawaban murid. |
-| **Murid** | Buka link kelas → **Lewati & Pilih Nomor Absen →** → pilih nomor absen + tulis nama → **Lanjut ke Tutorial** → pilih level → menggambar → klik salah satu tebakan AI. |
+| **Murid** | Buka link kelas → **Lewati & Pilih Nomor Absen →** → pilih nomor absen + tulis nama → **Lanjut ke Tutorial** → pilih level → menggambar → **Tebak Gambarku** → di popup Top-3 pilih **Accept / Correct / Override** → **✨ Wujudkan Objek** → letakkan objek di dunia game. |
 
 ---
 
@@ -232,7 +234,7 @@ Tekan `Ctrl+C` di setiap terminal. Data tetap tersimpan di `backend/data/momo.sq
 |---|---|
 | Dashboard: *"Tidak bisa menghubungi backend di ..."* | Backend (Terminal 1) belum jalan atau belum selesai memuat model. Cek http://localhost:8000/health. Pastikan `NEXT_PUBLIC_API_URL` di `frontend/admin/.env.local` = `http://localhost:8000`. |
 | Game: tebakan AI tidak muncul / *"AI gagal menebak"* | Backend belum jalan, atau `NEXT_PUBLIC_PREDICTION_ENDPOINT` di `frontend/implementation/.env.local` salah. |
-| Tebakan AI selalu `papan / batu / tangga` | Game masih memakai mode mock. Pastikan `NEXT_PUBLIC_PREDICTION_MODE=partner`, lalu restart `npm run dev`. |
+| Popup tebakan berlabel **DEMO / PREDIKSI SIMULASI** | Game masih memakai mode mock. Pastikan `NEXT_PUBLIC_PREDICTION_MODE=partner`, lalu restart `npm run dev`. Kalau benar, popup berlabel **PARTNER API**. |
 | `address already in use` | Server lama masih jalan di port itu. Tutup terminal lamanya, atau matikan prosesnya: `fuser -k 8000/tcp` (ganti 8000 dengan 3000/3002). |
 | `.env.local` masih berisi URL `trycloudflare.com` lama | URL tunnel sudah mati. Kembalikan ke `localhost` seperti di langkah A3. |
 
