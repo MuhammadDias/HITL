@@ -123,7 +123,12 @@ export function GlobalCamera({ mode, modelUrl, onWave, onSkip, recessed = false 
     const card = cameraCardRef.current;
     if (!card) return;
     const placement = `${mode}:${recessed ? "recessed" : "pip"}`;
-    if (placement !== lastPlacementRef.current) {
+    if (mode === "floating") {
+      // The PIP is anchored from its first paint; no cached cover/phase FLIP.
+      gsap.killTweensOf(card);
+      gsap.set(card, { clearProps: "transform,width,height,x,y" });
+      lastPlacementRef.current = placement;
+    } else if (placement !== lastPlacementRef.current) {
       const from = lastRectRef.current;
       const to = readRect(card);
       lastPlacementRef.current = placement;

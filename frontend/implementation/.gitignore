@@ -1,3 +1,4 @@
+node_modules
 node_modules/
 .next/
 .next-dev/
@@ -6,3 +7,8 @@ out/
 .env.local
 .env.*.local
 coverage/
+
+*.log
+docs/stage-visual-reference/*.log
+docs/stage-visual-reference/*gates.json
+docs/stage-visual-reference/serve_export.py

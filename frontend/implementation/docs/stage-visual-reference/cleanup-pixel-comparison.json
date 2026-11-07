@@ -1,0 +1,22 @@
+[
+  {
+    "scene": 0,
+    "pixel_exact": true,
+    "diff_bbox": null
+  },
+  {
+    "scene": 1,
+    "pixel_exact": true,
+    "diff_bbox": null
+  },
+  {
+    "scene": 2,
+    "pixel_exact": true,
+    "diff_bbox": null
+  },
+  {
+    "scene": 3,
+    "pixel_exact": true,
+    "diff_bbox": null
+  }
+]

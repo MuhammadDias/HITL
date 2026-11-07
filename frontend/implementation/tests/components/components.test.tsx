@@ -14,14 +14,9 @@ let mockHasInk = false;
 vi.mock("@/src/input", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/src/input")>();
   return { ...actual, DrawingSurface: class {
-    constructor(_canvas: HTMLCanvasElement, _video: HTMLVideoElement, options: { onInkChange?: (value: boolean) => void; onStrokesChange?: () => void }) {
-      if (mockHasInk) {
-        options.onInkChange?.(true);
-        options.onStrokesChange?.();
-      }
+    constructor(_canvas: HTMLCanvasElement, _video: HTMLVideoElement, options: { onInkChange?: (value: boolean) => void }) {
+      if (mockHasInk) options.onInkChange?.(true);
     }
-    isEmpty() { return !mockHasInk; }
-    toDrawingInput() { return { strokes: [[{ x: 0, y: 0 }, { x: 1, y: 1 }]], hasInk: mockHasInk, aspectRatio: 1 }; }
     resizeForDpr() {}
     dispose() {}
     undo() { return true; }
@@ -31,49 +26,9 @@ vi.mock("@/src/input", async (importOriginal) => {
 
 afterEach(cleanup);
 
-const livePrediction: PredictionResult = {
-  candidates: [
-    { label: "papan", confidence: 0.85 },
-    { label: "batu", confidence: 0.1 },
-    { label: "tangga", confidence: 0.05 },
-  ],
-};
-
-describe("DrawingScreen AI prediction probe", () => {
-  it("shows the empty-drawing fallback until ink exists", () => {
-    render(<DrawingScreen level={LEVELS[0]!} initialMode="pointer" feedback={null} surfaceOut={{ current: null }} onSubmit={() => {}} onExit={() => {}} predict={async () => livePrediction} />);
-    expect(screen.getByText("Mulai menggambar... AI siap menebak")).toBeTruthy();
-    expect(screen.queryByRole("button", { name: /#1 papan/i })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Kirim ke Momo" })).toBeNull();
-    expect(screen.getByRole("toolbar", { name: "Alat menggambar" }).contains(screen.getByRole("button", { name: "Undo Goresan" }))).toBe(true);
-    expect(screen.getByRole("button", { name: "Keluar Level" })).toBeTruthy();
-  });
-
-  it("shows provider candidates when the drawing surface reports ink and submits the chosen one", async () => {
-    mockHasInk = true;
-    const originalQuerySelector = document.querySelector.bind(document);
-    vi.stubGlobal("ResizeObserver", class {
-      observe() {}
-      disconnect() {}
-    });
-    vi.spyOn(document, "querySelector").mockImplementation(((selector: string) => {
-      if (selector === ".global-camera-host .camera-video") return document.createElement("video");
-      return originalQuerySelector(selector);
-    }) as typeof document.querySelector);
-    const ctx = { clearRect: vi.fn(), beginPath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), stroke: vi.fn() };
-    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(ctx as unknown as CanvasRenderingContext2D);
-    vi.spyOn(HTMLCanvasElement.prototype, "getBoundingClientRect").mockReturnValue({ width: 800, height: 450, top: 0, left: 0, right: 800, bottom: 450, x: 0, y: 0, toJSON: () => ({}) });
-
-    const predict = vi.fn(async () => livePrediction);
-    const onSubmit = vi.fn();
-    render(<DrawingScreen level={LEVELS[0]!} initialMode="pointer" feedback={null} surfaceOut={{ current: null }} onSubmit={onSubmit} onExit={() => {}} predict={predict} />);
-    const candidate = await screen.findByRole("button", { name: /#1 papan 85%/i });
-    expect(predict).toHaveBeenCalledTimes(1);
-    fireEvent.click(candidate);
-    expect(candidate.getAttribute("aria-pressed")).toBe("true");
-    expect(screen.getByText("Pilihanmu: papan")).toBeTruthy();
-    expect(onSubmit).toHaveBeenCalledWith("papan");
-  });
+describe("DrawingScreen explicit prediction", () => {
+ it("shows disabled prediction submit before ink and no placeholder catalog",()=>{mockHasInk=false;render(<DrawingScreen level={LEVELS[0]!} initialMode="pointer" feedback={null} surfaceOut={{current:null}} onSubmit={vi.fn()} onExit={vi.fn()}/>);expect(screen.queryByText(/Katalog DEMO/)).toBeNull();expect(screen.getByTestId("btn-submit-drawing").hasAttribute("disabled")).toBe(true);expect(screen.queryByLabelText("Tebakan AI")).toBeNull();});
+ it("submit requests prediction without selecting catalog intent",()=>{mockHasInk=true;const submit=vi.fn();render(<DrawingScreen level={LEVELS[0]!} initialMode="pointer" feedback={null} surfaceOut={{current:null}} onSubmit={submit} onExit={vi.fn()}/>);expect(submit).not.toHaveBeenCalled();fireEvent.click(screen.getByTestId("btn-submit-drawing"));expect(submit).toHaveBeenCalledWith(null);mockHasInk=false;});
 });
 
 describe("StudentRulerSelector", () => {
@@ -162,6 +117,8 @@ describe("DecisionPanel (TASK 09)", () => {
     expect(onCorrect).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: /Correct — pilih peringkat lain/i }));
     fireEvent.click(screen.getByRole("button", { name: /#3 · tali/i }));
+    expect(onCorrect).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByTestId("btn-wujudkan-objek"));
     expect(onCorrect).toHaveBeenCalledWith(3);
   });
 

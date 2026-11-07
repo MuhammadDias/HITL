@@ -6,9 +6,11 @@
  * No space/planet theme (revoked), no SaaS-dashboard aesthetic.
  */
 :root {
-  --paper: #f5efe4;
+  --paper: #f7f5ea;
   --paper-light: #f7f5ea;
   --paper-line: rgba(35, 33, 29, 0.14);
+  --paper-dots: rgba(49, 45, 38, 0.16);
+  --dot-grid-pattern: radial-gradient(circle at 1px 1px, var(--paper-dots) 1px, transparent 1.2px) 0 0 / 22px 22px, var(--paper);
   --ink: #23211d;
   --ink-strong: #111111;
   --ink-soft: #756f65;
@@ -39,9 +41,8 @@ body {
   margin: 0;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--ink);
-  background:
-    radial-gradient(circle at 1px 1px, rgba(49, 45, 38, 0.16) 1px, transparent 1.2px) 0 0 / 22px 22px,
-    linear-gradient(180deg, #f8f3ea 0%, #f3ecdf 100%);
+  background: var(--dot-grid-pattern);
+  background-attachment: fixed;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   text-rendering: geometricPrecision;
@@ -72,6 +73,72 @@ body {
 
 #screen-level-entry, .screen, .tutorial-screen {
   padding-bottom: 300px !important;
+}
+
+/* Gameplay Stage: FULLSCREEN RETINA CRISP VIEWPORT (Matches MacBook Pro Wireframe) */
+#screen-gameplay.screen {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: #e8efe3 !important;
+  background-image: radial-gradient(circle at 1px 1px, rgba(49, 45, 38, 0.16) 1px, transparent 1.2px) !important;
+  background-size: 22px 22px !important;
+  overflow: hidden !important;
+  z-index: 100 !important;
+  display: block !important;
+}
+
+#screen-gameplay .game-canvas {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  object-fit: fill !important;
+  display: block !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  image-rendering: auto !important;
+}
+
+/* Floating minimal UI overlay across the top */
+#screen-gameplay .stage-floating-header {
+  position: absolute;
+  top: 16px;
+  left: 24px;
+  right: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  z-index: 200;
+}
+#screen-gameplay .stage-floating-header * {
+  pointer-events: auto;
+}
+
+/* Floating bottom placement / gameplay controls */
+#screen-gameplay .stage-floating-controls {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: rgba(247, 245, 234, 0.95);
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(35, 33, 29, 0.18);
+  box-shadow: 0 4px 16px rgba(55, 31, 13, 0.12);
+  z-index: 200;
 }
 .screen-head h2, .screen h1 { margin: 0 0 6px; }
 .lead { margin: 0 0 14px; color: var(--ink-soft); }
@@ -270,17 +337,27 @@ body {
 
 .game-canvas, #game-canvas {
   display: block; width: 100%; height: auto;
-  border: 1px solid var(--paper-line); border-radius: 10px; background: #fff;
+  border: 2px solid rgba(35, 33, 29, 0.28);
+  border-radius: 12px;
+  background: #e8efe3;
+  background-image: radial-gradient(circle at 1px 1px, rgba(49, 45, 38, 0.16) 1px, transparent 1.2px);
+  background-size: 22px 22px;
+  box-shadow: 0 2px 4px rgba(55, 31, 13, 0.08), 0 8px 24px rgba(55, 31, 13, 0.10);
 }
 .decision-chip {
-  display: inline-block; padding: 4px 10px; border-radius: 999px;
-  background: #eef3fb; border: 1px solid #c9d8ee; font-size: 13px; margin: 0 0 10px;
+  display: inline-block; padding: 6px 14px; border-radius: 999px;
+  background: var(--paper-light); border: 1.5px solid var(--paper-line);
+  color: var(--ink-strong); font-weight: 600; font-size: 13px; margin: 0 0 12px;
+  box-shadow: 0 1px 3px rgba(55, 31, 13, 0.06);
 }
 .overlay {
   margin: -120px auto 0; max-width: 420px;
-  background: rgba(255, 255, 255, 0.97); border: 2px solid var(--ink);
-  border-radius: var(--radius); padding: 18px; text-align: center; position: relative;
-  box-shadow: var(--shadow);
+  background: var(--paper-light);
+  background-image: radial-gradient(circle at 1px 1px, rgba(49, 45, 38, 0.16) 1px, transparent 1.2px);
+  background-size: 22px 22px;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius); padding: 20px; text-align: center; position: relative;
+  box-shadow: var(--shadow-focus);
 }
 .overlay-passive { opacity: 0.85; }
 .overlay-title { font-size: 20px; font-weight: 800; margin: 0 0 6px; }
@@ -444,9 +521,7 @@ button:focus-visible, a:focus-visible, select:focus-visible {
   border: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-  background:
-    radial-gradient(circle at 1px 1px, rgba(49, 45, 38, 0.16) 1px, transparent 1.2px) 0 0 / 22px 22px,
-    linear-gradient(180deg, #f8f3ea 0%, #f3ecdf 100%) !important;
+  background: transparent !important;
   overflow: hidden !important;
 }
 
@@ -983,32 +1058,8 @@ button:focus-visible, a:focus-visible, select:focus-visible {
   display: none !important;
 }
 
-/* One continuous post-cover sketchbook paper surface across every route. */
-html:has(.student-number-screen),
-body:has(.student-number-screen),
-html:has(.tutorial-screen),
-body:has(.tutorial-screen),
-html:has(#screen-level-entry),
-body:has(#screen-level-entry),
-html:has(#screen-drawing),
-body:has(#screen-drawing),
-#app:has(.student-number-screen),
-#screens:has(.student-number-screen),
-.student-number-screen,
-#app:has(.tutorial-screen),
-#screens:has(.tutorial-screen),
-.tutorial-screen,
-#app:has(#screen-level-entry),
-#screens:has(#screen-level-entry),
-#screen-level-entry,
-#screen-level-entry > .level-ribbon-page,
-#app:has(#screen-drawing),
-#screens:has(#screen-drawing),
-#screen-drawing {
-  background-color: #f7f2ea !important;
-  background-image: radial-gradient(#d9d0c3 1px, transparent 1px) !important;
-  background-size: 22px 22px !important;
-}
+/* Page wrappers reveal one document paper layer. */
+html, #screens, #screen-level-entry { background: transparent !important; }
 
 #app:has(#screen-level-entry) .app-header,
 #app:has(#screen-level-entry) .app-footer {
@@ -1150,31 +1201,16 @@ body:has(#screen-drawing),
   gap: 3px !important;
 }
 
-.drawing-momo-top-right {
-  position: absolute !important;
-  top: 22px !important;
-  right: 24px !important;
-  z-index: 5 !important;
-  max-width: min(340px, 35vw) !important;
-}
 
-.drawing-momo-top-right .momo {
-  align-items: center !important;
-}
 
-.drawing-momo-top-right .momo-bubble {
-  border: 2px solid #111 !important;
-  border-radius: 16px !important;
-  background: #eff3db !important;
-  box-shadow: 3px 3px 0 #111 !important;
-}
-
+.drawing-tools-right,
 .drawing-tools-left {
   position: absolute !important;
   z-index: 5 !important;
   top: 50% !important;
   transform: translateY(-50%) !important;
-  left: 20px !important;
+  right: 20px !important;
+  left: auto !important;
   width: auto !important;
   height: auto !important;
   display: flex !important;
@@ -1189,6 +1225,7 @@ body:has(#screen-drawing),
   user-select: none !important;
 }
 
+.drawing-tools-right .tool-btn-action,
 .drawing-tools-left .tool-btn-action {
   display: flex !important;
   flex-direction: column !important;
@@ -1208,22 +1245,26 @@ body:has(#screen-drawing),
   outline: none !important;
 }
 
+.drawing-tools-right .tool-btn-action:hover,
 .drawing-tools-left .tool-btn-action:hover {
   background: #fbf7e6 !important;
   transform: translate(-1px, -1px) !important;
   box-shadow: 3px 3px 0 #111 !important;
 }
 
+.drawing-tools-right .tool-btn-action:active,
 .drawing-tools-left .tool-btn-action:active {
   transform: translate(1px, 1px) !important;
   box-shadow: 1px 1px 0 #111 !important;
 }
 
+.drawing-tools-right .tool-btn-action.active,
 .drawing-tools-left .tool-btn-action.active {
   background: #ef7a37 !important;
   color: #ffffff !important;
 }
 
+.drawing-tools-right .tool-btn-action .tool-icon,
 .drawing-tools-left .tool-btn-action .tool-icon {
   width: 24px !important;
   height: 24px !important;
@@ -1232,6 +1273,7 @@ body:has(#screen-drawing),
   stroke-width: 2.2px;
 }
 
+.drawing-tools-right .tool-btn-action .tool-label,
 .drawing-tools-left .tool-btn-action .tool-label {
   font-size: 9.5px !important;
   font-weight: 800 !important;
@@ -1241,6 +1283,7 @@ body:has(#screen-drawing),
   pointer-events: none !important;
 }
 
+.drawing-tools-right .tool-btn-action.active .tool-label,
 .drawing-tools-left .tool-btn-action.active .tool-label {
   color: #ffffff !important;
 }
@@ -1258,6 +1301,43 @@ body:has(#screen-drawing),
   padding: 0 !important;
 }
 
+.drawing-momo-companion {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: auto !important;
+  z-index: 101 !important;
+  pointer-events: none !important;
+  transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.drawing-momo-companion .momo {
+  align-items: flex-start !important;
+}
+
+.drawing-momo-companion .momo-bubble {
+  border: 2px solid #111 !important;
+  border-radius: 16px !important;
+  background: #eff3db !important;
+  box-shadow: 3px 3px 0 #111 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawing-momo-companion {
+    transition: none !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .drawing-momo-companion {
+    display: none !important;
+  }
+}
+
+#screen-drawing[data-drawing-active="false"] .draw-canvas {
+  pointer-events: none !important;
+}
+
 .drawing-screen-svg .drawing-dock {
   display: none !important;
 }
@@ -1271,6 +1351,7 @@ body:has(#screen-drawing),
   z-index: 10 !important;
 }
 
+#screen-drawing .drawing-tools-right .undo-tool,
 #screen-drawing .drawing-tools-left .undo-tool {
   cursor: pointer !important;
 }
@@ -1280,10 +1361,241 @@ body:has(#screen-drawing),
   .drawing-top-bar { top: 10px !important; left: 10px !important; gap: 5px !important; }
   .drawing-actions-top { gap: 4px !important; padding: 5px !important; }
   .drawing-actions-top .btn { min-height: 34px !important; padding: 4px 7px !important; font-size: 12px !important; }
-  .drawing-momo-top-right { top: 10px !important; right: 10px !important; max-width: 42vw !important; }
+  .drawing-tools-right { right: 8px !important; left: auto !important; gap: 6px !important; padding: 6px 4px !important; }
   .drawing-tools-left { left: 8px !important; gap: 6px !important; padding: 6px 4px !important; }
+  .drawing-tools-right .tool-btn-action { width: 52px !important; min-height: 46px !important; padding: 4px 2px !important; gap: 2px !important; }
   .drawing-tools-left .tool-btn-action { width: 52px !important; min-height: 46px !important; padding: 4px 2px !important; gap: 2px !important; }
+  .drawing-tools-right .tool-btn-action .tool-icon { width: 17px !important; height: 17px !important; }
   .drawing-tools-left .tool-btn-action .tool-icon { width: 17px !important; height: 17px !important; }
+  .drawing-tools-right .tool-btn-action .tool-label { font-size: 8.5px !important; }
   .drawing-tools-left .tool-btn-action .tool-label { font-size: 8.5px !important; }
   #screen-drawing .drawing-exit { bottom: 12px !important; right: 12px !important; }
+  /* narrow fallback retained - .drawing-momo-companion display:none already above */
+}
+
+/* Dunia Stickman only: pointer/touch controls and compact viewport layout. */
+#screen-gameplay .game-canvas, #screen-gameplay .game-input-button { touch-action: none; }
+#screen-gameplay .game-input-button { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; min-width: 54px; font-weight: 700; transition: transform 0.06s ease, background-color 0.06s ease, box-shadow 0.06s ease; }
+#screen-gameplay .game-input-button:active, #screen-gameplay .game-input-button.is-pressed { transform: translateY(2px) scale(0.96); box-shadow: 1px 1px 0 #111111 !important; background-color: #23211d !important; color: #fffaf0 !important; }
+#screen-gameplay .game-input-button.btn-primary:active, #screen-gameplay .game-input-button.btn-primary.is-pressed { background-color: #356614 !important; color: #fffaf0 !important; }
+#screen-gameplay .game-control-keys { margin: 0; font-size: 11px; text-align: center; }
+@media (max-width: 600px) {
+ #screen-gameplay .stage-floating-header { left: 10px; right: 10px; top: 10px; flex-wrap: wrap; gap: 8px; }
+ #screen-gameplay .stage-floating-header > div { flex-wrap: wrap; gap: 6px !important; }
+ #screen-gameplay .stage-floating-header h2 { font-size: 15px !important; }
+ #screen-gameplay .stage-floating-header .btn { font-size: 11px; }
+ #screen-gameplay .stage-floating-controls { bottom: 190px; max-width: calc(100vw - 16px); width: max-content; flex-wrap: wrap; justify-content: center; gap: 6px; padding: 8px; border-radius: 14px; }
+ #screen-gameplay .stage-floating-controls > span { font-size: 11px !important; }
+ #screen-gameplay .stage-input-status-chip { bottom: 4px !important; right: 4px !important; max-width: calc(100vw - 8px); font-size: 9px !important; }
+}
+
+/* Interior paper belongs to the document, not the current screen. */
+body {
+  background: var(--dot-grid-pattern) !important;
+  background-attachment: fixed !important;
+}
+#app,
+#app.onboarding-app,
+body #app:has(#screen-level-entry),
+body #app:has(#screen-drawing),
+.tutorial-screen,
+#screen-drawing,
+#screen-evaluating,
+#screen-summary,
+.level-ribbon-page {
+  background: transparent !important;
+}
+/* Cover retains its existing green treatment; do not share interior paper. */
+#app.onboarding-app:has(.camera-prototype-root.mode-cover) {
+  background: #eff3db !important;
+}
+
+/* ========================================================
+ * HITL Top-3 Floating Prediction Popup (Tactile Papercraft)
+ * ======================================================== */
+.prediction-hitl-popup,
+.prediction-hitl-geometry {
+  position: absolute !important;
+  top: 24px !important;
+  left: 28px !important;
+  width: min(440px, calc(100vw - 56px)) !important;
+  max-height: calc(100vh - 48px) !important;
+  overflow-y: auto !important;
+  z-index: 100 !important;
+  background: #fffaf0 !important;
+  border: 2px solid #111111 !important;
+  border-radius: 18px !important;
+  box-shadow: 4px 4px 0 #111111 !important;
+  padding: 18px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  font-family: inherit !important;
+  pointer-events: auto !important;
+  box-sizing: border-box !important;
+}
+
+.prediction-hitl-popup.is-predicting {
+  width: min(340px, calc(100vw - 56px)) !important;
+  align-items: center !important;
+  text-align: center !important;
+  padding: 24px 20px !important;
+  gap: 12px !important;
+}
+
+.prediction-hitl-popup.is-error {
+  width: min(380px, calc(100vw - 56px)) !important;
+  border-color: #d94336 !important;
+  gap: 12px !important;
+}
+
+.prediction-hitl-popup .popup-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prediction-hitl-popup .popup-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.prediction-hitl-popup .popup-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #111111;
+  letter-spacing: -0.02em;
+}
+
+.prediction-hitl-popup .popup-lead {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #756f65;
+  line-height: 1.4;
+}
+
+.prediction-hitl-popup .popup-desc {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4f5646;
+}
+
+.prediction-hitl-popup .popup-badge {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid #111;
+}
+
+.prediction-hitl-popup .popup-badge.dev-badge {
+  background: #fff3cd;
+  border-color: #e0c36a;
+  color: #6b5518;
+}
+
+.prediction-hitl-popup .popup-badge.error-badge {
+  background: #fdecea;
+  border-color: #d94336;
+  color: #d94336;
+}
+
+.prediction-hitl-popup .popup-actions-error {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  width: 100%;
+}
+
+.prediction-hitl-popup .popup-actions-error .btn {
+  flex: 1;
+}
+
+.prediction-hitl-popup .popup-candidates .top3 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.prediction-hitl-popup .popup-candidates .top3-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1.5px solid #111;
+  border-radius: 10px;
+  background: #f7f5ea;
+  box-shadow: 2px 2px 0 #111;
+}
+
+.prediction-hitl-popup .popup-candidates .top3-item.top3-item-rank1 {
+  background: #eff3db;
+  border: 2px solid #4a8c1f;
+  box-shadow: 2px 2px 0 #4a8c1f;
+}
+
+.rank1-badge {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  background: #4a8c1f;
+  color: #fff;
+  padding: 1px 6px;
+  border-radius: 999px;
+  vertical-align: middle;
+}
+
+.prediction-hitl-popup .popup-decision .decision-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prediction-hitl-popup .decision-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.prediction-hitl-popup .decision-tab {
+  flex: 1;
+  font-size: 11px;
+  padding: 8px 6px;
+  text-align: center;
+}
+
+.prediction-hitl-popup .btn-wujudkan-objek,
+.prediction-hitl-popup [data-testid="btn-wujudkan-objek"] {
+  width: 100%;
+  font-size: 14px;
+  padding: 10px 16px;
+}
+
+
+/* Measure the accepted result box before it is presented; never a loading card. */
+.prediction-hitl-geometry {
+  visibility: hidden !important;
+  pointer-events: none !important;
+  height: 1px !important;
+  min-height: 0 !important;
+  padding-block: 0 !important;
+  border-block-width: 0 !important;
+}
+.momo-prediction-source {
+  display: block;
+  margin: 6px 0 0 54px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #6b5518;
 }

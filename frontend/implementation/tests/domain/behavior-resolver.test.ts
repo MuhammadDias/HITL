@@ -38,4 +38,11 @@ describe("behavior resolver (FR-09)", () => {
     expect(resolveBehavior("tali", l1).behavior).toBe("unresolved");
     expect(resolveBehavior("tali", l3).behavior).toBe("danger");
   });
+
+  it("Level 2 maps tangga as solid scaffold", () => {
+    const l2 = LEVELS.find((l) => l.levelId === "stage-2-ambiguity")!;
+    expect(resolveBehavior("tangga", l2).behavior).toBe("solid");
+    expect(resolveBehavior("balok", l2).behavior).toBe("solid");
+    expect(resolveBehavior("duri", l2).behavior).toBe("danger");
+  });
 });

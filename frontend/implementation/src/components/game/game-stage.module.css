@@ -1,0 +1,103 @@
+.root{z-index:100;position:fixed;inset:0;overflow:hidden;background:transparent;isolation:isolate;display:grid;place-items:center;color:#1e2126}.surface{position:relative;width:min(100vw,177.7777778dvh);aspect-ratio:16/9;overflow:hidden}.canvas{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;touch-action:none;z-index:2}.root :global(.stage-floating-header){z-index:5}.root :global(.stage-floating-controls){z-index:5}.create{position:absolute;right:16px;top:74px;z-index:5;background:#f2dfab;border:2px solid #1e2126;padding:8px;font-weight:bold}.objects{position:absolute;right:16px;top:120px;display:flex;gap:4px;max-width:50%;flex-wrap:wrap;z-index:5}.objects button{background:#f7f5ea;border:1px solid #1e2126;padding:5px}
+
+/* Integrated gameplay only: undo inherited control text replacement. */
+.root:global(#screen-gameplay) :global(.stage-floating-controls) button {
+  font-size: 13px !important;
+  color: #23211d;
+  min-height: 44px;
+  white-space: nowrap;
+}
+.root:global(#screen-gameplay) :global(.stage-floating-controls) button::before,
+.root:global(#screen-gameplay) :global(.stage-floating-controls) button::after {
+  content: none !important;
+}
+
+@media (max-width: 760px) and (orientation: portrait) {
+  .root {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom));
+    gap: 8px;
+  }
+  .root:global(#screen-gameplay) :global(.stage-floating-header) {
+    position: static;
+    flex: none;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .root:global(#screen-gameplay) :global(.stage-floating-header) > div {
+    min-width: 0;
+    max-width: 100%;
+    flex-wrap: wrap;
+    gap: 6px !important;
+  }
+  .root:global(#screen-gameplay) :global(.stage-floating-header) h2 {
+    font-size: 15px !important;
+  }
+  .root:global(#screen-gameplay) :global(.decision-chip) {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+  .root:global(#screen-gameplay) :global(.stage-floating-header) button,
+  .root .create,
+  .root .objects button {
+    min-height: 44px;
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+  .root .surface {
+    order: 3;
+    flex: none;
+    width: min(100%, max(0px, calc((100dvh - 360px) * 16 / 9)));
+    margin: auto;
+  }
+  .root .create {
+    position: static;
+    order: 1;
+    flex: none;
+    align-self: flex-end;
+  }
+  .root .objects {
+    position: static;
+    order: 2;
+    flex: none;
+    max-width: 100%;
+    max-height: 96px;
+    overflow-y: auto;
+    justify-content: flex-end;
+  }
+  .root:global(#screen-gameplay) :global(.stage-floating-controls) {
+    position: static;
+    order: 4;
+    flex: none;
+    transform: none !important;
+    width: 100%;
+    max-width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px !important;
+    border-radius: 14px;
+  }
+  .root:global(#screen-gameplay) :global(.stage-floating-controls) > div {
+    justify-content: center;
+    width: 100%;
+  }
+  .root:global(#screen-gameplay) :global(.game-input-button) {
+    flex: 1;
+    padding: 10px 8px;
+  }
+}
+
+/* Desktop full-width for L1 (scene 1) and L3 (scene 3): remove side gutters on wide landscape */
+@media (min-width: 761px) and (orientation: landscape) {
+  .root:has([data-scene="1"]) .surface,
+  .root:has([data-scene="3"]) .surface {
+    width: 100vw;
+    max-width: none;
+  }
+}

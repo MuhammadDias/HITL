@@ -1,0 +1,22 @@
+[
+  {
+    "scene": 0,
+    "elements": 24,
+    "equal": true
+  },
+  {
+    "scene": 1,
+    "elements": 15,
+    "equal": true
+  },
+  {
+    "scene": 2,
+    "elements": 22,
+    "equal": true
+  },
+  {
+    "scene": 3,
+    "elements": 22,
+    "equal": true
+  }
+]

@@ -26,10 +26,10 @@ describe("behavior spawner (TASK 04 semantic integration)", () => {
     expect(p.hazard).toMatchObject({ x: 340, w: 150 });
   });
 
-  it("unresolved → neutral fallback bridge (no dead ends)", () => {
+  it("unresolved does not fabricate a bridge", () => {
     const p = planSpawn("unresolved", "??", LEVEL.scene, 380);
     expect(p.kind).toBe("fallback");
-    expect(p.bridge).not.toBeNull();
+    expect(p.bridge).toBeNull();
     expect(p.hazard).toBeNull();
   });
 });

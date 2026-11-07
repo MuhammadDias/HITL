@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7f5ea">
+<title>Sketchbook Universe · HD Animated Stage Art</title>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f7f5ea;--paper-dim:#ebe8de;--ink:#1e2126;--orange:#df6930;--green:#4a8c1f;--dots:#d6d3d1;--tan:#f2dfab}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--paper)}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink)}
+#presentation{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;overflow:hidden;background:var(--paper);isolation:isolate}
+.slide{position:absolute;inset:0;display:none;overflow:hidden;background:radial-gradient(circle,var(--dots) 2.4px,transparent 2.7px) 0 0/28px 28px,var(--paper)}
+.slide.active{display:block}
+.artwork{position:absolute;inset:0;display:flex;justify-content:center;align-items:center}
+.art-svg{display:block;width:100%;height:100%;overflow:visible}
+/* All scene geometry is inline SVG. No image or external assets. */
+.slide.stage .artwork{inset:0}
+.slide.stage .art-svg{width:100%;height:100%;}
+.ribbon{position:absolute;left:3.4vw;top:3.8vh;min-width:11vw;height:10vh;display:flex;align-items:flex-start;justify-content:center;padding:2vh 1.8vw 0;background:var(--orange);color:#fff;font:900 clamp(24px,2.5vw,49px)/1 'Hanken Grotesk',system-ui,sans-serif;letter-spacing:-.05em;clip-path:polygon(0 0,100% 0,100% 100%,50% 87%,0 100%);filter:drop-shadow(5px 5px 0 var(--ink))}
+.paper-title{position:absolute;top:10vh;left:14vw;padding:1.5vh 1.5vw;border:3px solid var(--ink);background:var(--tan);box-shadow:5px 5px 0 var(--ink);transform:rotate(-2deg);font:900 clamp(20px,2.55vw,48px)/1.1 'Hanken Grotesk',system-ui,sans-serif;letter-spacing:-.05em;white-space:nowrap}
+.paper-caption{position:absolute;bottom:2vh;left:50%;transform:translateX(-50%);padding:1.4vh 2vw;background:var(--paper-dim);border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink);border-radius:14px;white-space:nowrap;text-align:center;font:500 clamp(16px,1.55vw,30px)/1.35 'Plus Jakarta Sans',system-ui,sans-serif}
+.deck-ui{position:absolute;z-index:30;top:16px;left:50%;transform:translateX(-50%);right:auto;display:flex;align-items:center;gap:10px;transition:opacity .2s}
+#presentation.controls-hidden .deck-ui{opacity:0;pointer-events:none}
+.deck-ui button,.deck-count{height:57px;border:3px solid var(--ink);border-radius:12px;background:#f7f5ea;color:var(--ink);box-shadow:3px 3px 0 var(--ink);font:900 21px/1 'Hanken Grotesk',system-ui,sans-serif;display:flex;align-items:center;justify-content:center}
+.deck-ui button{padding:0 19px;cursor:pointer;min-width:61px}
+.deck-ui button#nextSlide{background:var(--orange);color:#fff}
+.deck-ui button:disabled{opacity:.35;cursor:not-allowed}
+.deck-ui button:focus-visible{outline:5px solid var(--green);outline-offset:4px}
+.deck-ui button:not(:disabled):active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.deck-count{padding:0 16px;white-space:nowrap;min-width:99px}
+.hint{display:none;position:absolute;z-index:30;left:24px;bottom:23px;font:600 16px/1.35 'Plus Jakarta Sans',system-ui,sans-serif;background:#f7f5eacc;color:#756f65;padding:8px 14px;border-radius:9px;transition:opacity .2s}
+#presentation.controls-hidden .hint{opacity:0}
+@media(max-width:760px){.deck-ui button,.deck-count{height:42px;min-width:40px;padding:0 9px;font-size:16px}.paper-title{left:9vw;top:13vh;max-width:80vw;white-space:normal}.paper-caption{white-space:normal;width:90vw;font-size:14px;padding:8px 10px}.ribbon{min-width:110px;height:70px}}
+@media (prefers-reduced-motion:reduce){.deck-ui,.hint{transition:none}}
+
+/* HD vector artwork remains 100% inline SVG. Cloud movement is decorative only. */
+.art-svg { shape-rendering: geometricPrecision; text-rendering: optimizeLegibility; }
+.cloud-motion, .fog-motion, .mist-motion {
+  transform-box: fill-box;
+  will-change: transform;
+  pointer-events: none;
+}
+.cloud-near { animation: cloudNear 21s ease-in-out infinite alternate; }
+.cloud-far  { animation: cloudFar  29s ease-in-out infinite alternate; }
+.cloud-mid  { animation: cloudMid  26s ease-in-out infinite alternate; }
+.fog-motion { animation: fogBreathe 18s ease-in-out infinite alternate; }
+.mist-motion { animation: mistBreathe 23s ease-in-out infinite alternate; }
+@keyframes cloudNear { 0% { translate: -7px 1px; } 100% { translate: 16px -2px; } }
+@keyframes cloudFar  { 0% { translate: 13px 0; } 100% { translate: -12px 2px; } }
+@keyframes cloudMid  { 0% { translate: -5px 0; } 100% { translate: 13px -3px; } }
+@keyframes fogBreathe { 0% { translate: 0 0; opacity: .9; } 100% { translate: -12px 4px; opacity: .79; } }
+@keyframes mistBreathe { 0% { translate: 0 0; opacity: .55; } 100% { translate: 11px -3px; opacity: .4; } }
+@media (prefers-reduced-motion: reduce) {
+  .cloud-motion, .fog-motion, .mist-motion { animation: none !important; translate: 0 0 !important; }
+}
+
+</style>
+</head>
+<body>
+<!-- Source artwork is composed entirely of inline SVG, not <img> or raster assets. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<filter id="rough"><feTurbulence type="fractalNoise" baseFrequency=".075" numOctaves="1" seed="4"/><feDisplacementMap in="SourceGraphic" scale="0.7"/></filter>
+<pattern id="dirt" width="46" height="46" patternUnits="userSpaceOnUse"><rect width="46" height="46" fill="#a9733f"/><path d="M0 12q11-7 23 0t23 0M0 34q11-7 23 0t23 0" stroke="#7e5128" stroke-width="1.3" fill="none" opacity=".55"/><path d="M8 22l5 3M30 4l4 3M36 40l5-2" stroke="#c28f58" stroke-width="2" opacity=".6"/>
+  <path d="M6 9l8 -3M22 20l11 -5M3 37l7 -3M37 24l7 -3" stroke="#543e2b" stroke-width=".9" stroke-linecap="round" opacity=".22"/>
+  <circle cx="26" cy="10" r="1" fill="#f1ddba" opacity=".45"/><circle cx="13" cy="30" r="1.2" fill="#563d29" opacity=".24"/>
+</pattern>
+<pattern id="spk" width="22" height="46" patternUnits="userSpaceOnUse"><path d="M1 46L11 12L21 46Z" fill="#cfcabb" stroke="#1e2126" stroke-width="1.6"/></pattern>
+<g id="man" fill="none" stroke="#1e2126" stroke-width="2.4" stroke-linecap="round"><circle cx="0" cy="-36" r="8" fill="#fff"/><path d="M0-28V-12M0-12L-7 0M0-12L7 0M0-25L-8-16M0-25L8-18"/></g>
+<g id="flag"><path d="M0 0V-52" stroke="#1e2126" stroke-width="3.5" stroke-linecap="round"/><path d="M1-52L30-42L1-34Z" fill="#df6930" stroke="#1e2126" stroke-width="2" stroke-linejoin="round"/></g>
+<g id="spark" stroke="#df6930" stroke-width="2.6" stroke-linecap="round" fill="none"><path d="M0 0l-5-11M9 3l4-10M15 10l10-4"/></g>
+<g id="cam"><rect width="108" height="88" rx="16" fill="#000" stroke="#df6930" stroke-width="4"/></g>
+<g id="cloud" fill="#fcf9ef" stroke="#aaa99f" stroke-width="1.8" stroke-linecap="round"><path d="M0 40q-8-24 22-26q8-22 38-12q24-8 34 14q22 4 14 24z"/><path d="M12 30q18-6 30 0M50 26q16-6 30 2" fill="none" opacity=".7"/>
+  <path d="M14 38l8 -4M30 40l8 -5M60 36l8 -5M84 37l7 -4" fill="none" stroke="#a8a59e" stroke-width=".9" opacity=".52" stroke-linecap="round"/>
+</g>
+<g id="city" fill="#d6d3c8" opacity=".42"><path d="M0 325V230h26v-40h30v60h22v-90h34v110h26v-60h30v100h30v-70h40v90z"/></g>
+<g id="paper" fill="#f3ead2" stroke="#b9ab86" stroke-width="1.4"><path d="M0 0l22-3 4 24-22 5z"/></g>
+</defs></svg>
+<div id="presentation" role="application" aria-label="Sketchbook Universe empat slide fullscreen">
+
+<section class="slide feature" data-slide="0" role="group" aria-label="Slide 1: Gameplay Screen" aria-hidden="false">
+      <div class="artwork"><svg class="art-svg" preserveAspectRatio="xMidYMid slice" viewBox="0 0 752 536" role="img" aria-label="Karakter stik di tebing kiri, bendera di tebing kanan, jurang di tengah">
+    <g class="cloud-motion cloud-near" data-layer="clouds" aria-hidden="true"><use href="#cloud" transform="translate(10 34) scale(1.1)" opacity=".8"/></g>
+    <g class="cloud-motion cloud-far" data-layer="clouds" aria-hidden="true"><use href="#cloud" transform="translate(630 96) scale(1.1)" opacity=".8"/></g>
+    <g stroke="#1e2126" stroke-width="2.4" stroke-linecap="round" fill="none"><circle cx="650" cy="62" r="17"/><path d="M650 30v-8M650 94v8M618 62h-8M690 62h8M628 40l-6-6M672 84l6 6M672 40l6-6M628 84l-6 6" stroke-width="2"/></g>
+
+    <g filter="url(#rough)" stroke="#1e2126" stroke-width="2.6" stroke-linejoin="round">
+      <!-- jurang & reruntuhan -->
+      <path d="M200 400l36-52l-8 80l6 108H196z" fill="#e5cfa0" stroke-width="1.8"/>
+      <path d="M552 400l-30-62l14 70l-8 128h40z" fill="#e5cfa0" stroke-width="1.8"/>
+      <path d="M196 340h-4v196h14z" fill="#d9bd88" stroke="none"/>
+      <!-- tebing kiri & kanan -->
+      <path d="M0 340h196v110l-6 86H0z" fill="url(#dirt)"/>
+      <path d="M556 340h196v196H560l-4-90z" fill="url(#dirt)"/>
+      <path d="M0 336h196v16H0zM556 336h196v16H556z" fill="#7ea142"/>
+      <path d="M0 336h196M556 336h196" stroke="#4d6a24" stroke-width="3"/>
+    </g>
+    <!-- puing sketsa -->
+    <g fill="none" stroke="#8a867b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity=".9">
+      <path d="M220 536l14-34l24-8l12 42M250 510l10-46l22 8-4 38M300 536l8-26l30-10l6 36M345 518l4-40h20l6 40M380 536l10-30l28 6l8 24M430 520l6-50l12-4l6 54M470 536l22-26l30 8M505 520l14-24l20 40M240 536l30-22M330 536l30-16"/>
+      <path d="M200 536h350" stroke="#555" stroke-width="3"/>
+    </g>
+
+    <use data-asset-role="character-preview" href="#man" transform="translate(116 334) scale(1.75)"/>
+    <use data-asset-role="goal-preview" href="#flag" transform="translate(668 334) scale(1.5)"/>
+    <use href="#spark" transform="translate(150 232) rotate(-20) scale(.9)"/>
+    <use href="#spark" transform="translate(722 252) scale(.9)"/>
+    <use href="#spark" transform="translate(700 302) rotate(20) scale(.7)"/>
+
+    <use href="#cam" transform="translate(22 428)"/>
+  </svg></div>
+      
+    </section>
+<section class="slide stage" data-slide="1" role="group" aria-label="Slide 2: Level 1 - Halaman yang Sobek" aria-hidden="true">
+      <div class="artwork"><svg class="art-svg" preserveAspectRatio="xMidYMid slice" viewBox="0 0 490 325">
+        <use href="#city"/>
+        <g class="cloud-motion cloud-mid" data-layer="clouds" aria-hidden="true"><use href="#cloud" transform="translate(10 12)" opacity=".7"/></g><g class="cloud-motion cloud-near" data-layer="clouds" aria-hidden="true"><use href="#cloud" transform="translate(330 76) scale(.7)" opacity=".7"/></g>
+        <g filter="url(#rough)" stroke="#1e2126" stroke-width="2.4" stroke-linejoin="round">
+          <path d="M152 204l60-38l-20 160h-44z" fill="#e8d5a6" stroke-width="1.6"/>
+          <path d="M360 204l-40-36l24 158h20z" fill="#e8d5a6" stroke-width="1.6"/>
+          <path d="M0 204h152v121H0z" fill="url(#dirt)"/>
+          <path d="M360 200h130v125H356z" fill="url(#dirt)"/>
+          <path d="M0 196h154v15H0zM358 192h132v15H358z" fill="#7ea142"/>
+        </g>
+        <g fill="none" stroke="#8a867b" stroke-width="1.6" stroke-linecap="round"><path d="M170 325l12-34l22-10l10 44M205 306l14-28l20 6l6 36M235 325l24-30l24 6l8 24M290 318l10-24l22 14"/></g>
+        <use data-asset-role="character-preview" href="#man" transform="translate(42 198) scale(1.1)"/>
+        <use data-asset-role="goal-preview" href="#flag" transform="translate(458 192)"/>
+      </svg></div>
+      <div class="ribbon" aria-hidden="true">Level 1</div>
+      <div class="paper-title">Halaman yang Sobek</div>
+      <div class="paper-caption">Buat pijakan untuk menyeberangi halaman yang terputus.</div>
+    </section>
+<section class="slide stage" data-slide="2" role="group" aria-label="Slide 3: Level 2 - Menara Lipatan" aria-hidden="true">
+      <div class="artwork"><svg class="art-svg" preserveAspectRatio="xMidYMid slice" viewBox="0 0 490 325">
+        <use href="#city" transform="translate(10 0)"/>
+        <g class="cloud-motion cloud-far" data-layer="clouds" aria-hidden="true"><use href="#cloud" transform="translate(340 60) scale(.8)" opacity=".6"/></g>
+        <g filter="url(#rough)" stroke="#1e2126" stroke-width="2.4" stroke-linejoin="round">
+          <rect x="44" y="196" width="66" height="129" fill="#c9a577"/><rect x="40" y="190" width="74" height="12" fill="#8c6a41"/>
+          <rect x="150" y="136" width="66" height="189" fill="#d2b186"/><rect x="146" y="130" width="74" height="10" fill="#9b7a4e"/>
+          <rect x="170" y="116" width="28" height="16" fill="#7ea142"/><rect x="166" y="130" width="36" height="6" fill="#8c6a41"/>
+          <rect x="340" y="136" width="82" height="189" fill="#b98b5a"/><rect x="334" y="130" width="94" height="10" fill="#7c5a33"/>
+          <path d="M330 130L378 62l54 68z" fill="#c9bfa5"/><path d="M378 62l54 68h-30z" fill="#aaa086" stroke="none"/>
+          <rect x="82" y="262" width="58" height="9" fill="#a9733f"/>
+          <rect x="258" y="190" width="52" height="9" fill="#a9733f"/>
+          <rect x="300" y="86" width="56" height="9" fill="#a9733f"/>
+          <path d="M406 148l10 4l-4 40l-14-4z" fill="#f3ead2" stroke-width="1.5"/>
+        </g>
+        <g stroke="#1e2126" stroke-width="2.4" fill="none"><path d="M349 140V325M366 140V325M349 162h17M349 186h17M349 210h17M349 234h17M349 258h17M349 282h17M349 306h17"/></g>
+        <use data-asset-role="character-preview" href="#man" transform="translate(77 190) scale(1.1)"/>
+        <use data-asset-role="goal-preview" href="#flag" transform="translate(379 66) scale(.75)"/>
+      </svg></div>
+      <div class="ribbon" aria-hidden="true">Level 2</div>
+      <div class="paper-title">Menara Lipatan</div>
+      <div class="paper-caption">Susun objek untuk mencapai tempat yang lebih tinggi.</div>
+    </section>
+<section class="slide stage" data-slide="3" role="group" aria-label="Slide 4: Level 3 - Lorong Kabut Penghapus" aria-hidden="true">
+      <div class="artwork"><svg class="art-svg" preserveAspectRatio="xMidYMid slice" viewBox="0 0 490 325">
+        <use href="#city"/>
+        <g class="fog-motion" data-layer="fog" fill="#3a3a3c" opacity=".92"><circle cx="440" cy="26" r="40"/><circle cx="395" cy="20" r="30"/><circle cx="470" cy="76" r="28"/><circle cx="420" cy="70" r="22"/></g>
+        <g class="mist-motion" data-layer="mist" fill="#8a867b" opacity=".5"><circle cx="160" cy="140" r="30"/><circle cx="195" cy="120" r="24"/></g>
+        <g filter="url(#rough)" stroke="#1e2126" stroke-width="2.4" stroke-linejoin="round">
+          <path d="M0 206h128v119H0z" fill="url(#dirt)"/>
+          <path d="M366 168h124v157H368z" fill="url(#dirt)"/>
+          <path d="M0 198h130v15H0zM362 160h128v15H362z" fill="#7ea142"/>
+          <rect x="130" y="278" width="238" height="47" fill="#df6930"/>
+          <rect x="184" y="238" width="66" height="54" fill="#a39d90"/><path d="M196 238l8-12l10 8l8-10l8 12z" fill="#c9a24b" stroke-width="1.6"/>
+          <rect x="204" y="150" width="76" height="9" fill="#a9733f"/>
+          <rect x="304" y="212" width="52" height="9" fill="#a9733f"/>
+          <path d="M18 250l22-4l6 26l-22 5zM428 214l26-6l8 28l-26 6z" fill="#f3ead2" stroke-width="1.4"/>
+        </g>
+        <rect x="132" y="282" width="236" height="43" fill="url(#spk)"/>
+        <use data-asset-role="character-preview" href="#man" transform="translate(48 198) scale(1.1)"/>
+        <use data-asset-role="goal-preview" href="#flag" transform="translate(436 160)"/>
+      </svg></div>
+      <div class="ribbon" aria-hidden="true">Level 3</div>
+      <div class="paper-title">Lorong Kabut Penghapus</div>
+      <div class="paper-caption">Pilih jalur yang aman dan tempatkan objek secara strategis.</div>
+    </section>
+  <div class="hint" aria-hidden="true">← → next/prev · F fullscreen · H sembunyikan kontrol</div>
+  <nav class="deck-ui" aria-label="Navigasi slide">
+    <button type="button" id="prevSlide" aria-label="Slide sebelumnya" title="Previous (←)">←</button>
+    <span class="deck-count" id="slideCount" aria-live="polite">01 / 04</span>
+    <button type="button" id="nextSlide" aria-label="Slide berikutnya" title="Next (→)">→</button>
+    <button type="button" id="fullscreenBtn" aria-label="Masuk fullscreen" title="Fullscreen (F)">⛶</button>
+  </nav>
+</div>
+<script>
+(() => {
+ const presentation=document.getElementById('presentation');
+ const slides=Array.from(document.querySelectorAll('.slide'));
+ const count=document.getElementById('slideCount');
+ const prev=document.getElementById('prevSlide');
+ const next=document.getElementById('nextSlide');
+ const full=document.getElementById('fullscreenBtn');
+ let index=0;
+ function resize(){ /* Slides occupy viewport directly, no letterboxing. */ }
+ function go(n) {
+   index=Math.max(0,Math.min(slides.length-1,n));
+   slides.forEach((el,i)=>{el.classList.toggle('active',i===index);el.setAttribute('aria-hidden',String(i!==index));});
+   count.textContent=String(index+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');
+   prev.disabled=index===0;next.disabled=index===slides.length-1;
+ }
+ function toggleFullscreen() {
+   if(document.fullscreenElement) {document.exitFullscreen?.();} else {document.documentElement.requestFullscreen?.();}
+ }
+ prev.addEventListener('click',()=>go(index-1));
+ next.addEventListener('click',()=>go(index+1));
+ full.addEventListener('click',toggleFullscreen);
+ document.addEventListener('fullscreenchange',()=>{
+   full.textContent=document.fullscreenElement?'⤢':'⛶';
+   full.setAttribute('aria-label',document.fullscreenElement?'Keluar fullscreen':'Masuk fullscreen');resize();
+ });
+ document.addEventListener('keydown',(event)=>{
+   if(event.altKey || event.ctrlKey || event.metaKey || event.target?.closest?.('input,textarea,select'))return;
+   if(['ArrowRight','PageDown',' ','Enter'].includes(event.key)){event.preventDefault();go(index+1);}
+   else if(['ArrowLeft','PageUp','Backspace'].includes(event.key)){event.preventDefault();go(index-1);}
+   else if(event.key.toLowerCase()==='f'){event.preventDefault();toggleFullscreen();}
+   else if(event.key.toLowerCase()==='h'){event.preventDefault();presentation.classList.toggle('controls-hidden');}
+   else if(event.key==='Home'){event.preventDefault();go(0);}
+   else if(event.key==='End'){event.preventDefault();go(slides.length-1);}
+ });
+ let touchX=null;let touchY=null;
+ presentation.addEventListener('touchstart',event=>{if(event.touches.length===1){touchX=event.touches[0].clientX;touchY=event.touches[0].clientY;}},{passive:true});
+ presentation.addEventListener('touchend',event=>{if(touchX===null||event.changedTouches.length!==1)return;const dx=event.changedTouches[0].clientX-touchX;const dy=event.changedTouches[0].clientY-touchY;if(Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)*1.2)go(index+(dx<0?1:-1));touchX=null;touchY=null;},{passive:true});
+ window.addEventListener('resize',resize);
+ window.visualViewport?.addEventListener('resize',resize);
+ resize();go(0);
+})();
+</script>
+</body>
+</html>

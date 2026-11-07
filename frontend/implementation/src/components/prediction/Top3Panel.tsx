@@ -12,12 +12,16 @@ export function Top3Panel({ result }: { result: PredictionResult }) {
       {result.candidates.map((c, i) => (
         <li
           key={`${c.label}-${i}`}
-          className="top3-item"
+          className={`top3-item ${i === 0 ? "top3-item-rank1" : ""}`}
           tabIndex={0}
           aria-label={`Peringkat ${i + 1}: ${c.label}, keyakinan ${Math.round(c.confidence * 100)} persen`}
+          data-rank={i + 1}
         >
           <span className="rank">#{i + 1}</span>
-          <span className="label">{c.label}</span>
+          <span className="label">
+            {c.label}
+            {i === 0 && <span className="rank1-badge" aria-label="Pilihan Utama">⭐ Utama</span>}
+          </span>
           <span
             className="conf-bar"
             role="img"
@@ -31,3 +35,4 @@ export function Top3Panel({ result }: { result: PredictionResult }) {
     </ol>
   );
 }
+

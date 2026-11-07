@@ -1,0 +1,7 @@
+{
+  "candidates": [
+    { "label": "papan", "confidence": 0.62 },
+    { "label": "balok", "confidence": 0.28 },
+    { "label": "tangga", "confidence": 0.10 }
+  ]
+}

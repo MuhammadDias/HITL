@@ -15,8 +15,6 @@ export interface DrawingSurfaceOptions {
   modelUrl?: string;
   onStatusChange?(status: HandInputStatus): void;
   onInkChange?(hasInk: boolean): void;
-  /** Fires on every stroke-store change (draw, clear, undo, redo). */
-  onStrokesChange?(): void;
 }
 
 export class DrawingSurface {
@@ -158,7 +156,6 @@ export class DrawingSurface {
   /* ---------------- workspace ops ---------------- */
 
   private reportInkChange(): void {
-    this.options.onStrokesChange?.();
     const hasInk = this.store.hasInk();
     if (hasInk === this.lastReportedInk) return;
     this.lastReportedInk = hasInk;
@@ -220,6 +217,8 @@ export class DrawingSurface {
     drawPaper(ctx);
 
     const { completed, active } = this.store.getStrokes();
+    this.canvas.dataset.strokeCount = String(completed.length + (active ? 1 : 0));
+    this.canvas.dataset.pointCount = String(completed.reduce((n, stroke) => n + stroke.length, 0) + (active?.length ?? 0));
     ctx.strokeStyle = "#23211d";
     ctx.lineCap = "round";
     ctx.lineJoin = "round";

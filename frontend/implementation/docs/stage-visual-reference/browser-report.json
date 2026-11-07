@@ -1,0 +1,389 @@
+{
+  "captures": [
+    {
+      "viewport": "1920",
+      "scene": 0,
+      "path": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1920-scene-0.png",
+      "bounds": {
+        "width": 1920,
+        "height": 1080,
+        "scrollWidth": 1920,
+        "scrollHeight": 1080,
+        "canvases": 0,
+        "rasters": 0
+      },
+      "svg_ids": {
+        "ids": 44,
+        "unique": 44,
+        "missing": []
+      },
+      "exact_dom_structure": true
+    },
+    {
+      "viewport": "1920",
+      "scene": 1,
+      "path": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1920-scene-1.png",
+      "bounds": {
+        "width": 1920,
+        "height": 1080,
+        "scrollWidth": 1920,
+        "scrollHeight": 1080,
+        "canvases": 0,
+        "rasters": 0
+      },
+      "svg_ids": {
+        "ids": 44,
+        "unique": 44,
+        "missing": []
+      },
+      "exact_dom_structure": true
+    },
+    {
+      "viewport": "1920",
+      "scene": 2,
+      "path": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1920-scene-2.png",
+      "bounds": {
+        "width": 1920,
+        "height": 1080,
+        "scrollWidth": 1920,
+        "scrollHeight": 1080,
+        "canvases": 0,
+        "rasters": 0
+      },
+      "svg_ids": {
+        "ids": 44,
+        "unique": 44,
+        "missing": []
+      },
+      "exact_dom_structure": true
+    },
+    {
+      "viewport": "1920",
+      "scene": 3,
+      "path": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1920-scene-3.png",
+      "bounds": {
+        "width": 1920,
+        "height": 1080,
+        "scrollWidth": 1920,
+        "scrollHeight": 1080,
+        "canvases": 0,
+        "rasters": 0
+      },
+      "svg_ids": {
+        "ids": 44,
+        "unique": 44,
+        "missing": []
+      },
+      "exact_dom_structure": true
+    },
+    {
+      "viewport": "1366",
+      "scene": 0,
+      "path": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1366-scene-0.png",
+      "bounds": {
+        "width": 1366,
+        "height": 768,
+        "scrollWidth": 1366,
+        "scrollHeight": 768,
+        "canvases": 0,
+        "rasters": 0
+      },
+      "svg_ids": {
+        "ids": 44,
+        "unique": 44,
+        "missing": []
+      },
+      "exact_dom_structure": true
+    },
+    {
+      "viewport": "1366",
+      "scene": 1,
+      "path": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1366-scene-1.png",
+      "bounds": {
+        "width": 1366,
+        "height": 768,
+        "scrollWidth": 1366,
+        "scrollHeight": 768,
+        "canvases": 0,
+        "rasters": 0
+      },
+      "svg_ids": {
+        "ids": 44,
+        "unique": 44,
+        "missing": []
+      },
+      "exact_dom_structure": true
+    },
+    {
+      "viewport": "1366",
+      "scene": 2,
+      "path": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1366-scene-2.png",
+      "bounds": {
+        "width": 1366,
+        "height": 768,
+        "scrollWidth": 1366,
+        "scrollHeight": 768,
+        "canvases": 0,
+        "rasters": 0
+      },
+      "svg_ids": {
+        "ids": 44,
+        "unique": 44,
+        "missing": []
+      },
+      "exact_dom_structure": true
+    },
+    {
+      "viewport": "1366",
+      "scene": 3,
+      "path": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1366-scene-3.png",
+      "bounds": {
+        "width": 1366,
+        "height": 768,
+        "scrollWidth": 1366,
+        "scrollHeight": 768,
+        "canvases": 0,
+        "rasters": 0
+      },
+      "svg_ids": {
+        "ids": 44,
+        "unique": 44,
+        "missing": []
+      },
+      "exact_dom_structure": true
+    },
+    {
+      "viewport": "mobile",
+      "scene": 0,
+      "path": "/home/agentops/.hermes/cache/react-stage-preview/evidence/mobile-scene-0.png",
+      "bounds": {
+        "width": 390,
+        "height": 844,
+        "scrollWidth": 390,
+        "scrollHeight": 844,
+        "canvases": 0,
+        "rasters": 0
+      },
+      "svg_ids": {
+        "ids": 44,
+        "unique": 44,
+        "missing": []
+      },
+      "exact_dom_structure": true
+    },
+    {
+      "viewport": "mobile",
+      "scene": 1,
+      "path": "/home/agentops/.hermes/cache/react-stage-preview/evidence/mobile-scene-1.png",
+      "bounds": {
+        "width": 390,
+        "height": 844,
+        "scrollWidth": 390,
+        "scrollHeight": 844,
+        "canvases": 0,
+        "rasters": 0
+      },
+      "svg_ids": {
+        "ids": 44,
+        "unique": 44,
+        "missing": []
+      },
+      "exact_dom_structure": true
+    },
+    {
+      "viewport": "mobile",
+      "scene": 2,
+      "path": "/home/agentops/.hermes/cache/react-stage-preview/evidence/mobile-scene-2.png",
+      "bounds": {
+        "width": 390,
+        "height": 844,
+        "scrollWidth": 390,
+        "scrollHeight": 844,
+        "canvases": 0,
+        "rasters": 0
+      },
+      "svg_ids": {
+        "ids": 44,
+        "unique": 44,
+        "missing": []
+      },
+      "exact_dom_structure": true
+    },
+    {
+      "viewport": "mobile",
+      "scene": 3,
+      "path": "/home/agentops/.hermes/cache/react-stage-preview/evidence/mobile-scene-3.png",
+      "bounds": {
+        "width": 390,
+        "height": 844,
+        "scrollWidth": 390,
+        "scrollHeight": 844,
+        "canvases": 0,
+        "rasters": 0
+      },
+      "svg_ids": {
+        "ids": 44,
+        "unique": 44,
+        "missing": []
+      },
+      "exact_dom_structure": true
+    }
+  ],
+  "checks": {
+    "1920": {
+      "reduced_motion": {
+        "name": "none",
+        "translate": "0px"
+      },
+      "native_button_keyboard": true,
+      "deep_link_refresh": true
+    },
+    "1366": {
+      "reduced_motion": {
+        "name": "none",
+        "translate": "0px"
+      },
+      "native_button_keyboard": true,
+      "deep_link_refresh": true
+    },
+    "mobile": {
+      "reduced_motion": {
+        "name": "none",
+        "translate": "0px"
+      },
+      "native_button_keyboard": true,
+      "deep_link_refresh": true
+    },
+    "motion_samples": {
+      "0": {
+        "before": {
+          "translate": "-6.92748px 0.990542px",
+          "opacity": "1",
+          "animation": "stage-preview_cloudNear__RJZnm"
+        },
+        "after": {
+          "translate": "-6.00479px 0.87019px",
+          "opacity": "1",
+          "animation": "stage-preview_cloudNear__RJZnm"
+        }
+      },
+      "1": {
+        "before": {
+          "translate": "-4.99994px -9.30451e-06px",
+          "opacity": "1",
+          "animation": "stage-preview_cloudMid__BAHSS"
+        },
+        "after": {
+          "translate": "-4.73157px -0.0447377px",
+          "opacity": "1",
+          "animation": "stage-preview_cloudMid__BAHSS"
+        }
+      },
+      "2": {
+        "before": {
+          "translate": "13px",
+          "opacity": "1",
+          "animation": "stage-preview_cloudFar__BAHbB"
+        },
+        "after": {
+          "translate": "12.7103px 0.0231756px",
+          "opacity": "1",
+          "animation": "stage-preview_cloudFar__BAHbB"
+        }
+      },
+      "3": {
+        "before": {
+          "translate": "0px",
+          "opacity": "0.9",
+          "animation": "stage-preview_fogBreathe___upKE"
+        },
+        "after": {
+          "translate": "-0.362123px 0.120708px",
+          "opacity": "0.896681",
+          "animation": "stage-preview_fogBreathe___upKE"
+        }
+      }
+    },
+    "hidden_controls": {
+      "opacity": "0.929199",
+      "tabStops": 0
+    }
+  },
+  "errors": [],
+  "console_errors": [],
+  "comparisons": [
+    {
+      "viewport": "1920",
+      "scene": 0,
+      "reference": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1920-reference-0.png",
+      "actual": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1920-scene-0.png"
+    },
+    {
+      "viewport": "1920",
+      "scene": 1,
+      "reference": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1920-reference-1.png",
+      "actual": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1920-scene-1.png"
+    },
+    {
+      "viewport": "1920",
+      "scene": 2,
+      "reference": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1920-reference-2.png",
+      "actual": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1920-scene-2.png"
+    },
+    {
+      "viewport": "1920",
+      "scene": 3,
+      "reference": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1920-reference-3.png",
+      "actual": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1920-scene-3.png"
+    },
+    {
+      "viewport": "1366",
+      "scene": 0,
+      "reference": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1366-reference-0.png",
+      "actual": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1366-scene-0.png"
+    },
+    {
+      "viewport": "1366",
+      "scene": 1,
+      "reference": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1366-reference-1.png",
+      "actual": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1366-scene-1.png"
+    },
+    {
+      "viewport": "1366",
+      "scene": 2,
+      "reference": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1366-reference-2.png",
+      "actual": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1366-scene-2.png"
+    },
+    {
+      "viewport": "1366",
+      "scene": 3,
+      "reference": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1366-reference-3.png",
+      "actual": "/home/agentops/.hermes/cache/react-stage-preview/evidence/1366-scene-3.png"
+    },
+    {
+      "viewport": "mobile",
+      "scene": 0,
+      "reference": "/home/agentops/.hermes/cache/react-stage-preview/evidence/mobile-reference-0.png",
+      "actual": "/home/agentops/.hermes/cache/react-stage-preview/evidence/mobile-scene-0.png"
+    },
+    {
+      "viewport": "mobile",
+      "scene": 1,
+      "reference": "/home/agentops/.hermes/cache/react-stage-preview/evidence/mobile-reference-1.png",
+      "actual": "/home/agentops/.hermes/cache/react-stage-preview/evidence/mobile-scene-1.png"
+    },
+    {
+      "viewport": "mobile",
+      "scene": 2,
+      "reference": "/home/agentops/.hermes/cache/react-stage-preview/evidence/mobile-reference-2.png",
+      "actual": "/home/agentops/.hermes/cache/react-stage-preview/evidence/mobile-scene-2.png"
+    },
+    {
+      "viewport": "mobile",
+      "scene": 3,
+      "reference": "/home/agentops/.hermes/cache/react-stage-preview/evidence/mobile-reference-3.png",
+      "actual": "/home/agentops/.hermes/cache/react-stage-preview/evidence/mobile-scene-3.png"
+    }
+  ],
+  "video": "/home/agentops/.hermes/cache/react-stage-preview/evidence/video/page@e2908546db037a625b1b0c3543f9290f.webm"
+}

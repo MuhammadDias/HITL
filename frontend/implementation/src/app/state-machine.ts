@@ -11,13 +11,12 @@ import { PredictionError, type PredictionProvider } from "../prediction/predicti
 import { noopSink, type InteractionEvent, type InteractionEventSink } from "../domain/events";
 
 /**
- * TASK 02/03 — App-level state machine implementing the PRD §13 flow.
+ * App-level state machine implementing the PRD §13 flow.
  * Pure logic — independent of React and KAPLAY. Single source of truth for
- * phase; React subscribes to snapshots (see app-reducer.ts / useFlow.ts).
+ * phase; React subscribes to snapshots.
  *
- * Phases: level-entry → drawing → predicting → evaluating → gameplay → (drawing|complete)
+ * Phases: level-entry → drawing → predicting → evaluating → falling → placing → gameplay → (drawing|complete)
  *         predicting └→ prediction-error → (predicting | drawing)
- * Redraw is a recovery action back to drawing — never a fourth peer decision.
  */
 
 export type AppPhase =
@@ -26,6 +25,8 @@ export type AppPhase =
   | "predicting"
   | "prediction-error"
   | "evaluating"
+  | "falling"
+  | "placing"
   | "gameplay"
   | "complete";
 
@@ -39,6 +40,8 @@ export class InvalidTransitionError extends Error {
 export interface FlowOptions {
   provider: PredictionProvider;
   sink?: InteractionEventSink;
+  /** Integrated worlds finish at the goal; legacy callers retain cycle pacing. */
+  goalCompletesLevel?: boolean;
 }
 
 export type FlowFeedback = "empty-drawing" | "prediction-failed" | null;
@@ -50,6 +53,8 @@ export interface FlowStateSnapshot {
   decision: HumanDecision | null;
   behavior: ObjectBehavior | null;
   cyclesCompleted: number;
+  /** During falling/placing phase: the object being materialized/positioned. */
+  placingObject?: { label: string; behavior: ObjectBehavior } | null;
 }
 
 type Listener = () => void;
@@ -67,11 +72,13 @@ export class FlowController {
 
   private readonly provider: PredictionProvider;
   private readonly sink: InteractionEventSink;
+  private readonly goalCompletesLevel: boolean;
   private readonly listeners = new Set<Listener>();
 
   constructor(options: FlowOptions) {
     this.provider = options.provider;
     this.sink = options.sink ?? noopSink;
+    this.goalCompletesLevel = options.goalCompletesLevel ?? false;
   }
 
   /* ---------------- React subscription ---------------- */
@@ -89,6 +96,9 @@ export class FlowController {
       decision: this.decision,
       behavior: this.behavior,
       cyclesCompleted: this.cyclesCompleted,
+      placingObject: (this.phase === "falling" || this.phase === "placing") && this.decision
+        ? { label: this.decision.finalLabel, behavior: this.behavior! }
+        : null,
     };
   }
 
@@ -212,15 +222,14 @@ export class FlowController {
   }
 
   /**
-   * Gameplay can ONLY be entered through an explicit human decision
-   * (AC-07). Behavior resolution consumes the final label (FR-08/09).
+   * Applying a decision transitions directly to "falling" (materialization animation from sky).
    */
   private applyDecision(decision: HumanDecision, sourceRank: 1 | 2 | 3 | undefined): void {
     const level = this.level!;
     const resolved = resolveBehavior(decision.finalLabel, level);
     this.decision = decision;
     this.behavior = resolved.behavior;
-    this.phase = "gameplay";
+    this.phase = "falling";
     this.emit({
       kind: "decision_made",
       levelId: level.levelId,
@@ -231,14 +240,35 @@ export class FlowController {
     this.notify();
   }
 
+  /** When falling animation finishes, transition to interactive placing. */
+  completeFall(): void {
+    this.require("falling", "completeFall");
+    this.phase = "placing";
+    this.notify();
+  }
+
+  /** Commit object placement and enter gameplay phase. */
+  commitPlacement(): void {
+    this.require("placing", "commitPlacement");
+    this.phase = "gameplay";
+    this.notify();
+  }
+
+  /** Reposition object: return from gameplay to placing if needed. */
+  repositionObject(): void {
+    this.require("gameplay", "repositionObject");
+    this.phase = "placing";
+    this.notify();
+  }
+
   /** FR-07/AC-08: recovery path back to the canvas, preserving level context. */
   requestRedraw(from: "evaluation" | "gameplay"): void {
-    if (this.phase !== "evaluating" && this.phase !== "gameplay") {
+    if (this.phase !== "evaluating" && this.phase !== "gameplay" && this.phase !== "placing" && this.phase !== "falling") {
       throw new InvalidTransitionError(
         `Redraw hanya valid dari evaluasi/gameplay (fase saat ini: "${this.phase}").`,
       );
     }
-    this.emitRedraw(from);
+    this.emitRedraw(from === "evaluation" ? "evaluation" : "gameplay");
     this.resetToDrawing();
   }
 
@@ -250,17 +280,14 @@ export class FlowController {
     this.emit({ kind: "gameplay_result", levelId: level.levelId, outcome, behavior });
 
     if (outcome === "fail") {
-      this.resetToDrawing(); // fresh cycle at the canvas (FR-11/15)
+      this.resetToDrawing(); // fresh cycle at the canvas
       return;
     }
 
     this.cyclesCompleted += 1;
-    if (this.cyclesCompleted >= level.cyclesRequired) {
+    if (this.goalCompletesLevel || this.cyclesCompleted >= level.cyclesRequired) {
       this.emit({ kind: "cycle_completed", levelId: level.levelId, cyclesUsed: this.cyclesCompleted });
-      this.decision = null;
-      this.behavior = null;
-      this.prediction = null;
-      this.drawingInput = null;
+      // Keep decision and behavior on snapshot for summary block in parent
       this.phase = "complete";
     } else {
       this.resetToDrawing(); // repeat cycle within same level
@@ -280,8 +307,6 @@ export class FlowController {
   }
 
   private resetToDrawing(): void {
-    // A new cycle requires a fresh drawing; prediction retry only survives
-    // inside prediction-error via drawingInput retention in runPrediction path.
     this.resetCycleState();
     this.drawingInput = null;
     this.phase = "drawing";

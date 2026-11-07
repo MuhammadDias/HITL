@@ -1,8 +1,8 @@
 import type { ObjectBehavior, SceneSpec } from "../domain/types";
 
 /**
- * TASK 04 — Pure spawn planning: HumanDecision.finalLabel → behavior resolver
- * result → concrete KAPLAY entity plan. Gameplay NEVER spawns raw rank-1
+ * Pure spawn planning: HumanDecision.finalLabel -> behavior resolver
+ * result -> concrete KAPLAY entity plan. Gameplay NEVER spawns raw rank-1
  * output; React passes only the resolved behavior here (architecture invariant).
  */
 export type SpawnKind = "bridge" | "fallback" | "hazard";
@@ -16,6 +16,8 @@ export interface SpawnPlan {
   hazard: { x: number; y: number; w: number; h: number } | null;
 }
 
+const GROUND_Y_OFFSET = 60;
+const HAZARD_DEPTH = 42;
 const GROUND_THICKNESS = 14;
 
 export function planSpawn(
@@ -34,10 +36,11 @@ export function planSpawn(
         hazard: null,
       };
     case "unresolved":
+      // Unsupported labels never silently become a solid support.
       return {
         kind: "fallback",
         label: finalLabel,
-        bridge: { x: scene.gapStartX, y: topY, w: scene.gapWidth, h: GROUND_THICKNESS },
+        bridge: null,
         hazard: null,
       };
     case "danger":
@@ -56,8 +59,7 @@ export function planSpawn(
   }
 }
 
-export const GROUND_Y_OFFSET = 60;
-export const HAZARD_DEPTH = 42;
+export { GROUND_Y_OFFSET, HAZARD_DEPTH, GROUND_THICKNESS };
 
 /** DEV/PLACEHOLDER palette for consequence objects (replaceable tokens). */
 export const SPAWN_COLORS: Record<SpawnKind, [number, number, number]> = {

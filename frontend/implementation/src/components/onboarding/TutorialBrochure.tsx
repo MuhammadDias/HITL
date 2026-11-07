@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
+import { getPrefersReducedMotion, subscribePrefersReducedMotion } from "./tutorial-motion";
 
 interface TutorialBrochureProps {
   onStart(): void;
@@ -56,6 +57,13 @@ export function TutorialBrochure({ onStart, onSkip }: TutorialBrochureProps) {
   const updateActive = useCallback((next: CardIndex | -1) => {
     activeRef.current = next;
     setActive(next);
+  }, []);
+
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => getPrefersReducedMotion());
+
+  useEffect(() => {
+    const unsubscribe = subscribePrefersReducedMotion(setPrefersReducedMotion);
+    return unsubscribe;
   }, []);
 
   const duration = useCallback((ms: number) => ms, []);
@@ -252,14 +260,33 @@ export function TutorialBrochure({ onStart, onSkip }: TutorialBrochureProps) {
       if (innerRefs.current[index]) innerRefs.current[index]!.style.transform = "rotateY(0deg)";
       if (panelRefs.current[index]) panelRefs.current[index]!.style.transform = "rotateY(0deg)";
     });
-    await Promise.all([0, 1, 2].map(async (index) => { await new Promise<void>((resolve) => window.setTimeout(resolve, duration(index * 90))); await animateSlot(index, { x: 0, y: index * 4 - 4, rot: [-4, 2, 5][index], opacity: 1 }, 620, "cubic-bezier(.18,.92,.24,1)"); }));
-    if (!(await wait(320, token))) return;
+    await Promise.all([0, 1, 2].map(async (index) => {
+      // Card 0 at 0ms, card 1 at 180ms, card 2 (digit 3) at 400ms - gentle delay for card 3
+      const delays = [0, 180, 400];
+      await new Promise<void>((resolve) => window.setTimeout(resolve, duration(delays[index]!)));
+      await animateSlot(
+        index,
+        { x: 0, y: index * 4 - 4, rot: [-4, 2, 5][index], opacity: 1 },
+        800,
+        "cubic-bezier(.18, .92, .24, 1)"
+      );
+    }));
+    if (!(await wait(450, token))) return;
     updatePhase("spread");
     const xs = [-dims.spreadGap, 0, dims.spreadGap];
-    await Promise.all([0, 1, 2].map((index) => animateSlot(index, { x: xs[index], y: 0, rot: [-5, 0, 5][index], opacity: 1, filter: "none" }, 760, "cubic-bezier(.18,.86,.18,1)")));
-    if (!(await wait(420, token))) return;
+    await Promise.all(
+      [0, 1, 2].map((index) =>
+        animateSlot(
+          index,
+          { x: xs[index], y: 0, rot: [-5, 0, 5][index], opacity: 1, filter: "none" },
+          1100,
+          "cubic-bezier(.18, .86, .18, 1)"
+        )
+      )
+    );
+    if (!(await wait(600, token))) return;
     await openCardRef.current(0, token);
-  }, [animateSlot, calculateDims, duration, resetInteractions, setSlot, updateActive, updatePhase, wait]);
+  }, [animateSlot, calculateDims, duration, prefersReducedMotion, resetInteractions, setSlot, updateActive, updatePhase, wait]);
 
   useEffect(() => {
     void start();

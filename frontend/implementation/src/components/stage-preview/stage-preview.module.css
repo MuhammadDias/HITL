@@ -1,0 +1,40 @@
+/* Runtime-only Google font stylesheet: no next/font build-time network fetch.
+   No local Hanken Grotesk / Plus Jakarta Sans files exist in public/.
+   Families are selected only inside this CSS-module root. */
+@import url("https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap");
+
+.root{--paper:#f7f5ea;--paper-dim:#ebe8de;--ink:#1e2126;--orange:#df6930;--green:#4a8c1f;--tan:#f2dfab}
+.root,.root *{box-sizing:border-box}
+.root{font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink)}
+.root{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;overflow:hidden;background:var(--paper);isolation:isolate}
+.slide{position:absolute;inset:0;display:none;overflow:hidden}
+.slide.active{display:grid;place-items:center}
+.world{width:100%;max-width:calc(100vh * 16 / 9);max-width:min(100vw,177.7778dvh);aspect-ratio:16 / 9}
+
+.ribbon{position:absolute;left:3.4vw;top:3.8vh;min-width:11vw;height:10vh;display:flex;align-items:flex-start;justify-content:center;padding:2vh 1.8vw 0;background:var(--orange);color:#fff;font:900 clamp(24px,2.5vw,49px)/1 'Hanken Grotesk',system-ui,sans-serif;letter-spacing:-.05em;clip-path:polygon(0 0,100% 0,100% 100%,50% 87%,0 100%);filter:drop-shadow(5px 5px 0 var(--ink))}
+.paper-title{position:absolute;top:10vh;left:14vw;padding:1.5vh 1.5vw;border:3px solid var(--ink);background:var(--tan);box-shadow:5px 5px 0 var(--ink);transform:rotate(-2deg);font:900 clamp(20px,2.55vw,48px)/1.1 'Hanken Grotesk',system-ui,sans-serif;letter-spacing:-.05em;white-space:nowrap}
+.paper-caption{position:absolute;bottom:2vh;left:50%;transform:translateX(-50%);padding:1.4vh 2vw;background:var(--paper-dim);border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink);border-radius:14px;white-space:nowrap;text-align:center;font:500 clamp(16px,1.55vw,30px)/1.35 'Plus Jakarta Sans',system-ui,sans-serif}
+.deck-ui{position:absolute;z-index:30;top:16px;left:50%;transform:translateX(-50%);right:auto;display:flex;align-items:center;gap:10px;transition:opacity .2s}
+.root.controlsHidden .deck-ui{opacity:0;pointer-events:none}
+.deck-ui button,.deck-count{height:57px;border:3px solid var(--ink);border-radius:12px;background:#f7f5ea;color:var(--ink);box-shadow:3px 3px 0 var(--ink);font:900 21px/1 'Hanken Grotesk',system-ui,sans-serif;display:flex;align-items:center;justify-content:center}
+.deck-ui button{padding:0 19px;cursor:pointer;min-width:61px}
+.deck-ui button.next{background:var(--orange);color:#fff}
+.deck-ui button:disabled{opacity:.35;cursor:not-allowed}
+.deck-ui button:focus-visible{outline:5px solid var(--green);outline-offset:4px}
+.deck-ui button:not(:disabled):active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.deck-count{padding:0 16px;white-space:nowrap;min-width:99px}
+.hint{display:none;position:absolute;z-index:30;left:24px;bottom:23px;font:600 16px/1.35 'Plus Jakarta Sans',system-ui,sans-serif;background:#f7f5eacc;color:#756f65;padding:8px 14px;border-radius:9px;transition:opacity .2s}
+.root.controlsHidden .hint{opacity:0}
+@media(max-width:760px){.deck-ui button,.deck-count{height:42px;min-width:40px;padding:0 9px;font-size:16px}.paper-title{left:9vw;top:13vh;max-width:80vw;white-space:normal}.paper-caption{white-space:normal;width:90vw;font-size:14px;padding:8px 10px}.ribbon{min-width:110px;height:70px}}
+@media (prefers-reduced-motion:reduce){.deck-ui,.hint{transition:none}}
+
+.root { color-scheme: light; touch-action: pan-y; }
+.root:focus { outline: none; }
+.root.controlsHidden .deck-ui { visibility: hidden; }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+/* Preview-only presentation placement; StageWorld stays centered at 16:9. */
+@media (max-width:760px) and (orientation:portrait) {
+  .deck-ui { top: calc(16px + env(safe-area-inset-top, 0px)); }
+  .ribbon { top: calc(80px + env(safe-area-inset-top, 0px)); }
+  .paper-title { top: calc(170px + env(safe-area-inset-top, 0px)); }
+}

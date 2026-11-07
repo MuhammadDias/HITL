@@ -1,0 +1,39 @@
+.root {
+  --paper: #f7f5ea;
+  --dots: #d6d3d1;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background:transparent;
+}
+
+.root :global(.art-svg) {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* HD vector artwork remains 100% inline SVG. Cloud movement is decorative only. */
+.root :global(.art-svg) { shape-rendering: geometricPrecision; text-rendering: optimizeLegibility; }
+.root :global(.cloud-motion), .root :global(.fog-motion), .root :global(.mist-motion) {
+  transform-box: fill-box;
+  will-change: transform;
+  pointer-events: none;
+}
+.root :global(.cloud-near) { animation: cloudNear 21s ease-in-out infinite alternate; }
+.root :global(.cloud-far)  { animation: cloudFar  29s ease-in-out infinite alternate; }
+.root :global(.cloud-mid)  { animation: cloudMid  26s ease-in-out infinite alternate; }
+.root :global(.fog-motion) { animation: fogBreathe 18s ease-in-out infinite alternate; }
+.root :global(.mist-motion) { animation: mistBreathe 23s ease-in-out infinite alternate; }
+@keyframes cloudNear { 0% { translate: -7px 1px; } 100% { translate: 16px -2px; } }
+@keyframes cloudFar  { 0% { translate: 13px 0; } 100% { translate: -12px 2px; } }
+@keyframes cloudMid  { 0% { translate: -5px 0; } 100% { translate: 13px -3px; } }
+@keyframes fogBreathe { 0% { translate: 0 0; opacity: .9; } 100% { translate: -12px 4px; opacity: .79; } }
+@keyframes mistBreathe { 0% { translate: 0 0; opacity: .55; } 100% { translate: 11px -3px; opacity: .4; } }
+@media (prefers-reduced-motion: reduce) {
+  .root :global(.cloud-motion), .root :global(.fog-motion), .root :global(.mist-motion) { animation: none !important; translate: 0 0 !important; }
+}

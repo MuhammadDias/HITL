@@ -14,6 +14,7 @@ import { Top3Panel } from "@/src/components/prediction/Top3Panel";
 import { PredictingScreen } from "@/src/components/prediction/PredictingScreen";
 import { DecisionPanel } from "@/src/components/decision/DecisionPanel";
 import { GameStage } from "@/src/components/game/GameStage";
+import { CreationStore, type WorldCreation } from "@/src/game/creation-store";
 import { TutorialBrochure } from "@/src/components/onboarding/TutorialBrochure";
 import { StudentRulerSelector } from "@/src/components/onboarding/StudentRulerSelector";
 import { DrawingScreen } from "@/src/components/drawing/DrawingScreen";
@@ -62,6 +63,12 @@ export function SketchbookApp() {
       .then(setClassInfo)
       .catch((err: unknown) => setClassNotice(err instanceof Error ? err.message : "Link kelas tidak valid."));
   }, []);
+  // Survives GameStage unmounts during redraw/add/prediction; never browser-persisted.
+  const creationsRef = useRef(new CreationStore());
+  const [drawingRevision,setDrawingRevision]=useState(0);
+  const handleCreationsChange = useCallback((items: WorldCreation[]) => {
+    creationsRef.current.replace(items);
+  }, []);
 
   // PULL-DOWN TRANSITION: keep the level-entry stage mounted (and inert) for a
   // beat while #screen-drawing slides down over it, so the page swap has no
@@ -79,6 +86,13 @@ export function SketchbookApp() {
   const isLevelUnlocked = useCallback((stage: number) => {
     if (stage <= 1) return true;
     try {
+      // In dev mode (dev.momominum.tech or localhost), allow direct stage access for autonomous QA
+      if (typeof window !== "undefined") {
+        const host = window.location.hostname;
+        if (host.includes("dev") || host.includes("localhost") || host === "127.0.0.1") {
+          return true;
+        }
+      }
       const completed = JSON.parse(window.localStorage.getItem("sketchbook.completedStages") ?? "[]") as number[];
       return completed.includes(stage - 1);
     } catch {
@@ -114,8 +128,9 @@ export function SketchbookApp() {
       () => classStudentRef.current,
       () => ({ drawing: flow.current?.drawingInput ?? null, prediction: flow.current?.prediction ?? null }),
     );
-    const c = new FlowController({ provider, sink });
+    const c = new FlowController({ provider, sink, goalCompletesLevel: true });
     flow.current = c;
+    creationsRef.current.enterLevel(level.levelId);
     setController(c);
     c.enterLevel(level);
   }, [isLevelUnlocked]);
@@ -180,6 +195,7 @@ export function SketchbookApp() {
         }
         setOnboarding("levels");
         if (controller?.getSnapshot().levelId) controller.exitToLevelEntry();
+        creationsRef.current.clear();
       } else if (route.kind === "number") {
         setRouteNotice(null);
         setOnboarding("number");
@@ -208,9 +224,6 @@ export function SketchbookApp() {
     [snapshot?.levelId],
   );
 
-  // Live Top-3 shown on the drawing screen; same provider config as the flow.
-  const livePredictor = useMemo(() => (level ? createPredictionProvider(level) : null), [level]);
-
   useEffect(() => {
     if (snapshot?.phase !== "complete" || !snapshot.levelId || typeof window === "undefined") return;
     const completedLevel = getLevel(snapshot.levelId);
@@ -225,26 +238,23 @@ export function SketchbookApp() {
     }
   }, [snapshot?.phase, snapshot?.levelId]);
 
-  async function handleSubmitDrawing(chosenPrediction: string | null) {
-    if (!controller || !surfaceRef.current) return;
-    const input = surfaceRef.current.toDrawingInput();
-    await controller.submitDrawing(input);
-    if (controller.getSnapshot().phase !== "evaluating" || !chosenPrediction || !controller.prediction) return;
-    const rank = controller.prediction.candidates.findIndex((candidate) => candidate.label === chosenPrediction);
-    try {
-      if (rank === 0) controller.decideAccept();
-      else if (rank === 1 || rank === 2) controller.decideCorrect((rank + 1) as 2 | 3);
-      else controller.decideOverride(chosenPrediction);
-    } catch {
-      // The drawing flow remains usable if a stale candidate is no longer valid.
-    }
+  async function handleSubmitDrawing() {
+    if (!controller || !surfaceRef.current || controller.getSnapshot().phase !== "drawing") return;
+    await controller.submitDrawing(surfaceRef.current.toDrawingInput());
   }
 
   const isCameraCover = onboarding === "camera";
   const isNumberSelection = onboarding === "number";
   const isOnboarding = onboarding === "tutorial" || isNumberSelection;
   const isDrawing = onboarding === "levels" && snapshot?.phase === "drawing";
+
   const phase = snapshot?.phase ?? "level-entry";
+  const isDrawingFlow =
+    onboarding === "levels" &&
+    (phase === "drawing" ||
+      phase === "predicting" ||
+      phase === "prediction-error" ||
+      phase === "evaluating");
   const isLevelEntry = onboarding === "levels" && ((!snapshot || phase === "level-entry") || entryHold);
 
   return (
@@ -299,108 +309,119 @@ export function SketchbookApp() {
             </section>
           )}
 
-          {/* DRAWING */}
-          {onboarding === "levels" && snapshot && snapshot.phase === "drawing" && level && livePredictor && (
+          {/* DRAWING (Hosts Drawing Canvas & Floating Top-3 HITL Popup) */}
+          {snapshot && isDrawingFlow && level && (
             <DrawingScreen
-              key={level.levelId + String(snapshot.cyclesCompleted)}
+              key={level.levelId + String(snapshot.cyclesCompleted) + ":" + drawingRevision}
               level={level}
               initialMode={env.defaultDrawInputMode}
               feedback={controller?.feedback ?? null}
               surfaceOut={surfaceRef}
-              onSubmit={(chosenPrediction) => void handleSubmitDrawing(chosenPrediction)}
-              predict={(input) => livePredictor.predict(input)}
+              active={phase === "drawing"}
+              phase={phase}
+              prediction={controller?.prediction ?? null}
+              errorDetail={controller?.errorDetail ?? null}
+              predictionMode={providerMode}
+              onAccept={() => {
+                try {
+                  controller?.decideAccept();
+                } catch {
+                  /* guarded by phase */
+                }
+              }}
+              onCorrect={(rank) => {
+                try {
+                  controller?.decideCorrect(rank);
+                } catch {
+                  /* guarded */
+                }
+              }}
+              onOverride={(label) => {
+                try {
+                  controller?.decideOverride(label);
+                } catch {
+                  /* DecisionError shown by picker validation */
+                }
+              }}
+              onRedraw={() => {
+                if (phase === "prediction-error") {
+                  controller?.redrawFromError();
+                } else {
+                  controller?.requestRedraw("evaluation");
+                }
+              }}
+              onRetry={() => void controller?.retryPrediction()}
+              onSubmit={() => void handleSubmitDrawing()}
               onExit={() => {
                 controller?.exitToLevelEntry();
+                creationsRef.current.clear();
                 if (typeof window !== "undefined") window.history.pushState(null, "", "/levels");
               }}
             />
           )}
 
-          {/* PREDICTING */}
-          {onboarding === "levels" && phase === "predicting" && (
-            <PredictingScreen error={false} detail={null} onRetry={() => undefined} onRedraw={() => undefined} />
-          )}
-
-          {/* PREDICTION ERROR */}
-          {onboarding === "levels" && phase === "prediction-error" && (
-            <PredictingScreen
-              error
-              detail={controller?.errorDetail ?? null}
-              onRetry={() => void controller?.retryPrediction()}
-              onRedraw={() => controller?.redrawFromError()}
-            />
-          )}
-
-          {/* EVALUATING */}
-          {onboarding === "levels" && phase === "evaluating" && controller?.prediction && level && (
-            <section id="screen-evaluating" className="screen" aria-label="Evaluasi prediksi">
-              <div className="screen-head">
-                <h2>Tebakan Momo (Top-3)</h2>
-                <p className="lead">Confidence bukan jaminan benar. Kamu yang memutuskan.</p>
-              </div>
-              <div className="eval-layout">
-                <Top3Panel result={controller.prediction} />
-                <DecisionPanel
-                  prediction={controller.prediction}
-                  level={level}
-                  onAccept={() => {
-                    try {
-                      controller.decideAccept();
-                    } catch {
-                      /* guarded by phase; UI reflects state */
-                    }
-                  }}
-                  onCorrect={(rank) => {
-                    try {
-                      controller.decideCorrect(rank);
-                    } catch {
-                      /* guarded */
-                    }
-                  }}
-                  onOverride={(label) => {
-                    try {
-                      controller.decideOverride(label);
-                    } catch {
-                      /* DecisionError shown by picker validation upstream */
-                    }
-                  }}
-                  onRedraw={() => controller.requestRedraw("evaluation")}
-                />
-              </div>
-            </section>
-          )}
-
           {/* GAMEPLAY */}
-          {onboarding === "levels" && phase === "gameplay" && level && snapshot?.behavior && snapshot?.decision && controller && (
+          {onboarding === "levels" && (phase === "falling" || phase === "placing" || phase === "gameplay") && level && snapshot?.behavior && snapshot?.decision && controller && (
             <GameStage
+              integrated={true}
+              creations={creationsRef.current.snapshot()}
+              onCreationsChange={handleCreationsChange}
+              onCreateAnotherObject={() => {setDrawingRevision(n=>n+1);controller.requestRedraw("gameplay");}}
               level={level}
               behavior={snapshot.behavior}
               decision={snapshot.decision}
               onOutcomeReported={(o) => controller.reportGameplayOutcome(o)}
-              onRedraw={() => controller.requestRedraw("gameplay")}
+              onRedraw={() => {setDrawingRevision(n=>n+1);controller.requestRedraw("gameplay");}}
+              onCommitPlacement={() => controller.commitPlacement()}
+              onFallComplete={() => controller.completeFall()}
+              drawingInput={controller.drawingInput}
+              onReposition={() => controller.repositionObject()}
+              phase={phase}
             />
           )}
 
-          {/* COMPLETE */}
+          {/* COMPLETE — Two-block summary: Gameplay + AI Literacy */}
           {onboarding === "levels" && phase === "complete" && level && snapshot && controller && (
             <section id="screen-complete" className="screen" aria-label="Level selesai">
               <h1>Level Selesai</h1>
-              <p id="complete-summary" className="lead">
-                {level.title} selesai dalam {snapshot.cyclesCompleted} siklus keputusan.
-              </p>
+              <div className="summary-two-block">
+                <div className="summary-block summary-gameplay">
+                  <h2>Hasil gameplay</h2>
+                  <p>{level.summary?.gameplay ?? "Kamu berhasil menyelesaikan level ini!"}</p>
+                </div>
+                <div className="summary-block summary-literacy">
+                  <h2>Literasi AI</h2>
+                  <p>Keputusan terakhir: {snapshot.decision?.type ?? "—"}, label {snapshot.decision?.finalLabel ?? "—"}. </p>
+                  <p>{level.summary?.literacy ?? "AI memberi saran, kamu yang memutuskan."}</p>
+                </div>
+              </div>
               <MomoBubble moment="level-complete" />
-              <div className="actions">
+              <div className="actions" style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 16 }}>
                 <button
                   type="button"
-                  className="btn btn-primary"
+                  className="btn"
                   data-testid="btn-back-to-levels"
                   onClick={() => {
                     controller.exitToLevelEntry();
+                    creationsRef.current.clear();
                     window.history.pushState(null, "", "/levels");
                   }}
                 >
                   Pilih Level
                 </button>
+                {level.stage < 3 && (
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    data-testid="btn-next-level"
+                    onClick={() => {
+                      const nextStage = level.stage + 1;
+                      window.location.href = `/level${nextStage}`;
+                    }}
+                  >
+                    Lanjut ke Level {level.stage + 1} →
+                  </button>
+                )}
               </div>
             </section>
           )}

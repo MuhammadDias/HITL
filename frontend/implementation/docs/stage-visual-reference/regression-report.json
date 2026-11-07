@@ -1,0 +1,83 @@
+[
+  {
+    "route": "levels",
+    "status": 200,
+    "dom": {
+      "title": "Sketchbook Universe \u2014 DEV BUILD (author-side)",
+      "text": "Sketchbook Universe\nSketchbook Universe\nLevel 1\nLevel 2\nLevel 3\nPILIH BAB CERITA\n\nTarik pita Level 1 ke bawah untuk mulai menggambar\n\nREC\nNyalakan Kamera",
+      "preview": 0,
+      "canvas": 0,
+      "headings": [
+        "Sketchbook Universe",
+        "Pilih Bab Cerita"
+      ]
+    },
+    "errors": []
+  },
+  {
+    "route": "level1",
+    "status": 200,
+    "dom": {
+      "title": "Sketchbook Universe \u2014 DEV BUILD (author-side)",
+      "text": "KATALOG DEMO \u00b7 PLACEHOLDER\n\nContoh objek untuk digambar, bukan hasil prediksi. Manifest model partner belum tersedia.\n\n\ud83e\uddf1 Balok \u00b7\n\ud83e\udeb5 Papan \u00b7\n\ud83e\udea8 Batu \u00b7\n\ud83e\ude9c Tangga \u00b7\nGambar\nHapus\nMundur\nMaju\nKeluar Level\nGambar objekmu di kanvas. Aku akan menebak apa yang kamu buat.\n\nFALLBACK pointer \u00b7 coba kamera\nTebak Gambarku\nREC\nNyalakan Kamera",
+      "preview": 0,
+      "canvas": 1,
+      "headings": []
+    },
+    "errors": []
+  },
+  {
+    "route": "level2",
+    "status": 200,
+    "dom": {
+      "title": "Sketchbook Universe \u2014 DEV BUILD (author-side)",
+      "text": "KATALOG DEMO \u00b7 PLACEHOLDER\n\nContoh objek untuk digambar, bukan hasil prediksi. Manifest model partner belum tersedia.\n\n\ud83e\udeb5 Papan \u00b7\n\ud83e\uddf1 Balok \u00b7\n\ud83c\udf35 Duri \u00b7\n\ud83e\ude9c Tangga \u00b7\nGambar\nHapus\nMundur\nMaju\nKeluar Level\nGambar objekmu di kanvas. Aku akan menebak apa yang kamu buat.\n\nFALLBACK pointer \u00b7 coba kamera\nTebak Gambarku\nREC\nNyalakan Kamera",
+      "preview": 0,
+      "canvas": 1,
+      "headings": []
+    },
+    "errors": []
+  },
+  {
+    "route": "level3",
+    "status": 200,
+    "dom": {
+      "title": "Sketchbook Universe \u2014 DEV BUILD (author-side)",
+      "text": "KATALOG DEMO \u00b7 PLACEHOLDER\n\nContoh objek untuk digambar, bukan hasil prediksi. Manifest model partner belum tersedia.\n\n\ud83e\udeb5 Papan \u00b7\n\ud83e\udea2 Tali \u00b7\n\ud83e\ude9c Tangga \u00b7\n\ud83e\udea3 Ember \u00b7\nGambar\nHapus\nMundur\nMaju\nKeluar Level\nGambar objekmu di kanvas. Aku akan menebak apa yang kamu buat.\n\nFALLBACK pointer \u00b7 coba kamera\nTebak Gambarku\nREC\nNyalakan Kamera",
+      "preview": 0,
+      "canvas": 1,
+      "headings": []
+    },
+    "errors": []
+  },
+  {
+    "route": "onboarding/card",
+    "status": 200,
+    "dom": {
+      "title": "Sketchbook Universe \u2014 DEV BUILD (author-side)",
+      "text": "Lewati Tutorial \u2192\n1\nKenalin Stickman\n\nDia mau jalan lewatin lembaran buku gambar ini, tapi jalurnya buntu. Coba gerakin tanganmu ke kanan atau kiri buat ajak dia jalan!\n\nLanjut\n\u25c0 \u00a0 GESER TANGAN \u00a0 \u25b6\n\u2713\n2\nPijakan Aman vs Bahaya\n\nGambarlah benda padat kayak balok atau tangga biar Stickman bisa lewat. Hindari benda tajam kayak duri atau pisau biar buku ",
+      "preview": 0,
+      "canvas": 1,
+      "headings": [
+        "Kenalin Stickman",
+        "Pijakan Aman vs Bahaya",
+        "Tes Coret & Gestur Jarimu"
+      ]
+    },
+    "errors": []
+  },
+  {
+    "route": "onboarding/number",
+    "status": 200,
+    "dom": {
+      "title": "Sketchbook Universe \u2014 DEV BUILD (author-side)",
+      "text": "GESER PENGGARIS SESUAI NOMOR ABSENMU\n20\n1\n5\n10\n15\n20\n25\n30\n1\n5\nLanjut ke Tutorial \u2192\nREC\nNyalakan Kamera",
+      "preview": 0,
+      "canvas": 0,
+      "headings": [
+        "GESER PENGGARIS SESUAI NOMOR ABSENMU"
+      ]
+    },
+    "errors": []
+  }
+]
