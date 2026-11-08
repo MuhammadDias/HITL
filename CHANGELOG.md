@@ -18,6 +18,14 @@ git checkout main        # kembali ke versi terbaru
 
 ---
 
+## [v0.5.1] - 2026-11-08
+
+### Diperbaiki
+- **Build dashboard gagal di server** (`Module not found: Can't resolve '@/lib/api'`): folder `frontend/admin/lib/`
+  tidak pernah ikut ke GitHub karena aturan `lib/` (template Python) di `.gitignore`. Aturan packaging Python sekarang
+  hanya berlaku di root repo, dan `frontend/admin/lib/` serta `frontend/implementation/e2e/lib/` ikut tersimpan.
+  Diuji dengan build Docker dari salinan yang hanya berisi file yang dilacak git.
+
 ## [v0.5.0] - 2026-11-08
 
 Update terbaru dari repo tim (`lustresense/hitl-momo`, branch `can`, commit `7613bd3`), digabung tanpa menghilangkan
@@ -127,6 +135,7 @@ digabung tanpa menghilangkan fitur kelas dan dashboard.
 - Backend FastAPI dengan endpoint `POST /predict` (Top-3 + confidence).
 - Frontend game awal (`frontend/implementation`).
 
+[v0.5.1]: https://github.com/MuhammadDias/HITL/compare/v0.5.0...v0.5.1
 [v0.5.0]: https://github.com/MuhammadDias/HITL/compare/v0.4.1...v0.5.0
 [v0.4.1]: https://github.com/MuhammadDias/HITL/compare/v0.4.0...v0.4.1
 [v0.4.0]: https://github.com/MuhammadDias/HITL/compare/v0.3.0...v0.4.0

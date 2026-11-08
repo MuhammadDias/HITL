@@ -1,0 +1,10 @@
+{
+  "_note": "Student-style plans. launchX = player left-edge world x where the student stops, then presses Right+Space; hold = fixed 50Hz steps Right stays held (999 = until landing). Validated by tests/game/level-solvability.test.ts (kinematic model) and by browser E2E (authority).",
+  "objectSize": { "w": 130.6122, "h": 19.5918 },
+  "1": { "cycles": [ { "label": "balok", "behavior": "solid", "x": 334.69, "y": 250.2 } ],
+         "steps": [ { "launchX": 226, "hold": 36 }, { "launchX": 447, "hold": 40 } ] },
+  "2": { "cycles": [ { "label": "balok", "behavior": "solid", "x": 190, "y": 220 }, { "label": "papan", "behavior": "solid", "x": 400, "y": 172 } ],
+         "steps": [ { "launchX": 125, "hold": 18 }, { "launchX": 200, "hold": 22 }, { "launchX": 290, "hold": 999 }, { "launchX": 420, "hold": 999 }, { "launchX": 552, "hold": 30 } ] },
+  "3": { "cycles": [ { "label": "papan", "behavior": "solid", "x": 390, "y": 280 } ],
+         "steps": [ { "launchX": 175, "hold": 44 }, { "launchX": 330, "hold": 22 }, { "launchX": 497, "hold": 26 } ] }
+}
