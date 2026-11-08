@@ -18,6 +18,31 @@ git checkout main        # kembali ke versi terbaru
 
 ---
 
+## [v0.5.0] - 2026-11-08
+
+Update terbaru dari repo tim (`lustresense/hitl-momo`, branch `can`, commit `7613bd3`), digabung tanpa menghilangkan
+fitur kelas dan dashboard.
+
+### Ditambahkan
+- **Momo memandu setiap halaman** sebelum game: Momo tidur di sampul dan bangun saat kamera menyala, lalu memandu
+  penggaris absen, kartu tutorial, dan daftar level.
+- **Intro cerita level** saat pertama kali masuk level (bisa dilewati), dengan karakter Thinman asli.
+- Tampilan baru bergaya *neo-brutalism* (border tebal, warna polos), termasuk penggaris absen yang dibangun ulang.
+- Pipeline event telemetri tim (`src/events`, aktif hanya jika `NEXT_PUBLIC_EVENT_ENDPOINT` diisi; default mati).
+- Test frontend bertambah menjadi 559.
+
+### Diubah
+- Popup keputusan: **Terima / Pilih lain / Bukan semua**, dan pilihan langsung tersimpan (tombol "Wujudkan Objek"
+  dihapus tim).
+- `SketchbookApp` dipecah tim ke `src/app/hooks/` dan `src/app/screens/`; rekam jawaban kelas sekarang dipasang di
+  `useLevelSession`, berdampingan dengan sink telemetri tim.
+- Isian nama murid menyesuaikan gaya baru.
+- Video bukti tes di `docs/**/*.webm|mp4` (±360 MB) tidak disimpan di repo ini.
+
+### Diperbaiki
+- Backend: error 500 acak di API dashboard (`SQLite objects created in a thread can only be used in that same thread`).
+  Koneksi database sekarang boleh berpindah thread dalam satu request; diuji dengan 300 request paralel.
+
 ## [v0.4.1] - 2026-11-08
 
 ### Ditambahkan
@@ -102,6 +127,7 @@ digabung tanpa menghilangkan fitur kelas dan dashboard.
 - Backend FastAPI dengan endpoint `POST /predict` (Top-3 + confidence).
 - Frontend game awal (`frontend/implementation`).
 
+[v0.5.0]: https://github.com/MuhammadDias/HITL/compare/v0.4.1...v0.5.0
 [v0.4.1]: https://github.com/MuhammadDias/HITL/compare/v0.4.0...v0.4.1
 [v0.4.0]: https://github.com/MuhammadDias/HITL/compare/v0.3.0...v0.4.0
 [v0.3.0]: https://github.com/MuhammadDias/HITL/compare/v0.2.0...v0.3.0

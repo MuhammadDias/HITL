@@ -192,14 +192,16 @@ Guru hanya bisa melihat kelas di sekolahnya sendiri dan tidak bisa export. Expor
 ## Langkah 8 — Yang dilakukan murid
 
 1. Buka link kelas dari guru.
-2. Di layar kamera, klik **Lewati & Pilih Nomor Absen →**, atau lambaikan tangan ke kamera.
+2. Di layar kamera, klik **Lewati & Pilih Nomor Absen**, atau nyalakan kamera dan lambaikan tangan ke Momo.
 3. Geser penggaris ke **nomor absen** (angkanya dibatasi sesuai jumlah murid kelas), tulis **nama**, lalu klik **Lanjut ke Tutorial**.
-4. Ikuti tutorial atau klik **Lewati Tutorial →**, lalu pilih **Level 1**.
-5. Gambar di kanvas, lalu tekan **Tebak Gambarku**. Popup **Tebakan Momo (Top-3)** menampilkan 3 tebakan model. Label **PARTNER API** berarti tebakannya dari backend; **DEMO / PREDIKSI SIMULASI** berarti masih mode mock.
-6. Pilih keputusan, lalu tekan **✨ Wujudkan Objek**:
-   - **Accept**: memakai tebakan #1 → tercatat sebagai **Menerima**
-   - **Correct**: memilih tebakan #2 atau #3 → tercatat sebagai **Merevisi**
-   - **Override**: menolak semua tebakan dan memilih label sendiri → tercatat sebagai **Menolak**
+4. Ikuti tutorial atau klik **Lewati Tutorial**, lalu pilih **Level 1**. Saat pertama masuk level, Momo menceritakan misinya
+   (bisa dilewati dengan tombol lewati di pojok).
+5. Gambar di kanvas, lalu tekan **Tebak Gambarku**. Popup **Tebakan Momo** menampilkan 3 tebakan model. Label
+   **Model partner** berarti tebakannya dari backend; **Demo: tebakan simulasi** berarti masih mode mock.
+6. Pilih keputusan. Pilihan langsung tersimpan:
+   - **Terima**: memakai tebakan #1 → tercatat sebagai **Menerima**
+   - **Pilih lain**: memilih tebakan #2 atau #3 → tercatat sebagai **Merevisi**
+   - **Bukan semua**: menolak semua tebakan dan memilih label sendiri → tercatat sebagai **Menolak**
 
    Keputusan langsung muncul di dashboard guru. Setelah itu objek jatuh ke dunia game dan murid meletakkannya.
 
@@ -264,6 +266,6 @@ Dashboard sendiri tetap dibuka di http://localhost:3002. Kalau dashboard juga pe
 | Murid: *"Link kelas tidak valid."* | Token salah, kelas sudah dihapus, atau link dibuat dengan URL tunnel lama. Salin ulang link dari dashboard. |
 | Murid: *"Nomor absen di kelas ini hanya 1–N."* | Nomor absen melebihi jumlah murid kelas. Pilih nomor yang benar. Kalau jumlah murid di kelas kurang, buat kelas baru dengan jumlah yang tepat. |
 | Tebakan AI tidak muncul / *"AI gagal menebak"* | Backend mati, atau `NEXT_PUBLIC_PREDICTION_ENDPOINT` salah. Cek http://localhost:8000/health. |
-| Jawaban murid tidak muncul di dashboard | Murid belum melewati layar nomor absen dari link kelas, atau belum menekan **✨ Wujudkan Objek** (jawaban baru tercatat setelah tombol itu ditekan). |
+| Jawaban murid tidak muncul di dashboard | Murid belum melewati layar nomor absen dari link kelas, atau belum memilih **Terima / Pilih lain / Bukan semua** (jawaban baru tercatat setelah memilih). |
 | `address already in use` / port terpakai | Server lama masih jalan. Tutup terminal lamanya, atau cari prosesnya dengan `ss -ltnp \| grep :8000`. |
 | Nama file export jadi `kelas-1.csv` | Backend versi lama. Restart backend supaya header `Content-Disposition` terbaca. |
