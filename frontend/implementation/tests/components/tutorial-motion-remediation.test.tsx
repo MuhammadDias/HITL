@@ -1,50 +1,34 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { describe, expect, it, vi, afterEach } from "vitest";
 import { render, screen, cleanup, act } from "@testing-library/react";
+import { gsap } from "gsap";
 import { TutorialBrochure } from "@/src/components/onboarding/TutorialBrochure";
 
-describe("Tutorial Brochure Card Animation Priority", () => {
-  beforeEach(() => {
-    Element.prototype.animate = vi.fn().mockImplementation(() => ({
-      finished: Promise.resolve(),
-      cancel: vi.fn(),
-      play: vi.fn(),
-      pause: vi.fn(),
-      reverse: vi.fn(),
-      finish: vi.fn(),
-    }));
-  });
-
+describe("Tutorial Brochure card animation", () => {
   afterEach(() => {
     cleanup();
-    vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
-  it("plays full tactile card animations without skipping sequence", async () => {
+  it("deals, fans and opens the first card on one real timeline, and never skips by itself", async () => {
     const onStart = vi.fn();
-    vi.useFakeTimers();
-
+    const spy = vi.spyOn(gsap, "timeline");
     await act(async () => {
       render(<TutorialBrochure onStart={onStart} />);
     });
-
-    await act(async () => {
-      vi.advanceTimersByTime(2000);
-    });
-
-    // Animate calls must have real durations (> 0), never zeroed out
-    const animateCalls = (Element.prototype.animate as any).mock.calls;
-    expect(animateCalls.length).toBeGreaterThan(0);
-    const maxDuration = Math.max(
-      ...animateCalls.map((call: any) => {
-        const options = call[1];
-        return typeof options === "number" ? options : (options?.duration ?? 0);
-      })
-    );
-    expect(maxDuration).toBeGreaterThanOrEqual(600);
-
-    // Tutorial must not be auto-skipped
+    expect(spy).toHaveBeenCalled();
+    const first = spy.mock.results[0]!.value as gsap.core.Timeline;
+    // A real choreography: deal-in + fan + open the first card is well over a second of motion.
+    expect(first.totalDuration()).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByRole("article")).toHaveLength(3);
     expect(onStart).not.toHaveBeenCalled();
+    spy.mockRestore();
+  });
 
-    vi.useRealTimers();
+  it("keeps Lanjut locked until the practice of the open card is done", async () => {
+    await act(async () => {
+      render(<TutorialBrochure onStart={() => {}} />);
+    });
+    const cta = document.querySelector(".tutorial-card-1 .brochure-cta") as HTMLButtonElement;
+    expect(cta.disabled).toBe(true);
   });
 });

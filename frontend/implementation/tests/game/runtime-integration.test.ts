@@ -178,8 +178,8 @@ it("isolates label font atlases across engine remounts", async () => {
   first.handle.destroy();
   const second = await startPhysics();
   const secondFont = second.labels[0]?.font;
-  expect(firstFont).toMatch(/, monospace$/);
-  expect(secondFont).toMatch(/, monospace$/);
+  expect(firstFont).toMatch(/, sans-serif$/);
+  expect(secondFont).toMatch(/, sans-serif$/);
   expect(secondFont).not.toBe(firstFont);
   second.handle.destroy();
 });

@@ -13,6 +13,9 @@ vi.mock("gsap", () => {
   return { default: mockGsap, ...mockGsap };
 });
 
+// The cover Momo has its own gsap engine; this test is about the camera card only.
+vi.mock("@/src/components/momo/MomoGuide", () => ({ MomoGuide: () => null }));
+
 vi.mock("@mediapipe/tasks-vision", () => ({
   FilesetResolver: { forVisionTasks: vi.fn().mockResolvedValue({}) },
   HandLandmarker: { createFromOptions: vi.fn().mockResolvedValue({ detectForVideo: vi.fn(), close: vi.fn() }) },

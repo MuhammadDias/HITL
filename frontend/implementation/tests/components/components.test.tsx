@@ -106,38 +106,38 @@ describe("Top3Panel (TASK 08)", () => {
     expect(items).toHaveLength(3);
     expect(screen.getByRole("listitem", { name: /Peringkat 1: papan/i })).toBeTruthy();
     expect(screen.getByRole("img", { name: /Bar keyakinan 60 persen/i })).toBeTruthy();
-    expect(screen.getByText("#3")).toBeTruthy();
+    expect(document.querySelector('[data-rank="3"] .rank')?.textContent).toBe("3");
   });
 });
 
 describe("DecisionPanel (TASK 09)", () => {
-  it("Correct requires explicit rank selection (never auto-selects rank 2)", () => {
+  it("Correct never auto-selects: nothing commits until a rank (2 or 3) is tapped, then it commits at once", () => {
     const onCorrect = vi.fn();
     render(<DecisionPanel prediction={RESULT} level={LEVEL} onAccept={() => {}} onCorrect={onCorrect} onOverride={() => {}} onRedraw={() => {}} />);
     expect(onCorrect).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: /Correct — pilih peringkat lain/i }));
-    fireEvent.click(screen.getByRole("button", { name: /#3 · tali/i }));
-    expect(onCorrect).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByTestId("btn-wujudkan-objek"));
+    fireEvent.click(screen.getByRole("button", { name: /Correct: pilih peringkat lain/i }));
+    expect(onCorrect).not.toHaveBeenCalled(); // opening the picker is not a decision
+    fireEvent.click(screen.getByRole("button", { name: /tali/i }));
+    expect(onCorrect).toHaveBeenCalledTimes(1);
     expect(onCorrect).toHaveBeenCalledWith(3);
   });
 
   it("Override picker excludes Top-3 labels and rejects empty selection", () => {
     const onOverride = vi.fn();
     render(<DecisionPanel prediction={RESULT} level={LEVEL} onAccept={() => {}} onCorrect={() => {}} onOverride={onOverride} onRedraw={() => {}} />);
-    fireEvent.click(screen.getByRole("button", { name: /Override — tolak semua tebakan/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Override: tolak semua tebakan/i }));
     const select = document.getElementById("override-select") as HTMLSelectElement;
     const options = [...select.options].map((o) => o.value).filter(Boolean);
     expect(options.sort()).toEqual(["ember", "tangga"]);
     fireEvent.click(screen.getByTestId("override-confirm"));
     expect(onOverride).not.toHaveBeenCalled();
-    expect(screen.getByRole("alert").textContent).toMatch(/pilih salah satu label/i);
+    expect(screen.getByRole("alert").textContent).toMatch(/pilih label dulu/i);
   });
 
   it("Redraw is a separate recovery action outside the three decisions", () => {
     const onRedraw = vi.fn();
     render(<DecisionPanel prediction={RESULT} level={LEVEL} onAccept={() => {}} onCorrect={() => {}} onOverride={() => {}} onRedraw={onRedraw} />);
-    fireEvent.click(screen.getByRole("button", { name: /gambar ulang \(revisi\)/i }));
+    fireEvent.click(screen.getByTestId("btn-redraw"));
     expect(onRedraw).toHaveBeenCalledTimes(1);
   });
 });
@@ -219,19 +219,20 @@ describe("GlobalCamera (Persistent Floating Camera)", () => {
   });
 });
 
-describe("LevelRibbonBookmark prototype shelf", () => {
-  it("renders three prototype swallowtail ribbons and heading", () => {
+describe("LevelRibbonBookmark shelf", () => {
+  it("renders three bookmarks on the spiral binding with a short heading", () => {
     render(<LevelRibbonBookmark levels={LEVELS} onSelectLevel={vi.fn()} />);
     const list = screen.getByTestId("level-list");
-    expect(list.querySelectorAll(".ribbon-slot")).toHaveLength(3);
-    expect(screen.getByText("Pilih Bab Cerita")).toBeTruthy();
-    expect(screen.getByText("Tarik pita Level 1 ke bawah untuk mulai menggambar")).toBeTruthy();
-    expect(screen.getByTestId("level-card-1").querySelector(".ribbon-outer")?.getAttribute("d")).toContain("L88 472L2 518");
+    expect(list.querySelectorAll(".bm-slot")).toHaveLength(3);
+    expect(screen.getByText("Pilih bab")).toBeTruthy();
+    expect(screen.getByTestId("level-card-1").querySelector(".bm-outer--body")?.getAttribute("d")).toContain("L");
   });
-  it("marks the first level playable and later ribbons locked", () => {
+  it("marks the first level open and later ribbons locked with a padlock", () => {
     render(<LevelRibbonBookmark levels={LEVELS} onSelectLevel={vi.fn()} />);
     expect(screen.getByTestId("level-card-1").className).toContain("is-playable");
+    expect(screen.getByTestId("level-card-1").dataset.state).toBe("open");
     expect(screen.getByTestId("level-card-2").className).toContain("is-locked");
-    expect(screen.getByTestId("level-card-3").querySelector(".ribbon-play svg rect")).toBeTruthy();
+    expect(screen.getByTestId("level-card-2").dataset.state).toBe("locked");
+    expect(screen.getByTestId("level-card-3").querySelector(".bm-badge .nb-icon")).toBeTruthy();
   });
 });

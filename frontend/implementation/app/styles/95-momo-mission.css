@@ -1,0 +1,28 @@
+/* Momo as a free interactive mascot, mission hint, input switch, provenance labels.
+   Part of the ordered globals.css split: keep the import order in app/globals.css. */
+/* ========================================================
+ * Momo as a free, interactive mascot (never clipped by a box), mission hint, input switch, success dim.
+ * Same palette / outlines / shadows as the rest of the app.
+ * ======================================================== */
+.momo, .momo-art, .drawing-momo-companion, .world-momo, .world-win, .world-win-momo { overflow: visible; }
+.momo { align-items: flex-end; gap: 6px; }
+.momo-art { transition: height .55s cubic-bezier(.22,1,.36,1), width .55s cubic-bezier(.22,1,.36,1); }
+.drawing-momo-companion .momo { align-items: flex-end !important; }
+
+.world-momo { max-width: min(420px, calc(100vw - 32px)); }
+.world-momo-play, .world-momo-fail { left: 20px; top: 84px; }
+.world-momo-play .momo-art, .world-momo-fail .momo-art { pointer-events: auto; cursor: pointer; }
+.world-momo-place { left: 20px; top: 84px; }
+
+.world-win::before {
+  content: ""; position: absolute; inset: 0; background: rgba(17, 17, 17, .42);
+  animation: world-dim .5s ease-out both; pointer-events: auto;
+}
+.world-win > * { position: relative; }
+@keyframes world-dim { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .world-win::before { animation: none; } .momo-art { transition: none; } }
+
+
+
+/* Plain sentence case for provenance labels; world Momo bubble sits beside her, not under her tail. */
+.dev-banner, .popup-badge, .popup-badge.dev-badge, .momo-prediction-source { text-transform: none !important; letter-spacing: 0 !important; }

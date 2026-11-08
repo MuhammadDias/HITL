@@ -273,3 +273,45 @@ describe("FlowController — optional goal completion", () => {
     expect(flow.cyclesCompleted).toBe(0);
   });
 });
+
+describe("FlowController — gameplay attempt logging seam (fail/retry/another object)", () => {
+  async function toGameplay() {
+    const c = makeFlow("stage-1-foundation");
+    c.flow.enterLevel(c.level);
+    await c.flow.submitDrawing(INK);
+    c.flow.decideAccept();
+    c.flow.completeFall();
+    c.flow.commitPlacement();
+    expect(c.flow.phase).toBe("gameplay");
+    return c;
+  }
+  it("records a FAIL result when the runtime reports it, without a phase transition", async () => {
+    const c = await toGameplay();
+    c.flow.recordGameplayAttempt("fail");
+    expect(c.flow.phase).toBe("gameplay");
+    expect(c.events.filter(e => e.kind === "gameplay_result")).toEqual([expect.objectContaining({ outcome: "fail" })]);
+  });
+  it("records retry; later success is logged exactly once (no duplicate on 'Lihat ringkasan')", async () => {
+    const c = await toGameplay();
+    c.flow.recordGameplayAttempt("fail");
+    c.flow.recordGameplayRetry();
+    c.flow.recordGameplayAttempt("success");
+    c.flow.reportGameplayOutcome("success");
+    const results = c.events.filter(e => e.kind === "gameplay_result").map(e => (e as { outcome: string }).outcome);
+    expect(results).toEqual(["fail", "success"]);
+    expect(c.events.some(e => e.kind === "gameplay_retry")).toBe(true);
+    expect(c.flow.phase).toBe("complete");
+  });
+  it("'create another object' is logged distinctly from Redraw", async () => {
+    const c = await toGameplay();
+    c.flow.requestRedraw("create_another");
+    expect(c.events.some(e => e.kind === "another_object_requested")).toBe(true);
+    expect(c.events.some(e => e.kind === "redraw_requested")).toBe(false);
+    expect(c.flow.phase).toBe("drawing");
+  });
+  it("reposition is logged", async () => {
+    const c = await toGameplay();
+    c.flow.repositionObject();
+    expect(c.events.some(e => e.kind === "object_repositioned")).toBe(true);
+  });
+});

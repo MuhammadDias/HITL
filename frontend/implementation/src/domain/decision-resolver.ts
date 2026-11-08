@@ -57,7 +57,7 @@ export function overrideDecision(
   }
   if (result.candidates.some((c) => c.label === label)) {
     throw new DecisionError(
-      `Label "${label}" ada di Top-3 â€” gunakan Correct untuk memilihnya.`,
+      `Label "${label}" ada di Top-3. Gunakan Correct untuk memilihnya.`,
     );
   }
   return { type: "override", finalLabel: label };

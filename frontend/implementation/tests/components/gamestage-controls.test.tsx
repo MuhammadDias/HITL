@@ -86,6 +86,7 @@ describe("GameStage controls in gameplay phase", () => {
         />
       );
     });
+    await act(async () => { fireEvent.click(screen.getByTestId("btn-enter-world")); });
 
     const btnRight = screen.getByTestId("move-right");
     const btnJump = screen.getByTestId("move-jump");
@@ -134,6 +135,7 @@ describe("GameStage controls in gameplay phase", () => {
         />
       );
     });
+    await act(async () => { fireEvent.click(screen.getByTestId("btn-enter-world")); });
 
     // ArrowRight down
     fireEvent.keyDown(window, { code: "ArrowRight" });
@@ -170,5 +172,31 @@ describe("GameStage controls in gameplay phase", () => {
     expect(lastInput.left).toBe(true);
     fireEvent.keyUp(window, { code: "KeyA" });
     expect(lastInput.left).toBe(false);
+  });
+});
+
+describe("GameStage: decided object is offered to the world first", () => {
+  it("shows 'Masukkan ke dunia' and does not start the world until the student enters", async () => {
+    await act(async () => {
+      render(
+        <GameStage
+          level={LEVELS[0]!}
+          behavior="solid"
+          decision={{ type: "accept", finalLabel: "papan", sourceRank: 1 }}
+          drawingInput={null}
+          phase="falling"
+          onOutcomeReported={vi.fn()}
+          onRedraw={vi.fn()}
+          onFallComplete={vi.fn()}
+          onCommitPlacement={vi.fn()}
+          onReposition={vi.fn()}
+        />,
+      );
+    });
+    expect(screen.getByTestId("enter-world-popup")).toBeTruthy();
+    expect(mockMount).not.toHaveBeenCalled();
+    await act(async () => { fireEvent.click(screen.getByTestId("btn-enter-world")); });
+    expect(mockMount).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId("enter-world-popup")).toBeNull();
   });
 });

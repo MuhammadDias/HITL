@@ -1,0 +1,292 @@
+/* Full-bleed drawing viewport and docked layout adaptation.
+   Part of the ordered globals.css split: keep the import order in app/globals.css. */
+/* SVG 13 Layout Adaptation - Full-bleed viewport canvas & docked trio */
+#app:has(#screen-drawing) {
+  max-width: none !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+#app:has(#screen-drawing) .app-header,
+#app:has(#screen-drawing) .app-footer {
+  display: none !important;
+}
+
+#screen-drawing.drawing-screen-svg {
+  position: relative !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  overflow: hidden !important;
+}
+
+.drawing-top-bar {
+  position: absolute !important;
+  top: 28px !important;
+  left: 36px !important;
+  z-index: 10 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  pointer-events: auto !important;
+}
+
+.drawing-level-tag {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.level-title-badge {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: #111;
+  background: #c8d9a4;
+  border: 1.5px solid #111;
+  border-radius: 6px;
+  padding: 2px 8px;
+  display: inline-block;
+  width: fit-content;
+  box-shadow: 2px 2px 0 #111;
+}
+
+.level-task-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+#screen-drawing .draw-canvas {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  display: block !important;
+}
+
+.drawing-dock {
+  position: absolute !important;
+  bottom: 24px !important;
+  left: 0 !important;
+  right: 0 !important;
+  padding: 0 40px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-end !important;
+  z-index: 10 !important;
+  pointer-events: none !important;
+  gap: 16px;
+}
+
+.dock-module {
+  pointer-events: auto !important;
+  border: 2px solid #111 !important;
+  border-radius: 18px !important;
+  box-shadow: 4px 4px 0 #111 !important;
+  padding: 14px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+
+.dock-actions {
+  background: #b9da8f !important;
+  width: 280px !important;
+  flex: 0 0 280px !important;
+}
+
+.dock-actions .action-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.dock-actions .action-bar .btn-submit-momo,
+.dock-actions .action-bar .btn-primary {
+  grid-column: 1 / -1;
+  background: #d86b3d !important;
+  border-color: #111 !important;
+  color: #fff !important;
+}
+
+.dock-actions .action-bar .btn-submit-momo:hover,
+.dock-actions .action-bar .btn-primary:hover {
+  background: #c35c30 !important;
+}
+
+.dock-camera {
+  background: #d96c3f !important;
+  color: #ffffff !important;
+  width: 280px !important;
+  flex: 0 0 280px !important;
+}
+
+.camera-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.camera-title-label {
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+
+.dock-camera .mode-switch .mode-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border: 1.5px solid #111;
+}
+
+.dock-camera .mode-switch .mode-btn.active {
+  background: #111;
+  color: #fff;
+}
+
+.camera-viewport-box {
+  width: 100%;
+  height: 140px;
+  background: #000000;
+  border-radius: 12px;
+  border: 2px solid #111;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-viewport-box .cam-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  display: block;
+}
+
+.camera-off-placeholder {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #eff3db;
+}
+
+.camera-chip-status .chip {
+  background: rgba(255, 255, 255, 0.95);
+  color: #111;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1.5px solid #111;
+  border-radius: 999px;
+  padding: 4px 10px;
+  display: inline-block;
+  width: 100%;
+  text-align: center;
+}
+
+.dock-tools {
+  background: #b9da8f !important;
+  width: 260px !important;
+  flex: 0 0 260px !important;
+}
+
+.dock-module-title {
+  font-weight: 800;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #111;
+}
+
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.tool-btn {
+  aspect-ratio: 1;
+  border: 2px solid #111;
+  border-radius: 10px;
+  background: #fff;
+  cursor: default;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 2px 2px 0 #111;
+  user-select: none;
+}
+
+.tool-btn.active {
+  background: #ef7a37;
+  color: #fff;
+}
+
+.tool-btn.disabled-hud,
+.tool-btn:disabled {
+  opacity: 0.45;
+}
+
+.tool-btn.swatch {
+  border-width: 2px;
+}
+
+@media (max-width: 900px) {
+  #app:has(#screen-drawing) {
+    height: auto !important;
+    overflow: auto !important;
+  }
+  #screen-drawing.drawing-screen-svg {
+    height: auto !important;
+    min-height: 100vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: auto !important;
+  }
+  .drawing-top-bar {
+    position: static !important;
+    padding: 16px !important;
+  }
+  #screen-drawing .draw-canvas {
+    position: relative !important;
+    height: 480px !important;
+  }
+  .drawing-dock {
+    position: static !important;
+    padding: 16px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .dock-module {
+    width: 100% !important;
+    flex: auto !important;
+  }
+}
+

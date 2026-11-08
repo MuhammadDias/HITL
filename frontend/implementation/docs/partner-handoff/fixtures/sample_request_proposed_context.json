@@ -1,0 +1,14 @@
+{
+  "_note": "PROPOSED, NOT AGREED. Only sent when NEXT_PUBLIC_PREDICTION_SEND_CONTEXT=1 (also adds header X-Contract-Version). Remove this _note key before sending.",
+  "drawing": {
+    "strokes": [
+      [{ "x": 0.1, "y": 0.2 }, { "x": 0.3, "y": 0.4 }, { "x": 0.5, "y": 0.6 }],
+      [{ "x": 0.7, "y": 0.8 }, { "x": 0.9, "y": 0.9 }]
+    ],
+    "hasInk": true,
+    "aspectRatio": 1.333
+  },
+  "levelId": "stage-1-foundation",
+  "attemptId": "6f1c2d3e-5b7a-4c1d-8e2f-1a2b3c4d5e6f",
+  "contractVersion": "1.0.0-draft"
+}

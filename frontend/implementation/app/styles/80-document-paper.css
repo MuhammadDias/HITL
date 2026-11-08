@@ -1,0 +1,23 @@
+/* Interior paper background shared by the document screens.
+   Part of the ordered globals.css split: keep the import order in app/globals.css. */
+/* Interior paper belongs to the document, not the current screen. */
+body {
+  background: var(--dot-grid-pattern) !important;
+  background-attachment: fixed !important;
+}
+#app,
+#app.onboarding-app,
+body #app:has(#screen-level-entry),
+body #app:has(#screen-drawing),
+.tutorial-screen,
+#screen-drawing,
+#screen-evaluating,
+#screen-summary,
+.level-ribbon-page {
+  background: transparent !important;
+}
+/* Cover retains its existing green treatment; do not share interior paper. */
+#app.onboarding-app:has(.camera-prototype-root.mode-cover) {
+  background: #eff3db !important;
+}
+

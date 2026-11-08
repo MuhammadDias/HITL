@@ -11,7 +11,7 @@
 
 ## Kontrak integrasi tahap 1: hanya visual
 
-1. Baca `INSTRUCTION.md`, `CHANGELOG.md` bagian Aktif dan Belum dikunci, `WORKING_STATE.md` terbaru, design system, dan source repo aktif. Jangan berasumsi path, branch, atau arsitektur lama masih berlaku.
+1. Baca `SOUL.md`, `DECISIONS.md` bagian Aktif dan Belum dikunci, `WORKING_STATE.md` terbaru, design system, dan source repo aktif. Jangan berasumsi path, branch, atau arsitektur lama masih berlaku.
 2. Periksa status Git dan worker lain terlebih dulu. Kerja non-overlap; stage visual masuk route sandbox/preview yang sudah ada jika memungkinkan, **bukan** langsung mengganti gameplay utama.
 3. Port stage ke komponen React sesuai struktur repo yang ditemukan, dengan viewBox dan vektor dipertahankan. Bila pakai SVGR, cek konfigurasi yang sudah ada terlebih dulu. Jangan menambah bundler kedua. JSX/React harus memakai `className`, `strokeWidth`, `fillRule`, `clipPath`, dan attribute SVG lain sesuai React. Sebelum impor periksa SVG ID collision dan URL filter/pattern.
 4. Pisahkan `StageArtwork` (SVG visual), `StageAtmosphere` (awan dan kabut), `StagePreview` (hanya viewer), dan metadata visual. **Tidak perlu** mengunci struktur folder persis bila repo sudah punya komponen setara. Jangan mengubah React route game tanpa izin untuk mengganti UI.

@@ -10,11 +10,13 @@ export type InputModeId = "pointer" | "hand";
 export type HandInputStatus =
   | { kind: "idle" }
   | { kind: "initializing" }
-  | { kind: "ready" }
+  /** `delegate` = MediaPipe backend actually in use ("GPU", "CPU (cadangan)") for diagnostics. */
+  | { kind: "ready"; delegate?: string }
   | { kind: "drawing" }
   | { kind: "no-hand" }
   | { kind: "tracking-lost" }
-  | { kind: "error"; reason: HandFailureReason };
+  /** `message` = short Indonesian reason (<= 8 words) that is safe to show a student. */
+  | { kind: "error"; reason: HandFailureReason; message?: string };
 
 export type HandFailureReason =
   | "permission-denied"

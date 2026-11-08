@@ -22,7 +22,8 @@ describe("MockPredictionProvider (FR-16 DEV/MOCK)", () => {
 
   it("is deterministic for identical input", async () => {
     const p = new MockPredictionProvider({ vocabulary: VOCAB, stage: 2, latencyMs: 0 });
-    expect(await p.predict(INPUT)).toEqual(await p.predict(INPUT));
+    // provenance.latencyMs is measured wall time and legitimately differs between calls
+    expect((await p.predict(INPUT)).candidates).toEqual((await p.predict(INPUT)).candidates);
   });
 
   it("hash is stable", () => {

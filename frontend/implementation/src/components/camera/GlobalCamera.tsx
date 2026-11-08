@@ -1,9 +1,14 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { FilesetResolver, HandLandmarker } from "@mediapipe/tasks-vision";
 import gsap from "gsap";
 import { setSharedStream } from "../../camera/shared-stream";
+import { Icon } from "../ui/Icon";
+import { MomoGuide } from "../momo/MomoGuide";
+import { COVER_WAKE } from "@/src/domain/guide-script";
+import { WaveTracker } from "../../camera/wave-tracker";
+import { DRAWING_MODE_EVENT, HAND_STATUS_EVENT, classifyCameraError, messageFor } from "../../camera/messages";
+import type { HandInputStatus } from "../../input/types";
 
 export interface GlobalCameraProps {
   /** "cover" = full centered orange card, "floating" = bottom-left mini PIP. */
@@ -17,10 +22,15 @@ export interface GlobalCameraProps {
    * MediaStream) stays mounted.
    */
   recessed?: boolean;
+  /** Pause between the camera turning on and the hand model loading, so Momo wakes up and waves smoothly first. */
+  waveStartDelayMs?: number;
 }
 
 /** Layout effect is a no-op (and warns) while server-rendering the shell. */
 const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
+/** How long Momo gets to wake up and wave before the hand model starts loading (it can stall the page for a moment). */
+const WAKE_SETTLE_MS = 3400;
 
 /** Center -> bottom-left mini PIP morph duration, in seconds. */
 const MORPH_DURATION = 0.6;
@@ -71,14 +81,24 @@ function morphCameraCard(card: HTMLElement, from: CardRect | null, to: CardRect 
   );
 }
 
-export function GlobalCamera({ mode, modelUrl, onWave, onSkip, recessed = false }: GlobalCameraProps) {
+export function GlobalCamera({ mode, modelUrl, onWave, onSkip, recessed = false, waveStartDelayMs = WAKE_SETTLE_MS }: GlobalCameraProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const landmarkerRef = useRef<HandLandmarker | null>(null);
-  const rafRef = useRef<number | null>(null);
-  const lastVideoTimeRef = useRef(-1);
-  const waveSamplesRef = useRef<Array<{ x: number; time: number }>>([]);
-  const waveReportedRef = useRef(false);
+  /**
+   * Monotonic request token. Every start/stop/unmount bumps it; an async
+   * getUserMedia that resolves with a stale token stops its own tracks instead
+   * of publishing a camera nobody asked for (toggle off while "Membuka kamera").
+   */
+  const requestRef = useRef(0);
+  const unmountedRef = useRef(false);
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
+  const onWaveRef = useRef(onWave);
+  onWaveRef.current = onWave;
+  const modelUrlRef = useRef(modelUrl);
+  modelUrlRef.current = modelUrl;
+  const trackerRef = useRef<WaveTracker | null>(null);
+  const handDelegateRef = useRef("");
   /** The one camera card node: ref'd so GSAP can morph it between layouts. */
   const cameraCardRef = useRef<HTMLDivElement>(null);
   /** Where the card was painted on the previous commit (morph start point). */
@@ -96,10 +116,75 @@ export function GlobalCamera({ mode, modelUrl, onWave, onSkip, recessed = false 
   const [previewLabel, setPreviewLabel] = useState("Camera Preview");
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [deviceId, setDeviceId] = useState("");
+  /** Short always-visible status line (failures, tracker backend). Empty = hidden. */
+  const [statusNote, setStatusNote] = useState("");
+  const [failed, setFailed] = useState(false);
+  const [delegate, setDelegate] = useState("");
+  /** Momo sleeps on the cover until the camera is on. (Later the wave wakes her; the wave detector does not wake her yet.) */
+  const [wake, setWake] = useState({ key: 0, startled: false, wave: 0 });
+  const awake = hasStream;
+  useEffect(() => {
+    if (!hasStream) return;
+    // Wakes startled (a hop and a flap), then settles and waves hello with one wing.
+    setWake((w) => ({ ...w, key: w.key + 1, startled: true }));
+    const t = setTimeout(() => setWake((w) => ({ ...w, startled: false, wave: w.wave + 1 })), 900);
+    return () => clearTimeout(t);
+  }, [hasStream]);
+
+  function getTracker(): WaveTracker {
+    if (!trackerRef.current) {
+      trackerRef.current = new WaveTracker({
+        getVideo: () => videoRef.current,
+        modelUrl: () => modelUrlRef.current,
+        onWave: () => {
+          setPreviewLabel("Lambaian terdeteksi. Momo siap!");
+          onWaveRef.current?.();
+        },
+        onStatus: (status) => {
+          if (unmountedRef.current) return;
+          if (status.kind === "ready") {
+            setDelegate(status.delegate);
+            setStatusNote(`Deteksi tangan siap · ${status.delegate}`);
+          } else {
+            // The preview keeps working; the student can still use "Lewati".
+            setStatusNote(status.message);
+          }
+        },
+      });
+    }
+    return trackerRef.current;
+  }
 
   useEffect(() => {
+    unmountedRef.current = false;
     void populateCameraChoices();
-    return () => stopStream();
+    // A real page unload / bfcache entry must release the camera too.
+    const onPageHide = () => stopStream();
+    window.addEventListener("pagehide", onPageHide);
+    // Hand-drawing status (published by DrawingSurface) and mode fallbacks.
+    const onHandStatus = (event: Event) => {
+      const status = (event as CustomEvent<HandInputStatus>).detail;
+      if (!status) return;
+      if (status.kind === "error") setStatusNote(status.message ?? messageFor("tracker-error"));
+      else if (status.kind === "tracking-lost") setStatusNote("Tangan tidak terlihat.");
+      else if (status.kind === "ready") {
+        if (status.delegate) handDelegateRef.current = status.delegate;
+        setStatusNote(handDelegateRef.current ? `Tangan siap · ${handDelegateRef.current}` : "");
+      } else if (status.kind === "idle") setStatusNote("");
+    };
+    const onMode = (event: Event) => {
+      const next = (event as CustomEvent<"pointer" | "hand">).detail;
+      if (next === "pointer" || next === "hand") setDrawingInputMode(next);
+    };
+    window.addEventListener(HAND_STATUS_EVENT, onHandStatus);
+    window.addEventListener(DRAWING_MODE_EVENT, onMode);
+    return () => {
+      unmountedRef.current = true;
+      window.removeEventListener("pagehide", onPageHide);
+      window.removeEventListener(HAND_STATUS_EVENT, onHandStatus);
+      window.removeEventListener(DRAWING_MODE_EVENT, onMode);
+      stopStream();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -107,7 +192,7 @@ export function GlobalCamera({ mode, modelUrl, onWave, onSkip, recessed = false 
   // as soon as we dock to the PIP so it cannot re-trigger navigation.
   useEffect(() => {
     if (mode === "cover") {
-      if (streamRef.current && !landmarkerRef.current) void startWaveTracking();
+      if (streamRef.current) void startWaveTracking();
       return;
     }
     stopWaveTracking();
@@ -152,20 +237,11 @@ export function GlobalCamera({ mode, modelUrl, onWave, onSkip, recessed = false 
   }
 
   function stopWaveTracking() {
-    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-    rafRef.current = null;
-    try {
-      landmarkerRef.current?.close();
-    } catch {
-      /* best effort */
-    }
-    landmarkerRef.current = null;
-    lastVideoTimeRef.current = -1;
-    waveSamplesRef.current = [];
-    waveReportedRef.current = false;
+    trackerRef.current?.stop();
   }
 
   function stopStream() {
+    requestRef.current++; // invalidate any getUserMedia still pending
     stopWaveTracking();
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
@@ -176,25 +252,59 @@ export function GlobalCamera({ mode, modelUrl, onWave, onSkip, recessed = false 
       // jsdom or unsupported media environment
     }
     if (videoRef.current) videoRef.current.srcObject = null;
+    if (!unmountedRef.current) {
+      setHasStream(false);
+      setDelegate("");
+    }
+  }
+
+  /** Failure path: back to "off" with a short reason, pointer/keyboard unaffected. */
+  function reportCameraFailure(message: string) {
     setHasStream(false);
+    setIsOn(false);
+    setFailed(true);
+    setToggleLabel("Nyalakan Kamera");
+    setPreviewLabel(message);
+    setStatusNote(message);
   }
 
   async function startCamera(selectedDevice = "") {
     stopStream();
+    const token = requestRef.current; // stopStream() just bumped it; this request owns the new value
+    const isStale = () => token !== requestRef.current || unmountedRef.current;
+    setFailed(false);
+    setStatusNote("");
     setPreviewLabel("Membuka kamera…");
     if (!navigator.mediaDevices?.getUserMedia) {
-      setPreviewLabel("Browser ini tidak mendukung akses kamera.");
+      // Keep the switch as the user left it (legacy contract); show why nothing happens.
+      setPreviewLabel(messageFor("unsupported"));
+      setStatusNote(messageFor("unsupported"));
       return;
     }
+    let stream: MediaStream | null = null;
     try {
       const videoConstraints: MediaTrackConstraints = selectedDevice
         ? { deviceId: { exact: selectedDevice } }
         : { facingMode: "user", aspectRatio: { ideal: 5 / 4 } };
-      const stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: false });
+      stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: false });
+      if (isStale()) {
+        // Toggled off / switched / unmounted while the permission prompt was open: do not keep the lens live.
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
       // Publish app-wide: the canvas hand driver reuses this exact stream
       // instead of opening a second camera (zero double camera).
       streamRef.current = stream;
       setSharedStream(stream);
+      // Camera unplugged / permission revoked mid-session: tear down and say why.
+      const live = stream;
+      stream.getVideoTracks().forEach((track) =>
+        track.addEventListener?.("ended", () => {
+          if (streamRef.current !== live) return;
+          stopStream();
+          reportCameraFailure(messageFor("camera-lost"));
+        }),
+      );
       const video = videoRef.current;
       if (!video) {
         // Card node must never be recreated, but guard anyway: keep the stream
@@ -204,71 +314,36 @@ export function GlobalCamera({ mode, modelUrl, onWave, onSkip, recessed = false 
       }
       video.srcObject = stream;
       await video.play().catch(() => undefined);
+      if (isStale()) return;
       setHasStream(true);
       const activeTrack = stream.getVideoTracks()[0];
-      const activeDeviceId = activeTrack?.getSettings().deviceId || selectedDevice;
+      const activeDeviceId = activeTrack?.getSettings?.().deviceId || selectedDevice;
       await populateCameraChoices(activeDeviceId);
-      setPreviewLabel("Menunggu lambaian tanganmu... 👋");
+      if (isStale()) return;
+      setPreviewLabel("Menunggu lambaian tanganmu...");
       if (mode === "cover") {
+        // Loading the hand model can stall the page for a moment. Let Momo wake up and wave first (smooth), then listen for the wave.
+        await new Promise((resolve) => setTimeout(resolve, waveStartDelayMs));
+        if (isStale() || modeRef.current !== "cover") return;
         await startWaveTracking();
       }
     } catch (error) {
-      setHasStream(false);
-      const name = error instanceof DOMException ? error.name : "";
-      if (name === "NotAllowedError") setPreviewLabel("Izin kamera belum diberikan.");
-      else if (name === "NotFoundError" || name === "OverconstrainedError")
-        setPreviewLabel("Kamera yang dipilih tidak tersedia.");
-      else setPreviewLabel("Kamera gagal dibuka. Coba pilih kamera lain.");
+      if (isStale()) {
+        stream?.getTracks().forEach((track) => track.stop());
+        return;
+      }
+      const reason = classifyCameraError(error);
+      reportCameraFailure(messageFor(reason === "model-error" || reason === "tracker-error" ? "camera-failed" : reason));
     }
   }
 
   async function startWaveTracking() {
-    try {
-      const vision = await FilesetResolver.forVisionTasks("/mediapipe/wasm");
-      landmarkerRef.current = await HandLandmarker.createFromOptions(vision, {
-        baseOptions: { modelAssetPath: modelUrl, delegate: "GPU" },
-        runningMode: "VIDEO",
-        numHands: 1,
-      });
-      waveSamplesRef.current = [];
-      waveReportedRef.current = false;
-      trackWaveFrame();
-    } catch {
-      // Camera preview remains usable when the optional wave detector cannot load.
-    }
-  }
-
-  function trackWaveFrame() {
-    const video = videoRef.current;
-    const landmarker = landmarkerRef.current;
-    if (!video || !landmarker || waveReportedRef.current) return;
-    rafRef.current = requestAnimationFrame(trackWaveFrame);
-    if (video.readyState < 2 || video.currentTime === lastVideoTimeRef.current) return;
-    lastVideoTimeRef.current = video.currentTime;
-    const result = landmarker.detectForVideo(video, performance.now());
-    const wrist = result.landmarks[0]?.[0];
-    if (!wrist) {
-      waveSamplesRef.current = [];
-      return;
-    }
-    const now = performance.now();
-    const samples = waveSamplesRef.current;
-    samples.push({ x: wrist.x, time: now });
-    while (samples.length && now - samples[0]!.time > 1300) samples.shift();
-    if (samples.length < 8) return;
-    const values = samples.map((sample) => sample.x);
-    const first = values[0]!;
-    const last = values[values.length - 1]!;
-    const span = Math.max(...values) - Math.min(...values);
-    if (span > 0.22 && Math.abs(last - first) < 0.18) {
-      waveReportedRef.current = true;
-      setPreviewLabel("Lambaian terdeteksi. Momo siap!");
-      onWave?.();
-    }
+    await getTracker().start();
   }
 
   async function setCameraState(nextOn: boolean) {
     setIsOn(nextOn);
+    if (nextOn) setFailed(false);
     if (nextOn) {
       setHeadline("Lambaikan Tanganmu!");
       setSubtext(
@@ -279,6 +354,8 @@ export function GlobalCamera({ mode, modelUrl, onWave, onSkip, recessed = false 
       return;
     }
     stopStream();
+    setFailed(false);
+    setStatusNote("");
     setHeadline("Jarimu Adalah Kuas Ajaibnya!");
     setSubtext(
       <>Di dunia buku gambar ini, kamu yang pegang kendali.<br />Cukup gerakin tangan di depan layar buat bantu Momo.<br />Tenang, kamera cuma baca jemarimu dan privasi wajah tetap aman.</>,
@@ -289,7 +366,7 @@ export function GlobalCamera({ mode, modelUrl, onWave, onSkip, recessed = false 
 
   return (
     <div
-      className={`global-camera-host camera-prototype-root mode-${mode}${recessed ? " is-recessed" : ""}`}
+      className={`global-camera-host camera-prototype-root mode-${mode}${recessed ? " is-recessed" : ""}${awake ? " has-momo-awake" : ""}`}
       data-testid="global-camera-widget"
     >
       {/*
@@ -310,7 +387,8 @@ export function GlobalCamera({ mode, modelUrl, onWave, onSkip, recessed = false 
           key="camera-core-card"
           ref={cameraCardRef}
           data-testid="camera-card"
-          className={`camera-widget-card toggle-card ${isOn ? "on" : ""} ${hasStream ? "has-stream" : ""}`}
+          className={`camera-widget-card toggle-card ${isOn ? "on" : ""} ${hasStream ? "has-stream" : ""} ${failed ? "failed" : ""}`}
+          data-delegate={delegate || undefined}
         >
           <div className="video-wrap">
             <video
@@ -354,10 +432,14 @@ export function GlobalCamera({ mode, modelUrl, onWave, onSkip, recessed = false 
             />
           </div>
 
+          <div className="camera-status" role="status" aria-live="polite" data-testid="camera-status">
+            {statusNote}
+          </div>
+
           {recessed && (
             <div className="global-camera-mode-switch" role="group" aria-label="Mode input gambar">
-              <button type="button" className="mode-btn" data-input-mode="pointer" aria-pressed={drawingInputMode === "pointer"} onClick={() => { setDrawingInputMode("pointer"); window.dispatchEvent(new CustomEvent("drawing-input-mode", { detail: "pointer" })); }}>Pointer</button>
-              <button type="button" className="mode-btn" data-input-mode="hand" aria-pressed={drawingInputMode === "hand"} onClick={() => { setDrawingInputMode("hand"); window.dispatchEvent(new CustomEvent("drawing-input-mode", { detail: "hand" })); }}>Tangan</button>
+              <button type="button" className="mode-btn" data-input-mode="pointer" aria-pressed={drawingInputMode === "pointer"} onClick={() => { setDrawingInputMode("pointer"); setStatusNote(""); window.dispatchEvent(new CustomEvent("drawing-input-mode", { detail: "pointer" })); }}>Pointer</button>
+              <button type="button" className="mode-btn" data-input-mode="hand" aria-pressed={drawingInputMode === "hand"} onClick={() => { setDrawingInputMode("hand"); setStatusNote(""); window.dispatchEvent(new CustomEvent("drawing-input-mode", { detail: "hand" })); }}>Tangan</button>
             </div>
           )}
           <div className="camera-select-wrap">
@@ -387,9 +469,32 @@ export function GlobalCamera({ mode, modelUrl, onWave, onSkip, recessed = false 
         </div>
 
         {mode === "cover" && (
+          <MomoGuide
+            placement="cover"
+            height={250}
+            sleeping={!awake}
+            step={awake ? { ...COVER_WAKE, mood: wake.startled ? "Kaget" : COVER_WAKE.mood } : null}
+            flapKey={awake ? wake.key : 0}
+            waveKey={awake ? wake.wave : 0}
+            startDelay={1400}
+            extrasFrom="last"
+            testId="cover-momo"
+          >
+            <button type="button" className="gesture-cue" data-testid="cover-continue" aria-label="Pilih nomor absen" onClick={onSkip}>
+              <span className="gesture-cue__hand">
+                <Icon name="thumb-up" size={30} stroke={2.2} />
+              </span>
+              <span className="gesture-cue__label">Pilih nomor absen</span>
+              <Icon name="arrow-right" size={18} stroke={3} />
+            </button>
+          </MomoGuide>
+        )}
+
+        {mode === "cover" && (
           <div className="cover-skip-block" style={{ marginTop: 20 }}>
-            <button type="button" className="camera-skip" onClick={onSkip}>
-              Lewati &amp; Pilih Nomor Absen →
+            <button type="button" className="camera-skip nb-btn nb-btn--ghost" onClick={onSkip}>
+              Lewati &amp; Pilih Nomor Absen
+              <Icon name="arrow-right" size={18} stroke={2.8} />
             </button>
           </div>
         )}

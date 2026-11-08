@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent, PointerEvent, WheelEvent } from "react";
+import { MomoGuide } from "../momo/MomoGuide";
+import { NUMBER_STEP, NUMBER_TAKEN_STEP } from "@/src/domain/guide-script";
 import "./StudentRulerSelector.css";
 
 const DEFAULT_MAX = 30;
@@ -261,13 +263,14 @@ export function StudentRulerSelector({
         {error && <p className="student-number-error" role="alert">{error}</p>}
         <button
           type="button"
-          className="student-number-confirm"
+          className="student-number-confirm nb-btn nb-btn--primary"
           disabled={!canConfirm}
           onClick={() => onConfirm(value, name.trim())}
         >
-          {busy ? "Menyimpan..." : "Lanjut ke Tutorial"} <span aria-hidden="true">→</span>
+          {busy ? "Menyimpan..." : "Lanjut ke Tutorial"}
         </button>
       </div>
+      <MomoGuide step={isTaken ? NUMBER_TAKEN_STEP : NUMBER_STEP} startDelay={700} testId="number-momo" />
     </section>
   );
 }

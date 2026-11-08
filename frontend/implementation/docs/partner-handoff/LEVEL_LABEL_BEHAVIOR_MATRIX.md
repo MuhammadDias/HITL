@@ -47,22 +47,20 @@ Matriks pemetaan antara vocabulary keluaran model classifier partner dan resolus
 | `tali` | [DRAFT / Subject to Partner Alignment] | `danger` | Bahaya jeratan / rintangan |
 | `papan` | [DRAFT / Subject to Partner Alignment] | `solid` | Menjadi pijakan stabil |
 | `tangga` | [DRAFT / Subject to Partner Alignment] | `solid` | Menjadi pijakan menuju target tinggi |
-| `ember` | [DRAFT / Subject to Partner Alignment] | `fallback` | Bukan item navigasi langsung; memicu fallback |
+| `ember` | [DRAFT / Subject to Partner Alignment] | `unresolved` (tidak ada di behaviorMap) | Tidak dipetakan; memakai fallback inert `objek-netral` |
 
 - Vocabulary Katalog Stage 3 (Prototype): `papan`, `tali`, `tangga`, `ember`
 - Mock Provider Stage Fixture: Stage 3 spread [0.55, 0.38, 0.07]
 
 ---
 
-## 4. Mekanisme Resolusi Fallback (Forgiving Design)
+## 4. Mekanisme Resolusi Fallback (sesuai `src/domain/behavior-resolver.ts`)
 
-Apabila model partner mengembalikan label yang tidak terdaftar dalam behaviorMap level aktif:
-1. Engine mencatat peringatan resolusi: `Label not in behaviorMap - fallback`.
-2. Resolusi diarahkan ke `kind: "fallback"` dengan `fallbackLabel = level.vocabulary[0]`.
-3. UI menampilkan indikator visual netral/peringatan tanpa merusak siklus permainan.
-4. Game tidak akan crash atau menolak response prediksi valid partner sekalipun label belum dipetakan.
-
----
+Apabila label akhir (yang diputuskan siswa) tidak ada di `behaviorMap` level aktif:
+1. `resolveBehavior()` mengembalikan `behavior: "unresolved"` dengan `resolution = { kind: "fallback", fallbackLabel: "objek-netral" }`. (Dokumen sebelumnya menulis `level.vocabulary[0]` dan peringatan konsol "Label not in behaviorMap"; keduanya TIDAK ada di kode.)
+2. Menurut komentar kode, objek menjadi platform placeholder inert agar siklus tetap berjalan tanpa jalan buntu. Tampilan visual spesifik untuk `unresolved` TIDAK diverifikasi di dokumen ini.
+3. Label `ember` pada Stage 3 ada di vocabulary tetapi tidak di `behaviorMap`, sehingga memakai jalur `unresolved` yang sama (bukan kasus khusus).
+4. Di lapisan prediksi, label di luar vocabulary level: default diteruskan apa adanya (nanti `unresolved` bila diterima siswa); opsi USULAN `NEXT_PUBLIC_PREDICTION_OOV_POLICY=reject` menolak respons sebagai `out-of-vocabulary` sehingga UI menawarkan coba lagi / gambar ulang. Lihat `docs/execution/PARTNER_CONTRACT_ACTUAL.md`.
 
 ## 5. Union Vocabulary Prototype (Referensi Author-Side, Bukan Kewajiban Partner)
 
@@ -71,3 +69,5 @@ Himpunan label prototype author-side saat ini:
 ["balok", "batu", "duri", "ember", "papan", "tali", "tangga"]
 ```
 *Catatan:* Daftar di atas adalah referensi awal dari author side. Partner dapat mengajukan perubahan, penambahan, atau pengurangan label pada rapat handoff 1 November.
+
+**VOCABULARY/EFFECTS → AUTHOR-SIDE FIXTURES (DRAFT); PARTNER MODEL VOCABULARY UNCONFIRMED**

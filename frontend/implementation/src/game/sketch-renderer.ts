@@ -5,6 +5,8 @@ export interface SketchRenderOptions {
   height: number;
   behavior: ObjectBehavior;
   label?: string;
+  /** Raster supersampling for crisp rendering: width/height attributes scale, viewBox stays in box units. Default 1. */
+  pixelScale?: number;
 }
 
 /**
@@ -23,6 +25,7 @@ const MAX_STROKES = 50;
 const MAX_POINTS_PER_STROKE = 200;
 const STROKE_WIDTH = 3;
 const DOT_RADIUS = 2;
+const MIN_BBOX = 0.02; // avoid blow-up when a drawing is a dot or a perfectly straight line
 
 function clampDimension(value: number): number {
   return Math.max(MIN_DIMENSION, Math.min(MAX_DIMENSION, Math.round(value)));
@@ -45,6 +48,7 @@ export function generateSketchSvg(
   const { width, height, behavior, label } = options;
   const safeW = clampDimension(width);
   const safeH = clampDimension(height);
+  const pixelScale = Math.max(1, Math.min(8, options.pixelScale ?? 1));
 
   // Determine palette based on behavior
   const bgFill =
@@ -79,28 +83,39 @@ export function generateSketchSvg(
 
     const strokePaths: string[] = [];
     const strokesToProcess = input.strokes.slice(0, MAX_STROKES);
-    
-    for (const stroke of strokesToProcess) {
-      const cleanStroke = sanitizeStroke(stroke);
-      if (cleanStroke.length === 0) continue;
-      
+    const cleaned = strokesToProcess.map(sanitizeStroke).filter((st) => st.length > 0);
+
+    // Uniform "contain" fit of the strokes' own bounding box: the student's drawing keeps its
+    // proportions (never squashed into the wide, thin collider box) and is centred in it.
+    let minX = 1, minY = 1, maxX = 0, maxY = 0;
+    for (const st of cleaned) for (const pt of st) {
+      if (pt.x < minX) minX = pt.x; if (pt.y < minY) minY = pt.y;
+      if (pt.x > maxX) maxX = pt.x; if (pt.y > maxY) maxY = pt.y;
+    }
+    const bw = Math.max(maxX - minX, MIN_BBOX), bh = Math.max(maxY - minY, MIN_BBOX);
+    const fit = Math.min(drawW / bw, drawH / bh);
+    const offX = padX + (drawW - bw * fit) / 2 - minX * fit;
+    const offY = padY + (drawH - bh * fit) / 2 - minY * fit;
+    const px = (x: number) => (offX + x * fit).toFixed(1);
+    const py = (y: number) => (offY + y * fit).toFixed(1);
+    const strokeWidth = Math.min(STROKE_WIDTH, Math.max(1.2, safeH * 0.1));
+
+    for (const cleanStroke of cleaned) {
       if (cleanStroke.length === 1) {
         // Single dot
         const pt = cleanStroke[0]!;
-        const cx = (padX + pt.x * drawW).toFixed(1);
-        const cy = (padY + pt.y * drawH).toFixed(1);
-        strokePaths.push(`<circle cx="${cx}" cy="${cy}" r="${DOT_RADIUS}" fill="#23211d" />`);
+        strokePaths.push(`<circle cx="${px(pt.x)}" cy="${py(pt.y)}" r="${DOT_RADIUS}" fill="#23211d" />`);
         continue;
       }
 
-      // Multi-point stroke: convert normalized [0,1] coordinates into pixel coordinates
-      let d = `M ${(padX + cleanStroke[0]!.x * drawW).toFixed(1)} ${(padY + cleanStroke[0]!.y * drawH).toFixed(1)}`;
+      // Multi-point stroke: normalized [0,1] -> uniformly scaled box coordinates
+      let d = `M ${px(cleanStroke[0]!.x)} ${py(cleanStroke[0]!.y)}`;
       for (let i = 1; i < cleanStroke.length; i++) {
         const pt = cleanStroke[i]!;
-        d += ` L ${(padX + pt.x * drawW).toFixed(1)} ${(padY + pt.y * drawH).toFixed(1)}`;
+        d += ` L ${px(pt.x)} ${py(pt.y)}`;
       }
       strokePaths.push(
-        `<path d="${d}" stroke="#23211d" stroke-width="${STROKE_WIDTH}" stroke-linecap="round" stroke-linejoin="round" fill="none" />`,
+        `<path d="${d}" stroke="#23211d" stroke-width="${strokeWidth.toFixed(2)}" stroke-linecap="round" stroke-linejoin="round" fill="none" />`,
       );
     }
     
@@ -120,7 +135,7 @@ export function generateSketchSvg(
   // Display label on badge
   const displayLabel = label ? label.slice(0, 16) : "";
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${safeW}" height="${safeH}" viewBox="0 0 ${safeW} ${safeH}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${safeW * pixelScale}" height="${safeH * pixelScale}" viewBox="0 0 ${safeW} ${safeH}">
   <defs>
     <filter id="paper-shadow" x="-5%" y="-5%" width="110%" height="115%">
       <feDropShadow dx="0" dy="1.5" stdDeviation="1" flood-color="#111" flood-opacity="0.18" />

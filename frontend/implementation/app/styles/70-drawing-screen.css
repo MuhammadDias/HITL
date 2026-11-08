@@ -1,0 +1,200 @@
+/* Page wrappers, drawing screen layout, SVG canvases and the Momo companion.
+   Part of the ordered globals.css split: keep the import order in app/globals.css. */
+/* Page wrappers reveal one document paper layer. */
+html, #screens, #screen-level-entry { background: transparent !important; }
+
+#app:has(#screen-level-entry) .app-header,
+#app:has(#screen-level-entry) .app-footer {
+  display: none !important;
+}
+
+
+/* ==========================================================================
+   DRAWING SCREEN LAYOUT & SVG CANVASES
+   ========================================================================== */
+html:has(#screen-drawing),
+body:has(#screen-drawing),
+#app:has(#screen-drawing),
+#app:has(#screen-drawing) #screens {
+  width: 100vw !important;
+  height: 100vh !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+#screen-drawing.drawing-screen-svg {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+#screen-drawing .draw-canvas {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 2 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  pointer-events: auto !important;
+  touch-action: none !important;
+}
+
+.drawing-top-bar {
+  position: absolute !important;
+  top: 22px !important;
+  left: 24px !important;
+  z-index: 5 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+  pointer-events: auto !important;
+}
+
+.drawing-actions-top {
+  display: flex !important;
+  gap: 8px !important;
+  padding: 9px !important;
+  border: 2px solid #111 !important;
+  border-radius: 14px !important;
+  background: #b9da8f !important;
+  box-shadow: 3px 3px 0 #111 !important;
+}
+
+.drawing-actions-top .btn {
+  min-height: 38px !important;
+  padding: 6px 11px !important;
+  border: 1.5px solid #111 !important;
+  border-radius: 9px !important;
+  box-shadow: 2px 2px 0 #111 !important;
+  white-space: nowrap !important;
+}
+
+.predict-choosable-box {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  max-width: 390px !important;
+  padding: 9px 11px !important;
+  border: 2px solid #111 !important;
+  border-radius: 12px !important;
+  background: #fff8e9 !important;
+  box-shadow: 3px 3px 0 #111 !important;
+}
+
+.predict-choosable-title {
+  color: #23211d !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+}
+
+.predict-choosable-candidates {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+}
+
+.predict-candidate {
+  display: inline-flex !important;
+  gap: 7px !important;
+  align-items: center !important;
+  padding: 6px 8px !important;
+  border: 1.5px solid #23211d !important;
+  border-radius: 8px !important;
+  background: #eff3db !important;
+  color: #23211d !important;
+  font: inherit !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  box-shadow: 1px 1px 0 #23211d !important;
+}
+
+.predict-candidate.is-selected,
+.predict-candidate[aria-pressed="true"] {
+  background: #ef7a37 !important;
+  color: white !important;
+  transform: translate(1px, 1px) !important;
+  box-shadow: none !important;
+}
+
+.predict-choosable-empty,
+.predict-chosen-label {
+  color: #555 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+
+.drawing-level-tag {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+
+
+
+.drawing-feedback {
+  position: absolute !important;
+  left: 50% !important;
+  bottom: 25px !important;
+  z-index: 4 !important;
+  transform: translateX(-50%) !important;
+}
+
+.drawing-feedback .feedback {
+  min-height: 0 !important;
+  padding: 0 !important;
+}
+
+.drawing-momo-companion {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: auto !important;
+  z-index: 101 !important;
+  pointer-events: none !important;
+  transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.drawing-momo-companion .momo {
+  align-items: flex-start !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawing-momo-companion {
+    transition: none !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .drawing-momo-companion {
+    display: none !important;
+  }
+}
+
+#screen-drawing[data-drawing-active="false"] .draw-canvas {
+  pointer-events: none !important;
+}
+
+.drawing-screen-svg .drawing-dock {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  #screen-drawing.drawing-screen-svg { min-height: 100vh !important; }
+  .drawing-top-bar { top: 10px !important; left: 10px !important; gap: 5px !important; }
+  .drawing-actions-top { gap: 4px !important; padding: 5px !important; }
+  .drawing-actions-top .btn { min-height: 34px !important; padding: 4px 7px !important; font-size: 12px !important; }
+}

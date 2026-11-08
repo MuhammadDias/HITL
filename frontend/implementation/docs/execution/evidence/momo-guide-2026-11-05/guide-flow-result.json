@@ -1,0 +1,75 @@
+{
+  "ok": true,
+  "checks": [
+    {
+      "name": "cover: Momo is asleep before the camera is on",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cover: no cue yet while she sleeps",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cover: camera on wakes Momo",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "cover: she greets",
+      "ok": true,
+      "detail": "Halo! Aku Momo."
+    },
+    {
+      "name": "cover: she points to the ruler and shows the next cue",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "ruler: Momo explains the ruler",
+      "ok": true,
+      "detail": "Geser penggarisnya sampai pas di nomor absenmu."
+    },
+    {
+      "name": "tutorial: Momo introduces the three cards",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "card 1: Momo asks to walk Thinman",
+      "ok": true,
+      "detail": "Coba geser tanganmu ke kanan dan kiri. Ajak Thinman jalan ke bendera."
+    },
+    {
+      "name": "card 1: Momo cheers when Thinman reaches the flag",
+      "ok": true,
+      "detail": "Mantap, Thinman sampai! Tekan Lanjut."
+    },
+    {
+      "name": "card 2: Momo explains solid and sharp",
+      "ok": true,
+      "detail": "Benda padat jadi pijakan. Benda tajam berbahaya."
+    },
+    {
+      "name": "card 3: Momo asks to draw and undo",
+      "ok": true,
+      "detail": "Sekarang coret kanvasnya, lalu coba mundur."
+    },
+    {
+      "name": "card 3: Momo says she is ready when both gestures are done",
+      "ok": true,
+      "detail": "Kamu sudah siap! Tekan Mulai Level 1."
+    },
+    {
+      "name": "levels: Momo points at Bab 1",
+      "ok": true,
+      "detail": "Pilih Bab 1, lalu tarik pitanya ke bawah."
+    },
+    {
+      "name": "no page errors",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

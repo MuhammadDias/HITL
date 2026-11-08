@@ -9,7 +9,7 @@
 - Historical/minimal source exists only in `archive/old-repo-snapshots/` (cold storage; not project truth).
 - Environment: Windows, Node v20.9.0, npm 10.1.0.
 - No selected Dola reference exists (`design/visual/references/dola/selected/` empty) → neutral replaceable placeholders required (PRD §9).
-- Governance reconciliation: PRD v1.0 is consistent with `CHANGELOG.md` active decisions (core loop, Redraw-as-recovery, Momo text-bubble-only, Solid/Danger, level progression, revoked items respected). No conflicts found.
+- Governance reconciliation: PRD v1.0 is consistent with `DECISIONS.md` active decisions (core loop, Redraw-as-recovery, Momo text-bubble-only, Solid/Danger, level progression, revoked items respected). No conflicts found.
 
 ## 2. Stack found / chosen
 

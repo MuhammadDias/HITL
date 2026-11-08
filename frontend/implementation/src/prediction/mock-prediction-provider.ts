@@ -2,6 +2,7 @@ import type { DrawingInput } from "../domain/types";
 import { PredictionError } from "./prediction-provider";
 import { validatePredictionResponse } from "./validation";
 import type { PredictionProvider } from "./prediction-provider";
+import { elapsedMs, makeProvenance, nowMs } from "./provenance";
 
 /**
  * ============================================================================
@@ -84,6 +85,7 @@ export class MockPredictionProvider implements PredictionProvider {
   }
 
   async predict(input: DrawingInput): Promise<ReturnType<typeof validatePredictionResponse>> {
+    const startedAt = nowMs();
     await delay(this.latencyMs);
 
     if (this.mode === "fail") {
@@ -100,13 +102,15 @@ export class MockPredictionProvider implements PredictionProvider {
     const seed = hashDrawingInput(input);
     const labels = pickDistinctLabels(this.options.vocabulary, seed);
     const [a, b, c] = STAGE_SPREADS[this.options.stage];
-    return validatePredictionResponse({
+    const result = validatePredictionResponse({
       candidates: [
         { label: labels[0]!, confidence: a },
         { label: labels[1]!, confidence: b },
         { label: labels[2]!, confidence: c },
       ],
     });
+    // Provenance is always "mock": downstream logs can never mistake DEV fixtures for model output.
+    return { ...result, provenance: makeProvenance("mock", elapsedMs(startedAt)) };
   }
 }
 

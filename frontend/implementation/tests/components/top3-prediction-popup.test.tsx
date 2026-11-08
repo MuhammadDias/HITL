@@ -86,8 +86,8 @@ describe("Top3PredictionPopup Component", () => {
     );
 
     expect(screen.getByTestId("popup-evaluating")).toBeDefined();
-    expect(screen.getByText("Tebakan Momo (Top-3)")).toBeDefined();
-    expect(screen.getByTestId("prediction-source").textContent).toContain("DEMO / PREDIKSI SIMULASI");
+    expect(screen.getByText("Tebakan Momo")).toBeDefined();
+    expect(screen.getByTestId("prediction-source").textContent).toContain("Demo: tebakan simulasi");
 
     // Check all 3 candidates
     expect(screen.getByText("jembatan")).toBeDefined();
@@ -101,7 +101,7 @@ describe("Top3PredictionPopup Component", () => {
     expect(screen.getByLabelText("Pilihan Utama")).toBeDefined();
   });
 
-  it("commits Accept decision when CTA is clicked", () => {
+  it("commits Accept decision on tap (no separate confirm button)", () => {
     const onAccept = vi.fn();
     render(
       <Top3PredictionPopup
@@ -117,12 +117,11 @@ describe("Top3PredictionPopup Component", () => {
       />
     );
 
-    fireEvent.click(screen.getByText(/Accept —/));
-    fireEvent.click(screen.getByTestId("btn-wujudkan-objek"));
+    fireEvent.click(screen.getByTestId("btn-accept"));
     expect(onAccept).toHaveBeenCalledTimes(1);
   });
 
-  it("commits Correct decision with chosen rank (2 or 3) only after CTA is clicked", () => {
+  it("commits Correct decision with the tapped rank (2 or 3) only", () => {
     const onCorrect = vi.fn();
     render(
       <Top3PredictionPopup
@@ -138,20 +137,16 @@ describe("Top3PredictionPopup Component", () => {
       />
     );
 
-    // Switch to Correct tab
-    fireEvent.click(screen.getByText(/Correct —/));
+    fireEvent.click(screen.getByTestId("btn-correct"));
+    expect(onCorrect).not.toHaveBeenCalled(); // opening the picker is not a decision
 
-    // Select candidate #2 (papan)
-    fireEvent.click(screen.getByText(/#2 ·/));
-    expect(onCorrect).not.toHaveBeenCalled();
-
-    // Commit via CTA
-    fireEvent.click(screen.getByTestId("btn-wujudkan-objek"));
+    // Tapping candidate #2 is the decision
+    fireEvent.click(document.querySelector('.correct-option[data-rank="2"]') as HTMLElement);
     expect(onCorrect).toHaveBeenCalledTimes(1);
     expect(onCorrect).toHaveBeenCalledWith(2);
   });
 
-  it("commits Override decision with chosen vocabulary label only after CTA is clicked", () => {
+  it("commits Override decision with the chosen vocabulary label only after confirming", () => {
     const onOverride = vi.fn();
     render(
       <Top3PredictionPopup
@@ -167,16 +162,12 @@ describe("Top3PredictionPopup Component", () => {
       />
     );
 
-    // Switch to Override tab
-    fireEvent.click(screen.getByText(/Override —/));
+    fireEvent.click(screen.getByTestId("btn-override"));
 
-    // Select vocabulary item
-    fireEvent.change(screen.getByLabelText("Label yang dimaksud:"), { target: { value: "tangga" } });
-    fireEvent.click(screen.getByTestId("override-confirm"));
+    // Choosing a label alone does not commit; confirming does
+    fireEvent.change(document.getElementById("override-select") as HTMLSelectElement, { target: { value: "tangga" } });
     expect(onOverride).not.toHaveBeenCalled();
-
-    // Commit via CTA
-    fireEvent.click(screen.getByTestId("btn-wujudkan-objek"));
+    fireEvent.click(screen.getByTestId("override-confirm"));
     expect(onOverride).toHaveBeenCalledTimes(1);
     expect(onOverride).toHaveBeenCalledWith("tangga");
   });

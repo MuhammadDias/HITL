@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import type { Top3PredictionPopupProps } from "./top3-popup-types";
 import { Top3Panel } from "./Top3Panel";
 import { DecisionPanel } from "../decision/DecisionPanel";
+import { Icon } from "../ui/Icon";
 
 /**
  * Top-3 HITL Prediction Floating Popup.
@@ -42,25 +43,30 @@ export function Top3PredictionPopup({
         aria-label="Kendala prediksi AI"
         data-testid="popup-error"
       >
-        <div className="popup-badge error-badge">KENDALA PREDIKSI</div>
-        <h3 className="popup-title">Gagal menebak gambar</h3>
+        <div className="popup-badge error-badge">
+          <Icon name="close" size={14} stroke={3.2} />
+          Kendala
+        </div>
+        <h3 className="popup-title">Momo belum bisa menebak</h3>
         <p className="popup-desc">{errorDetail || "Terjadi kesalahan pada layanan prediksi."}</p>
         <div className="popup-actions-error">
           <button
             type="button"
-            className="btn btn-primary"
+            className="nb-btn nb-btn--primary"
             onClick={onRetry}
             data-testid="btn-retry-prediction"
           >
-            Coba Lagi
+            <Icon name="again" size={19} />
+            Coba lagi
           </button>
           <button
             type="button"
-            className="btn btn-ghost"
+            className="nb-btn"
             onClick={onRedraw}
             data-testid="btn-redraw-error"
           >
-            Revisi Gambar
+            <Icon name="pencil" size={19} />
+            Revisi gambar
           </button>
         </div>
       </div>
@@ -76,17 +82,15 @@ export function Top3PredictionPopup({
       className="prediction-hitl-popup is-evaluating"
       role="dialog"
       aria-modal="false"
-      aria-label="Hasil Prediksi Top-3 dan Keputusan"
+      aria-label="Tiga tebakan Momo dan keputusanmu"
       data-testid="popup-evaluating"
     >
       <div className="popup-header">
-        <div className="popup-title-row">
-          <h3 className="popup-title">Tebakan Momo (Top-3)</h3>
-          <span className="popup-badge dev-badge" data-testid="prediction-source">
-            {predictionMode === "mock" ? "DEMO / PREDIKSI SIMULASI" : "PARTNER API"}
-          </span>
-        </div>
-        <p className="popup-lead">Confidence bukan jaminan benar. Kamu yang memutuskan.</p>
+        <h3 className="popup-title">Tebakan Momo</h3>
+        {/* Provenance stays machine-readable; the visible notice is the single demo tape of the shell. */}
+        <span className="visually-hidden" data-testid="prediction-source">
+          {predictionMode === "mock" ? "Demo: tebakan simulasi" : "Model partner"}
+        </span>
       </div>
 
       <div className="popup-candidates">

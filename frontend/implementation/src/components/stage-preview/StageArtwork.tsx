@@ -93,10 +93,10 @@ function SceneLayers({ scene, prefix, gameplay }: { scene: SceneIndex; prefix: s
         <use href={`#${prefix}-city`} />
         <StageAtmosphere scene={scene} prefix={prefix} />
         <g filter={`url(#${prefix}-rough)`} stroke="#1e2126" strokeWidth="2.4" strokeLinejoin="round">
-          <path d="M152 204l60-38l-20 160h-44z" fill="#e8d5a6" strokeWidth="1.6" />
-          <path d="M360 204l-40-36l24 158h20z" fill="#e8d5a6" strokeWidth="1.6" />
-          <path d="M0 204h152v121H0z" fill={`url(#${prefix}-dirt)`} />
-          <path d="M360 200h130v125H356z" fill={`url(#${prefix}-dirt)`} />
+          <path d="M152 204l60-38l-20 220h-44z" fill="#e8d5a6" strokeWidth="1.6" />
+          <path d="M360 204l-40-36l24 220h20z" fill="#e8d5a6" strokeWidth="1.6" />
+          <path d="M0 204h152v220H0z" fill={`url(#${prefix}-dirt)`} />
+          <path d="M360 200h130v220H356z" fill={`url(#${prefix}-dirt)`} />
           <path d="M0 196h154v15H0zM358 192h132v15H358z" fill="#7ea142" />
         </g>
         <g fill="none" stroke="#8a867b" strokeWidth="1.6" strokeLinecap="round">

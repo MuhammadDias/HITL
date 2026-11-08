@@ -1,0 +1,90 @@
+/* Neo-sketch kit, part 3: level select (bookmarks on the spiral binding). */
+#screen-level-entry[data-entry-hold] { position: absolute !important; inset: 0 !important; width: 100% !important; min-height: 0 !important; pointer-events: none; }
+
+.bm-page { position: relative; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 0 16px 20px; overflow: hidden; box-sizing: border-box; }
+.bm-brand { position: absolute; z-index: 3; top: 50px; left: 26px; display: flex; align-items: center; gap: 9px; font-size: 16px; font-weight: 900; color: var(--nb-ink); letter-spacing: -.01em; }
+.bm-brand__mark { width: 24px; height: 24px; border-radius: 7px; border: 2.5px solid var(--nb-ink); background: repeating-linear-gradient(45deg, var(--nb-ink), var(--nb-ink) 3px, transparent 3px, transparent 7px); }
+
+/* Spiral binding: wire rings clipped over the top edge. */
+.bm-binding { position: absolute; z-index: 4; top: -14px; left: 0; right: 0; height: 52px; display: flex; justify-content: space-evenly; pointer-events: none; }
+.bm-binding i { display: block; width: 13px; height: 46px; border: 2.5px solid var(--nb-ink); border-radius: 9px; background: linear-gradient(90deg, #fffdf6 0 35%, #d9d5c6 35% 100%); box-shadow: 2px 3px 0 rgba(17, 17, 17, .25); }
+
+.bm-shelf { position: relative; z-index: 2; display: flex; justify-content: center; align-items: flex-start; gap: clamp(26px, 5vw, 76px); margin-top: 34px; perspective: 1000px; }
+.bm-slot { position: relative; display: flex; flex-direction: column; align-items: center; }
+.bm-ring-clip { position: absolute; z-index: 5; top: -9px; left: 50%; width: 22px; height: 22px; transform: translateX(-50%); border-radius: 50%; background: #fffdf6; border: 2.5px solid var(--nb-ink); box-shadow: 2px 2px 0 var(--nb-ink); }
+
+.bm-ribbon.level-card {
+  position: relative; display: block; padding: 0; margin: 0; border: 0; border-radius: 0; background: none; box-shadow: none; overflow: visible;
+  color: var(--nb-ink); font: inherit; text-align: center; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; outline: none; transform-origin: 50% 0;
+}
+.bm-ribbon.level-card::before { content: none; }
+.bm-ribbon.level-card:hover { transform: none; box-shadow: none; }
+.bm-ribbon.is-pulling { cursor: grabbing; }
+.bm-ribbon:focus-visible .bm-outer--body { stroke: var(--nb-sky); stroke-width: 5; }
+.bm-body { position: relative; display: block; transform-origin: 50% 0; }
+.bm-shape { display: block; overflow: visible; }
+.bm-outer--shadow { fill: var(--nb-ink); }
+.bm-outer--body { fill: var(--nb-orange); stroke: var(--nb-ink); stroke-width: 3; stroke-linejoin: round; transition: fill .35s ease; }
+.bm-stitch { fill: none; stroke: rgba(255, 250, 240, .6); stroke-width: 2; stroke-dasharray: 6 6; stroke-linecap: round; }
+.bm-done .bm-outer--body { fill: #7fbf4a; }
+.bm-locked .bm-outer--body { fill: #cfc9bb; }
+.bm-locked .bm-stitch { stroke: rgba(17, 17, 17, .3); }
+.bm-locked .bm-ribbon.level-card { cursor: not-allowed; }
+
+.bm-content { position: absolute; left: 0; right: 0; top: 26px; display: flex; flex-direction: column; align-items: center; gap: 2px; pointer-events: none; }
+.bm-tag { font-size: 13px; font-weight: 900; letter-spacing: .18em; text-indent: .18em; color: var(--nb-ink); }
+.bm-number { font-size: clamp(64px, 12vh, 96px); font-weight: 900; line-height: .95; color: var(--nb-ink); }
+.bm-locked .bm-number { font-size: clamp(64px, 12vh, 96px); font-weight: 900; line-height: .95; color: var(--nb-ink); }
+.bm-name { max-width: calc(var(--bm-w, 170px) - 36px); margin-top: 4px; font-size: 14px; font-weight: 900; line-height: 1.15; color: var(--nb-ink); }
+.bm-badge { display: grid; place-items: center; width: 48px; height: 48px; margin-top: 12px; color: var(--nb-ink); background: var(--nb-paper); border: 2.5px solid var(--nb-ink); border-radius: 50%; }
+.bm-done .bm-badge { background: var(--nb-green); color: #fffaf0; }
+.bm-locked .bm-badge { background: #efeadb; }
+.bm-ribbon.is-armed .bm-badge { background: var(--nb-green); color: #fffaf0; }
+
+/* Pull ring sits in the swallowtail notch. */
+.bm-ring { position: absolute; z-index: 3; left: 50%; top: calc(var(--bm-len, 420px) - 62px); display: grid; place-items: center; width: 42px; height: 42px; transform: translateX(-50%); color: var(--nb-ink); background: var(--nb-paper); border: 3px solid var(--nb-ink); border-radius: 50%; box-shadow: 3px 3px 0 var(--nb-ink); transition: background-color .15s ease, color .15s ease; }
+.bm-ribbon.is-armed .bm-ring { background: var(--nb-green); color: #fffaf0; }
+.bm-locked .bm-ring { display: none; }
+
+/* "tek, tek": one pip per notch while pulling. */
+.bm-notches { position: absolute; right: -22px; top: 30px; display: flex; flex-direction: column; gap: 7px; opacity: 0; transition: opacity .15s ease; pointer-events: none; }
+.bm-ribbon.is-pulling .bm-notches { opacity: 1; }
+.bm-notches i { display: block; width: 14px; height: 7px; border: 2px solid var(--nb-ink); border-radius: 4px; background: var(--nb-paper); transition: background-color .1s ease, transform .15s var(--nb-ease-pop); }
+.bm-ribbon[data-notch="1"] .bm-notches i:nth-child(-n+1),
+.bm-ribbon[data-notch="2"] .bm-notches i:nth-child(-n+2),
+.bm-ribbon[data-notch="3"] .bm-notches i:nth-child(-n+3),
+.bm-ribbon[data-notch="4"] .bm-notches i:nth-child(-n+4) { background: var(--nb-orange); transform: scaleX(1.25); }
+
+/* The ribbon to pull next: it sways gently and a thumb shows the pull. */
+.bm-slot.is-next .bm-body { animation: bm-sway 3.4s ease-in-out infinite; }
+.bm-ribbon.is-pulling .bm-body, .bm-ribbon.is-armed .bm-body { animation: none; }
+@keyframes bm-sway { 0%, 100% { transform: rotate(-1.1deg); } 50% { transform: rotate(1.1deg); } }
+.bm-hint { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: 14px; color: var(--nb-ink); pointer-events: none; animation: bm-hint 1.7s ease-in-out infinite; }
+.bm-hint__hand { display: grid; place-items: center; width: 52px; height: 52px; background: var(--nb-paper); border: 2.5px solid var(--nb-ink); border-radius: 50%; }
+@keyframes bm-hint { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(10px); } }
+
+/* Unlock burst */
+.bm-slot.is-unlocking::after { content: ""; position: absolute; top: 120px; left: 50%; width: 30px; height: 30px; margin-left: -15px; border: 4px solid var(--nb-orange); border-radius: 50%; opacity: 0; animation: bm-burst .8s ease-out .05s; pointer-events: none; }
+@keyframes bm-burst { 0% { transform: scale(.4); opacity: 1; } 100% { transform: scale(7); opacity: 0; } }
+
+.bm-foot { position: relative; z-index: 2; margin-top: auto; padding-top: 14px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.bm-title { display: inline-flex; align-items: center; gap: 10px; margin: 0; font-size: 28px; font-weight: 900; letter-spacing: -.02em; color: var(--nb-ink); }
+.bm-title .nb-icon { color: var(--nb-orange-deep); }
+.bm-status { min-height: 34px; display: flex; align-items: center; }
+
+@media (max-width: 600px) {
+  .bm-brand { display: none; }
+  .bm-shelf { gap: 14px; }
+  .bm-number { font-size: clamp(64px, 12vh, 96px); font-weight: 900; line-height: .95; color: var(--nb-ink); }
+  .bm-name { font-size: 12px; }
+  .bm-badge { width: 38px; height: 38px; margin-top: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bm-slot.is-next .bm-body, .bm-hint, .bm-slot.is-unlocking::after { animation: none; }
+}
+
+/* The demo tape would sit on the spiral binding here: park it bottom-right on the level list. */
+#app:has(.bm-page) .demo-tape { top: auto; bottom: 16px; left: auto; right: 18px; transform: rotate(-1deg); }
+@media (max-width: 640px) { #app:has(.bm-page) .demo-tape { top: auto; bottom: 10px; left: auto; right: 8px; } }
+.route-notice { position: fixed; z-index: 1300; left: 20px; bottom: 120px; max-width: min(420px, calc(100vw - 40px)); }
+.drawing-flow-host[data-intro="true"] { visibility: hidden; }

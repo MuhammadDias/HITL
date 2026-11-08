@@ -1,0 +1,56 @@
+{
+  "1": [
+    {
+      "labels": [
+        "batu",
+        "tangga",
+        "balok"
+      ],
+      "decision": {
+        "type": "Correct",
+        "rank": 3,
+        "label": "balok"
+      }
+    }
+  ],
+  "2": [
+    {
+      "labels": [
+        "duri",
+        "tangga",
+        "balok"
+      ],
+      "decision": {
+        "type": "Correct",
+        "rank": 3,
+        "label": "balok"
+      }
+    },
+    {
+      "labels": [
+        "balok",
+        "papan",
+        "duri"
+      ],
+      "decision": {
+        "type": "Correct",
+        "rank": 2,
+        "label": "papan"
+      }
+    }
+  ],
+  "3": [
+    {
+      "labels": [
+        "ember",
+        "tangga",
+        "papan"
+      ],
+      "decision": {
+        "type": "Correct",
+        "rank": 3,
+        "label": "papan"
+      }
+    }
+  ]
+}

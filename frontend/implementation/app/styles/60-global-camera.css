@@ -1,0 +1,274 @@
+/* Persistent global camera widget (cover and floating mini PIP).
+   Part of the ordered globals.css split: keep the import order in app/globals.css. */
+/* ==========================================================================
+   GLOBAL CAMERA — POST-COVER UNIFIED MINI PIP (5:4 LANDSCAPE)
+   Applied identically across ALL post-cover routes:
+   /onboarding/number, /onboarding/card, /levels, /level1, /level2, /level3
+   ========================================================================== */
+.global-camera-host.mode-floating,
+.global-camera-host.mode-floating.camera-prototype-root,
+.global-camera-host.mode-floating.is-recessed,
+.global-camera-host.mode-floating.is-recessed.camera-prototype-root {
+  position: fixed !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: 24px !important;
+  left: 24px !important;
+  transform: none !important;
+  width: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  background: transparent !important;
+  z-index: 900 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: flex-end !important;
+  pointer-events: none !important;
+}
+
+@media (max-width: 640px) {
+  .global-camera-host.mode-floating,
+  .global-camera-host.mode-floating.camera-prototype-root,
+  .global-camera-host.mode-floating.is-recessed,
+  .global-camera-host.mode-floating.is-recessed.camera-prototype-root {
+    bottom: 12px !important;
+    left: 12px !important;
+  }
+}
+
+.global-camera-host.mode-floating::before,
+.global-camera-host.mode-floating.camera-prototype-root::before,
+.global-camera-host.mode-floating.is-recessed::before {
+  display: none !important;
+}
+
+.global-camera-host.mode-floating .content {
+  width: auto !important;
+  display: block !important;
+  text-align: left !important;
+}
+
+.global-camera-host.mode-floating .content > .eyebrow,
+.global-camera-host.mode-floating .content > .headline,
+.global-camera-host.mode-floating .content > .subtext,
+.global-camera-host.mode-floating .cover-skip-block {
+  display: none !important;
+}
+
+/* Card Frame: strictly 5:4 LANDSCAPE (150x120 desktop, 125x100 mobile) */
+.global-camera-host.mode-floating .camera-widget-card,
+.global-camera-host.mode-floating .camera-widget-card.on,
+.global-camera-host.mode-floating .toggle-card,
+.global-camera-host.mode-floating .toggle-card.on,
+.global-camera-host.mode-floating.is-recessed .camera-widget-card,
+.global-camera-host.mode-floating.is-recessed .camera-widget-card.on,
+.global-camera-host.mode-floating.is-recessed .toggle-card,
+.global-camera-host.mode-floating.is-recessed .toggle-card.on {
+  position: relative !important;
+  display: block !important;
+  box-sizing: border-box !important;
+  width: 150px !important;
+  height: 120px !important;
+  aspect-ratio: 5 / 4 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  overflow: hidden !important;
+  color: #fffaf0 !important;
+  background: #1e2126 !important;
+  border: 3px solid #d0622a !important;
+  border-radius: 14px !important;
+  box-shadow: 4px 4px 0 #111 !important;
+  pointer-events: auto !important;
+}
+
+@media (max-width: 640px) {
+  .global-camera-host.mode-floating .camera-widget-card,
+  .global-camera-host.mode-floating .camera-widget-card.on,
+  .global-camera-host.mode-floating .toggle-card,
+  .global-camera-host.mode-floating .toggle-card.on,
+  .global-camera-host.mode-floating.is-recessed .camera-widget-card,
+  .global-camera-host.mode-floating.is-recessed .camera-widget-card.on,
+  .global-camera-host.mode-floating.is-recessed .toggle-card,
+  .global-camera-host.mode-floating.is-recessed .toggle-card.on {
+    width: 125px !important;
+    height: 100px !important;
+    aspect-ratio: 5 / 4 !important;
+  }
+}
+
+/* ZERO SENSOR BANNER OR WATERMARK: No ::before or ::after banners blocking video */
+.global-camera-host.mode-floating .toggle-card::before,
+.global-camera-host.mode-floating .toggle-card::after,
+.global-camera-host.mode-floating .camera-widget-card::before,
+.global-camera-host.mode-floating .camera-widget-card::after,
+.global-camera-host.mode-floating.is-recessed .toggle-card::before,
+.global-camera-host.mode-floating.is-recessed .toggle-card::after,
+.global-camera-host.mode-floating.is-recessed .camera-widget-card::before,
+.global-camera-host.mode-floating.is-recessed .camera-widget-card::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Video Wrapper fills 100% of the card */
+.global-camera-host.mode-floating .video-wrap,
+.global-camera-host.mode-floating .toggle-card .video-wrap,
+.global-camera-host.mode-floating .toggle-card.on .video-wrap,
+.global-camera-host.mode-floating .camera-widget-card .video-wrap,
+.global-camera-host.mode-floating .camera-widget-card.on .video-wrap,
+.global-camera-host.mode-floating.is-recessed .video-wrap,
+.global-camera-host.mode-floating.is-recessed .toggle-card .video-wrap,
+.global-camera-host.mode-floating.is-recessed .toggle-card.on .video-wrap,
+.global-camera-host.mode-floating.is-recessed .camera-widget-card .video-wrap,
+.global-camera-host.mode-floating.is-recessed .camera-widget-card.on .video-wrap {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-radius: inherit !important;
+  background: #1e2126 !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transform: none !important;
+  aspect-ratio: 5 / 4 !important;
+}
+
+/* Video element fills 100% frame without distortion or cropping */
+.global-camera-host.mode-floating .camera-video,
+.global-camera-host.mode-floating.is-recessed .camera-video {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  aspect-ratio: 5 / 4 !important;
+  object-fit: cover !important;
+  transform: scaleX(-1) !important;
+  border-radius: inherit !important;
+  border: 0 !important;
+}
+
+/* Placeholder when stream is off */
+.global-camera-host.mode-floating .video-inner,
+.global-camera-host.mode-floating .toggle-card .video-inner,
+.global-camera-host.mode-floating.is-recessed .video-inner {
+  position: absolute !important;
+  inset: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  opacity: 1 !important;
+  background: #1e2126 !important;
+  z-index: 1 !important;
+}
+
+.global-camera-host.mode-floating .toggle-card.has-stream .video-inner,
+.global-camera-host.mode-floating .toggle-card.on.has-stream .video-inner,
+.global-camera-host.mode-floating.is-recessed .toggle-card.has-stream .video-inner,
+.global-camera-host.mode-floating.is-recessed .toggle-card.on.has-stream .video-inner {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.global-camera-host.mode-floating .video-inner .label,
+.global-camera-host.mode-floating.is-recessed .video-inner .label {
+  display: none !important;
+}
+
+.global-camera-host.mode-floating .video-inner svg,
+.global-camera-host.mode-floating.is-recessed .video-inner svg {
+  width: 24px !important;
+  height: 24px !important;
+  opacity: 0.6 !important;
+  color: #fffaf0 !important;
+}
+
+/* Compact REC indicator at top right */
+.global-camera-host.mode-floating .rec-dot,
+.global-camera-host.mode-floating.is-recessed .rec-dot {
+  position: absolute !important;
+  top: 6px !important;
+  right: 6px !important;
+  left: auto !important;
+  bottom: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  font-size: 7.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  color: #ff4d4d !important;
+  background: rgba(0, 0, 0, 0.45) !important;
+  padding: 1.5px 4px !important;
+  border-radius: 4px !important;
+  opacity: 0 !important;
+  z-index: 10 !important;
+}
+
+.global-camera-host.mode-floating .rec-dot::before,
+.global-camera-host.mode-floating.is-recessed .rec-dot::before {
+  content: "" !important;
+  display: inline-block !important;
+  width: 5px !important;
+  height: 5px !important;
+  border-radius: 50% !important;
+  background: #ff4d4d !important;
+  box-shadow: 0 0 6px #ff4d4d !important;
+}
+
+.global-camera-host.mode-floating .toggle-card.has-stream .rec-dot,
+.global-camera-host.mode-floating.is-recessed .toggle-card.has-stream .rec-dot {
+  opacity: 1 !important;
+}
+
+/* Toggle switch docks cleanly at bottom right */
+.global-camera-host.mode-floating .toggle-row,
+.global-camera-host.mode-floating.is-recessed .toggle-row {
+  position: absolute !important;
+  right: 4px !important;
+  bottom: 4px !important;
+  left: auto !important;
+  top: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  z-index: 10 !important;
+}
+
+.global-camera-host.mode-floating .toggle-label,
+.global-camera-host.mode-floating.is-recessed .toggle-label {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.global-camera-host.mode-floating .toggle-switch,
+.global-camera-host.mode-floating.is-recessed .toggle-switch {
+  transform: scale(0.72) !important;
+  transform-origin: bottom right !important;
+}
+
+/* Hide selector dropdown and mode switch in floating PIP */
+.global-camera-host.mode-floating .camera-select-wrap,
+.global-camera-host.mode-floating.is-recessed .camera-select-wrap,
+.global-camera-host.mode-floating .global-camera-mode-switch,
+.global-camera-host.mode-floating.is-recessed .global-camera-mode-switch {
+  display: none !important;
+}
+

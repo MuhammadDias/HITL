@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { LevelRibbonBookmark } from "@/src/components/level/LevelRibbonBookmark";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { LevelRibbonBookmark, NOTCHES_TO_ARM, NOTCH_PX } from "@/src/components/level/LevelRibbonBookmark";
 import {
   PULL_TRIGGER_PX,
   playPullDownTransition,
@@ -36,12 +36,14 @@ function pull(card: HTMLElement, fromY: number, toY: number) {
     card.dispatchEvent(pointerEvent("pointerdown", fromY));
   });
   act(() => {
-    window.dispatchEvent(pointerEvent("pointermove", toY));
+    card.dispatchEvent(pointerEvent("pointermove", toY));
   });
   act(() => {
-    window.dispatchEvent(pointerEvent("pointerup", toY));
+    card.dispatchEvent(pointerEvent("pointerup", toY));
   });
 }
+
+const settle = (ms: number) => act(() => new Promise<void>((resolve) => setTimeout(resolve, ms)));
 
 describe("pull release rule", () => {
   it("snaps back below the 150px trigger and activates at/above it", () => {
@@ -59,37 +61,39 @@ describe("pull release rule", () => {
   });
 });
 
-describe("Level 1 pointer drag", () => {
-  it("pull shorter than 150px does not activate the level", () => {
+describe("Level ribbon pull", () => {
+  it(`a pull shorter than ${NOTCHES_TO_ARM} notches does not start the level`, async () => {
     const onSelect = vi.fn();
     render(<LevelRibbonBookmark levels={LEVELS} onSelectLevel={onSelect} />);
     const card = screen.getByTestId("level-card-1");
 
-    pull(card, 200, 260); // 60px
+    pull(card, 200, 260); // 60px, one notch
 
+    await settle(900);
     expect(onSelect).not.toHaveBeenCalled();
-    // Trailing synthetic click is suppressed after the pull release.
+    // The trailing synthetic click after a drag is suppressed.
     fireEvent.click(card);
+    await settle(100);
     expect(onSelect).not.toHaveBeenCalled();
   });
 
-  it("pull of 150px or more activates Level 1 exactly once", () => {
+  it("a full pull starts Level 1 exactly once, after the snap and sway", async () => {
     const onSelect = vi.fn();
     render(<LevelRibbonBookmark levels={LEVELS} onSelectLevel={onSelect} />);
     const card = screen.getByTestId("level-card-1");
 
-    pull(card, 200, 350); // exactly 150px
-
-    expect(onSelect).toHaveBeenCalledTimes(1);
+    pull(card, 200, 200 + NOTCHES_TO_ARM * NOTCH_PX + 20);
+    // The level does not start at release: the ribbon snaps taut and sways first.
+    expect(onSelect).not.toHaveBeenCalled();
+    await waitFor(() => expect(onSelect).toHaveBeenCalledTimes(1), { timeout: 3000 });
     expect(onSelect).toHaveBeenCalledWith(LEVELS[0]);
 
-    // The drag already decided on pointerup — a follow-up click must not
-    // fire the level a second time.
     fireEvent.click(card);
+    await settle(200);
     expect(onSelect).toHaveBeenCalledTimes(1);
   });
 
-  it("marks the ribbon as pulling while the drag is live", () => {
+  it("shows the pulling state and counts notches while the drag is live", () => {
     const onSelect = vi.fn();
     render(<LevelRibbonBookmark levels={LEVELS} onSelectLevel={onSelect} />);
     const card = screen.getByTestId("level-card-1");
@@ -97,32 +101,31 @@ describe("Level 1 pointer drag", () => {
     act(() => {
       card.dispatchEvent(pointerEvent("pointerdown", 100));
     });
-    expect(card.className).toContain("is-dragging");
+    expect(card.className).toContain("is-pulling");
 
     act(() => {
-      window.dispatchEvent(pointerEvent("pointermove", 180));
+      card.dispatchEvent(pointerEvent("pointermove", 100 + NOTCH_PX * 2 + 5));
     });
-    expect(card.className).toContain("is-dragging");
+    expect(card.dataset.notch).toBe("2");
 
     act(() => {
-      window.dispatchEvent(pointerEvent("pointercancel", 180));
+      card.dispatchEvent(pointerEvent("pointercancel", 180));
     });
+    expect(card.className).not.toContain("is-pulling");
     expect(onSelect).not.toHaveBeenCalled();
   });
 
-  it("a plain tap (no movement) still activates Level 1", () => {
+  it("a plain click pulls the ribbon by itself and starts Level 1", async () => {
     const onSelect = vi.fn();
     render(<LevelRibbonBookmark levels={LEVELS} onSelectLevel={onSelect} />);
-    const card = screen.getByTestId("level-card-1");
 
-    pull(card, 200, 200); // 0px
-    fireEvent.click(card);
+    fireEvent.click(screen.getByTestId("level-card-1"));
 
-    expect(onSelect).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(onSelect).toHaveBeenCalledTimes(1), { timeout: 3000 });
     expect(onSelect).toHaveBeenCalledWith(LEVELS[0]);
   });
 
-  it("locked ribbons keep plain click semantics (no drag session)", () => {
+  it("locked ribbons never start and say what to finish first", () => {
     const onSelect = vi.fn();
     render(<LevelRibbonBookmark levels={LEVELS} onSelectLevel={onSelect} />);
     const card = screen.getByTestId("level-card-2");
@@ -131,7 +134,7 @@ describe("Level 1 pointer drag", () => {
     fireEvent.click(card);
 
     expect(onSelect).not.toHaveBeenCalled();
-    expect(screen.getByRole("status").textContent).toContain("Level 2 masih terkunci");
+    expect(screen.getByRole("status").textContent).toContain("Selesaikan Bab 1 dulu");
   });
 });
 

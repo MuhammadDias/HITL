@@ -1,3 +1,4 @@
+// LEGACY (not maintained): written for the old "Wujudkan Objek" / full-screen summary flow. The maintained suites are normal-journey, recovery-paths, hand-control-probe and mediapipe-probe.
 /**
  * TASK 14 — Full author-side browser E2E (Edge headless via playwright-core).
  *
@@ -22,7 +23,7 @@ const PKG_ROOT = fileURLToPath(new URL("..", import.meta.url));
 const PORT = Number(process.env.E2E_PORT ?? 3344);
 const BASE = `http://localhost:${PORT}`;
 const LINUX_PLAYWRIGHT_PATH = "/home/agentops/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome";
-const EDGE_PATH = process.env.EDGE_PATH ?? (fs.existsSync(LINUX_PLAYWRIGHT_PATH) ? LINUX_PLAYWRIGHT_PATH : "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe");
+const EDGE_PATH = process.env.EDGE_PATH ?? process.env.CHROMIUM_PATH ?? (fs.existsSync("/opt/pw-browsers/chromium") ? "/opt/pw-browsers/chromium" : fs.existsSync(LINUX_PLAYWRIGHT_PATH) ? LINUX_PLAYWRIGHT_PATH : "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe");
 const HEADLESS = process.env.E2E_HEADLESS !== "0";
 
 let failures = 0;
@@ -103,6 +104,9 @@ try {
     const canvas = page.locator("[data-testid=draw-canvas]");
     await canvas.waitFor({ state: "visible", timeout: 10000 });
     await page.waitForTimeout(400);
+    // Mission Briefing modal (added after this suite was written) overlays the canvas on first level entry.
+    const dlg = page.locator("[role=dialog][aria-modal=true]");
+    if (await dlg.waitFor({ state: "visible", timeout: 2500 }).then(() => true, () => false)) { await dlg.getByRole("button", { name: /mulai|lewati/i }).first().click(); await dlg.waitFor({ state: "hidden", timeout: 5000 }).catch(() => {}); }
 
     // Guaranteed stroke injection via test hooks
     await page.evaluate(() => {
@@ -139,7 +143,7 @@ try {
   }
   async function confirmPlacementAndPlay({ x = 340, y = 260 } = {}) {
     await page.waitForTimeout(300);
-    const wujudkanBtn = page.locator("[data-testid=btn-wujudkan-objek]");
+    const wujudkanBtn = page.locator("[data-testid=btn-enter-world]");
     if (await wujudkanBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
       await wujudkanBtn.click({ force: true }).catch(() => {});
     }
@@ -229,7 +233,7 @@ try {
   check("05 Top-3 exactly 3 items", (await page.locator(".top3-item").count()) === 3);
 
   // Select Accept (rank 1) to enable Wujudkan Objek button
-  await page.getByRole("button", { name: /accept — terima peringkat 1/i }).click();
+  await page.getByTestId("btn-accept").click();
   await confirmPlacementAndPlay({ x: 340, y: 280 });
   await page.locator("[data-testid=outcome-overlay]").waitFor({ timeout: 20000 });
   const cState = await page.evaluate(() => {
@@ -398,6 +402,8 @@ try {
   check("hand landmark injection produces stroke activity (TASK 05 automated part)", handOk);
 
   /* ---------- Keyboard smoke ---------- */
+  const dismissMission = async () => { const d = page.locator("[role=dialog][aria-modal=true]"); if (await d.waitFor({ state: "visible", timeout: 2500 }).then(() => true, () => false)) { await d.getByRole("button", { name: /mulai|lewati/i }).first().click(); await d.waitFor({ state: "hidden", timeout: 5000 }).catch(() => {}); } };
+  await dismissMission();
   await page.keyboard.press("Escape").catch(() => undefined);
   const exitToLevels = page.locator("button.drawing-exit, button:has-text('Keluar Level'), [data-testid=btn-back-to-levels]").first();
   if (await exitToLevels.isVisible({ timeout: 5000 }).catch(() => false)) await exitToLevels.click();
@@ -406,6 +412,7 @@ try {
   await page.keyboard.press("Enter");
   await page.waitForTimeout(1000);
   const kbOk = await page.locator("[data-testid=draw-canvas]").isVisible();
+  await dismissMission();
   const exitAgain = page.locator("button.drawing-exit, button:has-text('Keluar Level'), [data-testid=btn-back-to-levels]").first();
   if (await exitAgain.isVisible({ timeout: 5000 }).catch(() => false)) await exitAgain.click();
   check("18 keyboard smoke: focus + Enter opens level", kbOk);

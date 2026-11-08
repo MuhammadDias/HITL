@@ -5,7 +5,7 @@
 ## Governance re-check
 
 All governance/context files re-verified unchanged since this session's full reads
-(mtimes 2026-08-22): `INSTRUCTION.md`, `SOURCE_OF_TRUTH.md`, `CHANGELOG.md`, `AGENTS.md`,
+(mtimes 2026-08-22): `SOUL.md`, `SOURCE_OF_TRUTH.md`, `CHANGELOG.md`, `AGENTS.md`,
 `PROJECT_MEMORY.md`, `WORKING_CONTEXT.md`, team docs, PRD v1.0, TASK-001 packet,
 TASK-001 report, IMPLEMENTATION_AUDIT.md.
 `design/visual/references/dola/selected/` → **empty** ⇒ neutral placeholder UI direction (no fake final art).

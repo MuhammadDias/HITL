@@ -12,10 +12,15 @@ import { validatePredictionResponse } from "./validation";
  * prototype assumptions for initial scaffolding and testing.
  * They are NOT rigid constraints on the partner classifier model or backend.
  *
- * The validator is designed to be forgiving:
- * 1. Labels: Accepts ANY non-empty string. Not constrained to 7 prototype labels.
- * 2. Confidence: Accepts any number in [0.0, 1.0]. Does NOT enforce sum=1.0.
- * 3. Fallback: Unknown labels resolve gracefully to gameplay fallback.
+ * Validator rules (see validation.ts; ACTUAL behaviour documented in
+ * docs/execution/PARTNER_CONTRACT_ACTUAL.md):
+ * 1. Exactly 3 candidates, sorted by confidence descending (ties allowed), labels unique.
+ * 2. Labels: any non-empty string (trimmed). With a level vocabulary supplied, labels are
+ *    matched case-insensitively and returned in canonical spelling; labels outside it are
+ *    kept ("allow", default) or rejected as "out-of-vocabulary" (PROPOSED opt-in).
+ * 3. Confidence: number in [0.0, 1.0]. Does NOT enforce sum=1.0.
+ * 4. Unknown labels that survive resolve to the inert "unresolved" gameplay fallback
+ *    (behavior-resolver.ts -> fallbackLabel "objek-netral").
  */
 
 /**
@@ -24,6 +29,13 @@ import { validatePredictionResponse } from "./validation";
  */
 export interface PartnerRequestPayload {
   drawing: DrawingInput;
+  /**
+   * PROPOSED additive optional fields — only sent when the adapter's
+   * `sendContext` flag is ON (default OFF). Partner has NOT agreed to them.
+   */
+  levelId?: string;
+  attemptId?: string;
+  contractVersion?: string;
 }
 
 /**
@@ -36,6 +48,8 @@ export interface PartnerResponsePayload {
     { label: string; confidence: number },
     { label: string; confidence: number }
   ];
+  /** PROPOSED optional model version (alternative to the X-Model-Version response header). */
+  modelVersion?: string;
 }
 
 /**
@@ -191,3 +205,13 @@ export function isMockProvider(provider: unknown): provider is { getMode(): stri
  * Partner should echo this in response header or body when agreed.
  */
 export const CONTRACT_VERSION = "1.0.0-draft";
+
+/** PROPOSED request header carrying CONTRACT_VERSION (sent only when `sendContext` is ON). */
+export const CONTRACT_VERSION_HEADER = "X-Contract-Version";
+
+/**
+ * PROPOSED response header carrying the partner model version. For a
+ * cross-origin response the partner must list it in Access-Control-Expose-Headers,
+ * otherwise browsers hide it from JavaScript.
+ */
+export const MODEL_VERSION_HEADER = "X-Model-Version";

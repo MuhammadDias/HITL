@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FilesetResolver, HandLandmarker } from "@mediapipe/tasks-vision";
+import { WaveTracker } from "../../camera/wave-tracker";
+import { classifyCameraError, messageFor } from "../../camera/messages";
 
 interface CameraIntroProps {
   modelUrl: string;
@@ -12,11 +13,14 @@ interface CameraIntroProps {
 export function CameraIntro({ modelUrl, onWave, onSkip }: CameraIntroProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const landmarkerRef = useRef<HandLandmarker | null>(null);
-  const rafRef = useRef<number | null>(null);
-  const lastVideoTimeRef = useRef(-1);
-  const waveSamplesRef = useRef<Array<{ x: number; time: number }>>([]);
-  const waveReportedRef = useRef(false);
+  /** Bumped by every start/stop/unmount so a late getUserMedia cannot resurrect a stopped camera. */
+  const requestRef = useRef(0);
+  const unmountedRef = useRef(false);
+  const onWaveRef = useRef(onWave);
+  onWaveRef.current = onWave;
+  const modelUrlRef = useRef(modelUrl);
+  modelUrlRef.current = modelUrl;
+  const trackerRef = useRef<WaveTracker | null>(null);
   const [isOn, setIsOn] = useState(false);
   const [hasStream, setHasStream] = useState(false);
   const [headline, setHeadline] = useState("Jarimu Adalah Kuas Ajaibnya!");
@@ -29,9 +33,33 @@ export function CameraIntro({ modelUrl, onWave, onSkip }: CameraIntroProps) {
   const [deviceId, setDeviceId] = useState("");
 
   useEffect(() => {
+    unmountedRef.current = false;
     void populateCameraChoices();
-    return () => stopStream();
+    return () => {
+      unmountedRef.current = true;
+      stopStream();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  function getTracker(): WaveTracker {
+    if (!trackerRef.current) {
+      trackerRef.current = new WaveTracker({
+        getVideo: () => videoRef.current,
+        modelUrl: () => modelUrlRef.current,
+        onWave: () => {
+          setPreviewLabel("Lambaian terdeteksi. Momo siap!");
+          onWaveRef.current();
+        },
+        onStatus: (status) => {
+          if (unmountedRef.current) return;
+          if (status.kind === "ready") setPreviewLabel(`Menunggu lambaian tanganmu... (${status.delegate})`);
+          else setPreviewLabel(status.message);
+        },
+      });
+    }
+    return trackerRef.current;
+  }
 
   async function populateCameraChoices(preferredId = "") {
     if (!navigator.mediaDevices?.enumerateDevices) return;
@@ -46,91 +74,54 @@ export function CameraIntro({ modelUrl, onWave, onSkip }: CameraIntroProps) {
   }
 
   function stopStream() {
-    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-    rafRef.current = null;
+    requestRef.current++;
+    trackerRef.current?.stop();
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
-    videoRef.current?.pause();
+    try { videoRef.current?.pause(); } catch { /* jsdom */ }
     if (videoRef.current) videoRef.current.srcObject = null;
-    try { landmarkerRef.current?.close(); } catch { /* best effort */ }
-    landmarkerRef.current = null;
-    setHasStream(false);
+    if (!unmountedRef.current) setHasStream(false);
   }
 
   async function startCamera(selectedDevice = "") {
     stopStream();
+    const token = requestRef.current;
+    const isStale = () => token !== requestRef.current || unmountedRef.current;
     setPreviewLabel("Membuka kamera…");
     if (!navigator.mediaDevices?.getUserMedia) {
-      setPreviewLabel("Browser ini tidak mendukung akses kamera.");
+      setPreviewLabel(messageFor("unsupported"));
       return;
     }
+    let stream: MediaStream | null = null;
     try {
       const videoConstraints: MediaTrackConstraints = selectedDevice
         ? { deviceId: { exact: selectedDevice } }
         : { facingMode: "user" };
-      const stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: false });
+      stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: false });
       const video = videoRef.current;
-      if (!video) return;
+      if (isStale() || !video) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
       streamRef.current = stream;
       video.srcObject = stream;
       await video.play().catch(() => undefined);
+      if (isStale()) return;
       setHasStream(true);
       const activeTrack = stream.getVideoTracks()[0];
-      const activeDeviceId = activeTrack?.getSettings().deviceId || selectedDevice;
+      const activeDeviceId = activeTrack?.getSettings?.().deviceId || selectedDevice;
       await populateCameraChoices(activeDeviceId);
-      setPreviewLabel("Menunggu lambaian tanganmu... 👋");
-      await startWaveTracking();
+      if (isStale()) return;
+      setPreviewLabel("Menunggu lambaian tanganmu...");
+      await getTracker().start();
     } catch (error) {
+      if (isStale()) {
+        stream?.getTracks().forEach((track) => track.stop());
+        return;
+      }
       setHasStream(false);
-      const name = error instanceof DOMException ? error.name : "";
-      if (name === "NotAllowedError") setPreviewLabel("Izin kamera belum diberikan.");
-      else if (name === "NotFoundError" || name === "OverconstrainedError") setPreviewLabel("Kamera yang dipilih tidak tersedia.");
-      else setPreviewLabel("Kamera gagal dibuka. Coba pilih kamera lain.");
-    }
-  }
-
-  async function startWaveTracking() {
-    try {
-      const vision = await FilesetResolver.forVisionTasks("/mediapipe/wasm");
-      landmarkerRef.current = await HandLandmarker.createFromOptions(vision, {
-        baseOptions: { modelAssetPath: modelUrl, delegate: "GPU" },
-        runningMode: "VIDEO",
-        numHands: 1,
-      });
-      waveSamplesRef.current = [];
-      waveReportedRef.current = false;
-      trackWaveFrame();
-    } catch {
-      // Camera preview remains usable when the optional wave detector cannot load.
-    }
-  }
-
-  function trackWaveFrame() {
-    const video = videoRef.current;
-    const landmarker = landmarkerRef.current;
-    if (!video || !landmarker || waveReportedRef.current) return;
-    rafRef.current = requestAnimationFrame(trackWaveFrame);
-    if (video.readyState < 2 || video.currentTime === lastVideoTimeRef.current) return;
-    lastVideoTimeRef.current = video.currentTime;
-    const result = landmarker.detectForVideo(video, performance.now());
-    const wrist = result.landmarks[0]?.[0];
-    if (!wrist) {
-      waveSamplesRef.current = [];
-      return;
-    }
-    const now = performance.now();
-    const samples = waveSamplesRef.current;
-    samples.push({ x: wrist.x, time: now });
-    while (samples.length && now - samples[0]!.time > 1300) samples.shift();
-    if (samples.length < 8) return;
-    const values = samples.map((sample) => sample.x);
-    const first = values[0]!;
-    const last = values[values.length - 1]!;
-    const span = Math.max(...values) - Math.min(...values);
-    if (span > 0.22 && Math.abs(last - first) < 0.18) {
-      waveReportedRef.current = true;
-      setPreviewLabel("Lambaian terdeteksi. Momo siap!");
-      onWave();
+      const reason = classifyCameraError(error);
+      setPreviewLabel(messageFor(reason === "model-error" || reason === "tracker-error" ? "camera-failed" : reason));
     }
   }
 
@@ -176,8 +167,8 @@ export function CameraIntro({ modelUrl, onWave, onSkip }: CameraIntroProps) {
           </div>
         </div>
         <div style={{ marginTop: 20 }}>
-          <button type="button" className="camera-skip" onClick={onSkip}>
-            Lewati &amp; Buka Tutorial Kartu →
+          <button type="button" className="camera-skip" data-testid="camera-skip" onClick={onSkip}>
+            Lewati &amp; Buka Tutorial Kartu
           </button>
         </div>
       </div>

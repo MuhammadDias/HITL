@@ -76,16 +76,16 @@ describe("DrawingScreen Momo state-based positioning - NEW CONTRACT", () => {
     Element.prototype.getBoundingClientRect = originalGetBoundingClientRect;
   });
 
-  it("shows Momo at draw anchor (x28 y24) in drawing phase with NEW copy", () => {
+  it("shows Momo at draw anchor (x28 y24) in drawing phase with NEW copy", async () => {
     render(<DrawingScreen {...defaultProps} phase="drawing" />);
     const companion = document.querySelector(".drawing-momo-companion");
     expect(companion).not.toBeNull();
     expect(companion?.getAttribute("data-phase")).toBe("drawing");
     expect((companion as HTMLElement).style.transform).toContain("translate(28px, 24px)");
-    expect(screen.getByText("Gambar objekmu dulu, ya. Nanti aku coba tebak!")).not.toBeNull();
+    expect(await screen.findByText("Gambar objekmu dulu, ya. Nanti aku coba tebak!")).not.toBeNull();
   });
 
-  it("moves Momo to popup.right+16 using EVALUATING geometry (440px) in predicting phase with NEW copy", () => {
+  it("moves Momo to popup.right+16 using EVALUATING geometry (440px) in predicting phase with NEW copy", async () => {
     Element.prototype.getBoundingClientRect = vi.fn().mockImplementation(function(this: Element) {
       if (this.classList.contains("prediction-hitl-geometry")) return mockRect(468, 24); // evaluating width 440 + 28 = 468
       if (this.id === "screen-drawing") return mockSectionRect();
@@ -95,12 +95,12 @@ describe("DrawingScreen Momo state-based positioning - NEW CONTRACT", () => {
     render(<DrawingScreen {...defaultProps} phase="predicting" />);
     const companion = document.querySelector(".drawing-momo-companion");
     expect(companion?.getAttribute("data-phase")).toBe("predicting");
-    expect(screen.getByText("Hmm... ini gambar apa, ya?")).not.toBeNull();
+    expect(await screen.findByText("Hmm... ini gambar apa, ya?")).not.toBeNull();
     // x = geometryProbe.right(468) - section.left(0) + 16 = 484, y = 24
     expect((companion as HTMLElement).style.transform).toContain("translate(484px, 24px)");
   });
 
-  it("moves Momo to popup.right+16 using EVALUATING geometry in evaluating phase with NEW copy", () => {
+  it("moves Momo to popup.right+16 using EVALUATING geometry in evaluating phase with NEW copy", async () => {
     Element.prototype.getBoundingClientRect = vi.fn().mockImplementation(function(this: Element) {
       if (this.classList.contains("prediction-hitl-geometry")) return mockRect(468, 24); // evaluating width
       if (this.id === "screen-drawing") return mockSectionRect();
@@ -110,11 +110,11 @@ describe("DrawingScreen Momo state-based positioning - NEW CONTRACT", () => {
     render(<DrawingScreen {...defaultProps} phase="evaluating" prediction={mockPrediction} />);
     const companion = document.querySelector(".drawing-momo-companion");
     expect(companion?.getAttribute("data-phase")).toBe("evaluating");
-    expect(screen.getByText("Aku punya tiga tebakan. Coba lihat dulu, yuk!")).not.toBeNull();
+    expect(await screen.findByText("Aku punya tiga tebakan. Bandingkan dulu, ya.")).not.toBeNull();
     expect((companion as HTMLElement).style.transform).toContain("translate(484px, 24px)");
   });
 
-  it("moves Momo to popup.right+16 using EVALUATING geometry in prediction-error phase with NEW copy", () => {
+  it("moves Momo to popup.right+16 using EVALUATING geometry in prediction-error phase with NEW copy", async () => {
     Element.prototype.getBoundingClientRect = vi.fn().mockImplementation(function(this: Element) {
       if (this.classList.contains("prediction-hitl-geometry")) return mockRect(468, 24); // evaluating width
       if (this.id === "screen-drawing") return mockSectionRect();
@@ -124,16 +124,15 @@ describe("DrawingScreen Momo state-based positioning - NEW CONTRACT", () => {
     render(<DrawingScreen {...defaultProps} phase="prediction-error" />);
     const companion = document.querySelector(".drawing-momo-companion");
     expect(companion?.getAttribute("data-phase")).toBe("prediction-error");
-    expect(screen.getByText("Hmm, aku belum bisa membaca gambarmu. Mau coba lagi?")).not.toBeNull();
+    expect(await screen.findByText("Hmm, aku belum bisa membaca gambarmu. Mau coba lagi?")).not.toBeNull();
     expect((companion as HTMLElement).style.transform).toContain("translate(484px, 24px)");
   });
 
-  it("updates bubble message per phase via .momo-bubble with NEW copy", () => {
+  it("updates bubble message per phase via .momo-bubble with NEW copy", async () => {
+    // The drawing and predicting cues are asserted in their own tests; here the point is the hand-over order:
+    // the result popup is held back until Momo has arrived beside it, then Momo's new lines follow.
     const { rerender } = render(<DrawingScreen {...defaultProps} phase="drawing" />);
-    expect(screen.getByText("Gambar objekmu dulu, ya. Nanti aku coba tebak!")).not.toBeNull();
-
     rerender(<DrawingScreen {...defaultProps} phase="predicting" />);
-    expect(screen.getByText("Hmm... ini gambar apa, ya?")).not.toBeNull();
 
     rerender(<DrawingScreen {...defaultProps} phase="evaluating" prediction={mockPrediction} />);
     expect(document.querySelector("[data-testid=popup-evaluating]")).toBeNull();
@@ -141,10 +140,10 @@ describe("DrawingScreen Momo state-based positioning - NEW CONTRACT", () => {
     const end = new Event("transitionend", { bubbles: true });
     Object.defineProperty(end, "propertyName", { value: "transform" });
     fireEvent(companion, end);
-    expect(screen.getByText("Aku punya tiga tebakan. Coba lihat dulu, yuk!")).not.toBeNull();
+    expect(await screen.findByText("Aku punya tiga tebakan. Bandingkan dulu, ya.")).not.toBeNull();
 
     rerender(<DrawingScreen {...defaultProps} phase="prediction-error" />);
-    expect(screen.getByText("Hmm, aku belum bisa membaca gambarmu. Mau coba lagi?")).not.toBeNull();
+    expect(await screen.findByText("Hmm, aku belum bisa membaca gambarmu. Mau coba lagi?")).not.toBeNull();
   });
 
   it("single Momo DOM element persists across phase changes (img identity)", () => {
@@ -207,29 +206,30 @@ describe("DrawingScreen Momo state-based positioning - NEW CONTRACT", () => {
     expect(removeEventListenerSpy).toHaveBeenCalledWith("resize", expect.any(Function));
   });
 
-  it("copy by .momo-bubble text content with NEW copy", () => {
+  it("copy by .momo-bubble text content with NEW copy", async () => {
     render(<DrawingScreen {...defaultProps} phase="drawing" />);
+    await screen.findByText("Gambar objekmu dulu, ya. Nanti aku coba tebak!");
     const bubble = document.querySelector(".momo-bubble");
     expect(bubble).not.toBeNull();
     expect(bubble?.textContent).toContain("Gambar objekmu dulu, ya. Nanti aku coba tebak!");
   });
 
-  it("empty-drawing feedback retains existing cue", () => {
+  it("empty-drawing feedback retains existing cue", async () => {
     render(<DrawingScreen {...defaultProps} feedback="empty-drawing" phase="drawing" />);
-    expect(screen.getByText("Gambar masih kosong — gambar sesuatu dulu.")).not.toBeNull();
+    expect(await screen.findByText("Gambar dulu sebelum menebak.")).not.toBeNull();
   });
 });
 
 describe("DrawingScreen reduced CSS media query", () => {
   it("has @media (prefers-reduced-motion: reduce) with transition: none in globals.css", () => {
-    const cssPath = path.join(process.cwd(), "app/globals.css");
+    const cssPath = path.join(process.cwd(), "app/styles/70-drawing-screen.css");
     const cssContent = fs.readFileSync(cssPath, "utf-8");
     expect(cssContent).toContain("@media (prefers-reduced-motion: reduce)");
     expect(cssContent).toContain("transition: none");
   });
 
   it("has .drawing-momo-companion transition: none in reduced motion block", () => {
-    const cssPath = path.join(process.cwd(), "app/globals.css");
+    const cssPath = path.join(process.cwd(), "app/styles/70-drawing-screen.css");
     const cssContent = fs.readFileSync(cssPath, "utf-8");
     // Match the specific reduced-motion block containing .drawing-momo-companion
     const regex = /@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{[^}]*\.drawing-momo-companion[^}]*transition:\s*none/;

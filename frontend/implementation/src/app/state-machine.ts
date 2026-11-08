@@ -69,6 +69,7 @@ export class FlowController {
   feedback: FlowFeedback = null;
   errorDetail: string | null = null;
   cyclesCompleted = 0;
+  private attemptRecorded: "success" | "fail" | null = null;
 
   private readonly provider: PredictionProvider;
   private readonly sink: InteractionEventSink;
@@ -257,19 +258,37 @@ export class FlowController {
   /** Reposition object: return from gameplay to placing if needed. */
   repositionObject(): void {
     this.require("gameplay", "repositionObject");
+    this.emit({ kind: "object_repositioned", levelId: this.level?.levelId ?? "?" });
     this.phase = "placing";
     this.notify();
   }
 
   /** FR-07/AC-08: recovery path back to the canvas, preserving level context. */
-  requestRedraw(from: "evaluation" | "gameplay"): void {
+  requestRedraw(from: "evaluation" | "gameplay" | "create_another"): void {
     if (this.phase !== "evaluating" && this.phase !== "gameplay" && this.phase !== "placing" && this.phase !== "falling") {
       throw new InvalidTransitionError(
         `Redraw hanya valid dari evaluasi/gameplay (fase saat ini: "${this.phase}").`,
       );
     }
-    this.emitRedraw(from === "evaluation" ? "evaluation" : "gameplay");
+    if (from === "create_another") this.emit({ kind: "another_object_requested", levelId: this.level?.levelId ?? "?" });
+    else this.emitRedraw(from === "evaluation" ? "evaluation" : "gameplay");
     this.resetToDrawing();
+  }
+
+  /**
+   * Log a run result at the moment the runtime reports it (fail overlays never reach
+   * reportGameplayOutcome). Emits only; no phase transition.
+   */
+  recordGameplayAttempt(outcome: "success" | "fail"): void {
+    if (this.phase !== "gameplay" || !this.level || !this.behavior) return;
+    this.attemptRecorded = outcome;
+    this.emit({ kind: "gameplay_result", levelId: this.level.levelId, outcome, behavior: this.behavior });
+  }
+
+  recordGameplayRetry(): void {
+    if (this.phase !== "gameplay" || !this.level) return;
+    this.attemptRecorded = null;
+    this.emit({ kind: "gameplay_retry", levelId: this.level.levelId });
   }
 
   /** FR-12/AC-10: outcome reporting with explicit recovery routes. */
@@ -277,7 +296,8 @@ export class FlowController {
     this.require("gameplay", "reportGameplayOutcome");
     const level = this.level!;
     const behavior = this.behavior!;
-    this.emit({ kind: "gameplay_result", levelId: level.levelId, outcome, behavior });
+    if (this.attemptRecorded !== outcome) this.emit({ kind: "gameplay_result", levelId: level.levelId, outcome, behavior });
+    this.attemptRecorded = null;
 
     if (outcome === "fail") {
       this.resetToDrawing(); // fresh cycle at the canvas

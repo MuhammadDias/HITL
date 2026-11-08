@@ -1,41 +1,30 @@
-# Model Integration Contract — Partner Classifier ↔ Author Side
+# Model Integration Contract — Partner Classifier <-> Author Side
 
-## Status: FROZEN (Contract v1.0.0-draft — Handoff 1 November)
-This document defines the wire-level contract between the author-side application and the partner classifier model/backend. It serves as the single source of truth for request/response wire schema, error handling, normalization rules, and MOCK vs REAL provider separation.
+## Status: DRAFT (Contract v1.0.0-draft) — reconciled with code on 2026-11-04
+
+This is alignment material, **not a signed contract**. The partner has NOT confirmed any wire schema, vocabulary, SLA, normalization rule, auth scheme or error mapping. Items tagged **[DRAFT / PENDING PARTNER]** need explicit partner sign-off.
+
+> **Reconciliation note (2026-11-04).** An earlier revision of this file described behaviour the code does not have (6 error codes, an `X-Contract-Version` header that was never sent, unvalidated ordering, `level.vocabulary[0]` as fallback label, per-reason UI messages, bounding box normalised to exactly (0,0)-(1,1)). This file now matches the code. The complete, example-driven description lives in **`docs/execution/PARTNER_CONTRACT_ACTUAL.md`** — read that first; this file is the shorter wire summary.
+>
+> Nothing here was tested against a real partner model or backend (none exists). Verified only with injected fake `fetch` in `tests/prediction/`.
 
 ---
 
-## ⚠️ **[DRAFT / PENDING PARTNER CONFIRMATION]** — Global Notice
-**Entire contract is a prototype author-side specification. Partner has NOT confirmed any wire schema, vocabulary, SLA, normalization rules, auth scheme, or error mapping below. All items marked with ⚠️ require explicit partner sign-off at 1 November handoff meeting.**
+## 1. Request (Author -> Partner)
 
----
+* `POST` to `NEXT_PUBLIC_PREDICTION_ENDPOINT` (http/https), header `content-type: application/json`.
+* Client timeout 8000 ms default (`NEXT_PUBLIC_PREDICTION_TIMEOUT_MS`) [DRAFT / PENDING PARTNER].
+* **No auth header is sent by default.** A static client cannot hold secrets (all `NEXT_PUBLIC_*` values are public). Non-secret headers can be configured with `NEXT_PUBLIC_PREDICTION_HEADERS_JSON` (credential-like names/values are refused); a code-injected `tokenProvider` exists for a future runtime-issued token. Auth scheme = **UNKNOWN**.
+* `X-Contract-Version` is **not** sent by default. It is sent only when the PROPOSED flag `NEXT_PUBLIC_PREDICTION_SEND_CONTEXT=1` is set.
 
-## 1. Request Wire Format (Author → Partner)
-
-### HTTP Transport
-- **Method:** `POST`
-- **Endpoint:** Partner-provided HTTPS URL (configured via `NEXT_PUBLIC_PREDICTION_ENDPOINT`)
-- **Headers:**
-  - `Content-Type: application/json`
-  - `X-Contract-Version: 1.0.0-draft` ⚠️ **[DRAFT / PENDING PARTNER CONFIRMATION]**
-- **Timeout:** Author default 8000 ms (`timeoutMs` configurable via `PartnerHttpPredictionProviderOptions`) ⚠️ **[DRAFT / PENDING PARTNER CONFIRMATION]**
-
-### Payload: `PartnerRequestPayload` (JSON Schema)
-The author side constructs and validates `DrawingInput` before transmission.
+Default body (`PartnerRequestPayload`):
 
 ```json
 {
   "drawing": {
     "strokes": [
-      [
-        { "x": 0.1, "y": 0.2 },
-        { "x": 0.3, "y": 0.4 },
-        { "x": 0.5, "y": 0.6 }
-      ],
-      [
-        { "x": 0.7, "y": 0.8 },
-        { "x": 0.9, "y": 0.9 }
-      ]
+      [{ "x": 0.1, "y": 0.2 }, { "x": 0.3, "y": 0.4 }, { "x": 0.5, "y": 0.6 }],
+      [{ "x": 0.7, "y": 0.8 }, { "x": 0.9, "y": 0.9 }]
     ],
     "hasInk": true,
     "aspectRatio": 1.333
@@ -43,21 +32,20 @@ The author side constructs and validates `DrawingInput` before transmission.
 }
 ```
 
-### Geometry & Normalization Contract (Author-Side Guarantee) ⚠️ **[DRAFT / PENDING PARTNER CONFIRMATION]**
-1. **Coordinate space:** Unit interval `[0.0, 1.0]` inclusive along both axes (`x` and `y`).
-2. **Translation:** Strokes are translated so bounding box minimum `(minX, minY) = (0.0, 0.0)`.
-3. **Scaling:** Strokes are scaled so bounding box maximum `(maxX, maxY) = (1.0, 1.0)`.
-4. **Aspect Ratio:** Canvas aspect ratio (`width / height`) preserved in `aspectRatio` field for partner stroke reconstruction.
-5. **Ink indicator:** `hasInk = true` if and only if at least one stroke contains `>= 2` coordinate points.
+PROPOSED additive optional fields (only with `SEND_CONTEXT=1`; partner has not agreed): `"levelId"`, `"attemptId"`, `"contractVersion": "1.0.0-draft"`.
 
-> ⚠️ **[DRAFT / PENDING PARTNER CONFIRMATION]**: The bounding box normalization to `[0,1]` with aspect ratio preservation is an author-side prototype convention. Partner may request alternative coordinate space (e.g., raw pixels, center-crop square, different normalization). This is NOT a hard constraint on partner model input.
+### Geometry (as implemented in `src/input/normalize.ts`)
+
+1. Strokes with fewer than 2 points are dropped; `hasInk = true` iff at least one stroke remains. Empty drawings are never sent.
+2. The bounding box of all strokes is **letterboxed into the unit square**: the longer axis spans `[0,1]`, the shorter axis is centred (so the box is *not* translated to exactly (0,0)-(1,1) unless it is square).
+3. `aspectRatio` = bounding-box width / height (not the canvas ratio).
+4. At most 64 points per stroke by default; coordinates rounded to 4 decimals.
+
+[DRAFT / PENDING PARTNER]: the partner may want a different input space (raster, pixels, crop). There is currently no raster helper in the repo.
 
 ---
 
-## 2. Response Wire Format (Partner → Author)
-
-### Success (HTTP 200 OK)
-Partner must respond with exact Top-3 prediction candidates ordered by confidence (descending).
+## 2. Response (Partner -> Author)
 
 ```json
 {
@@ -69,82 +57,79 @@ Partner must respond with exact Top-3 prediction candidates ordered by confidenc
 }
 ```
 
-### Wire-Level Field Validation Rules (Author-Side Enforced) ⚠️ **[DRAFT / PENDING PARTNER CONFIRMATION]**
-| Field | Type / Constraint | Enforcement / Failure Reason |
-|-------|-------------------|------------------------------|
-| `candidates` | Array of exact length `3` | Hard error: `malformed-response` |
-| `candidates[i].label` | Non-empty `string` (trimmed) | Hard error: `malformed-response` |
-| `candidates[i].confidence` | Number in `[0.0, 1.0]`, non-NaN | Hard error: `malformed-response` |
+Optional PROPOSED version info: response header `X-Model-Version: <string>` or body field `"modelVersion"` (header wins). Browsers only expose that header cross-origin if the partner sends `Access-Control-Expose-Headers: X-Model-Version`.
 
-*Note:* If partner response violates any rule above, author throws `PredictionError(reason: "malformed-response")`. The author app **never fabricates fallback prediction data** (PRD FR-02).
+### Validation actually enforced (`src/prediction/validation.ts`)
 
-> ⚠️ **[DRAFT / PENDING PARTNER CONFIRMATION]**: The exact-3-candidate requirement, confidence range `[0,1]`, and trimming behavior are author-side validation choices. Partner may propose different candidate count (e.g., Top-5), different confidence encoding (logits, softmax sum=1), or different label encoding (indices + lookup). Author validator is forgiving — it accepts any `label: string` (not restricted to the 7-label prototype vocabulary) and any `confidence: number` in `[0,1]`.
+| Rule | Failure |
+| --- | --- |
+| body is an object with a `candidates` array | `malformed-response` |
+| exactly 3 candidates | `malformed-response` |
+| `label` non-empty string (trimmed) | `malformed-response` |
+| `confidence` number in `[0,1]`, not NaN (sum is not checked) | `malformed-response` |
+| sorted by confidence **descending** (ties allowed) | `malformed-response` |
+| labels **unique** (case-insensitive after trim) | `malformed-response` |
+| (PROPOSED, opt-in `NEXT_PUBLIC_PREDICTION_OOV_POLICY=reject`) every label is in the level vocabulary | `out-of-vocabulary` |
 
-### Prototype Vocabulary (Author-Side Only) ⚠️ **[DRAFT / PENDING PARTNER CONFIRMATION]**
-The following 7 labels are used in author-side mock fixtures and level behavior mapping. **This is NOT a constraint on partner model output vocabulary.** Partner may use any label set; unknown labels resolve to `fallback` behavior gracefully.
+The author app never fabricates or repairs prediction data (PRD FR-02).
 
-```
-balok, batu, duri, ember, papan, tali, tangga
-```
+### Label normalization and vocabulary
 
----
-
-## 3. Provenance & MOCK vs REAL Separation
-
-| Characteristic | MOCK Provider (`MockPredictionProvider`) | REAL Partner Provider (`PartnerHttpPredictionProvider`) |
-|----------------|-----------------------------------------|-------------------------------------------------------|
-| **Execution** | Browser-local deterministic fixture | Remote HTTPS POST fetch |
-| **Provenance Tag** | `MOCK` (UI banner: `DEV / MOCK`) | `REAL` (UI banner: `DEV / PARTNER ADAPTER`) |
-| **Data Source** | Quantized stroke geometry hash (`FNV-1a`) | Live partner inference endpoint |
-| **Error Handling** | Configurable via `setMode("fail" | "malformed")` | Live HTTP status, network errors, timeouts |
-| **Isolation** | Swapped cleanly via Dependency Injection at app root | Configured via env (`NEXT_PUBLIC_PREDICTION_MODE=partner`) |
-
-*Zero Backend Database Pollution:* The author application does not persist prediction results to any server-side database. All inference stays in ephemeral memory for the duration of the interactive gameplay cycle.
+* With the level vocabulary (always supplied by the factory): trim, case-insensitive match, exact canonical spelling returned.
+* Labels outside the level vocabulary: by default kept as sent. If the student accepts one, gameplay resolves it to behavior `unresolved` with `fallbackLabel: "objek-netral"` (inert placeholder platform; see `src/domain/behavior-resolver.ts`). With policy `reject` the response is refused as `out-of-vocabulary` and the UI offers retry/redraw instead.
+* The 7-label prototype vocabulary (`balok, batu, duri, ember, papan, tali, tangga`) is an **author placeholder**, not a restriction on the partner model. Real vocabulary = **UNKNOWN**.
 
 ---
 
-## 4. Error Mapping & SLA Matrix ⚠️ **[DRAFT / PENDING PARTNER CONFIRMATION]**
+## 3. MOCK vs REAL separation
 
-| HTTP / Network Scenario | Author Internal Error Reason | User UI Behavior | Partner Action |
-|-------------------------|-----------------------------|------------------|----------------|
-| HTTP 200 OK (valid JSON) | None (Success) | Displays Top-3 card popup | Deliver within latency SLA |
-| HTTP 4xx / 5xx | `provider-unavailable` | Recoverable banner: "Penyedia prediksi tidak tersedia" | Check server logs / endpoint health |
-| Timeout (> 8000ms) | `timeout` | Retry prompt: "Permintaan melebihi batas waktu" | Optimize inference latency (< 1500ms recommended) |
-| Non-JSON / Corrupt Body | `malformed-response` | Recoverable error, prompt redraw | Ensure strict JSON Content-Type & body |
-| Array length != 3 | `malformed-response` | Recoverable error, prompt redraw | Return exactly 3 candidates |
-| Confidence < 0 or > 1 | `malformed-response` | Recoverable error, prompt redraw | Normalize softmax scores to [0.0, 1.0] |
-| DNS / Network Drop | `unknown` | Network disconnect alert | Check TLS/DNS and CORS configuration |
+| | MOCK (`MockPredictionProvider`) | Partner (`PartnerHttpPredictionProvider`) |
+| --- | --- | --- |
+| Execution | Browser-local deterministic fixture (FNV-1a hash of stroke geometry) | Remote HTTPS POST via `fetch` |
+| Result tag | `provenance.mode = "mock"` | `provenance.mode = "partner"`, `modelVersion?`, `latencyMs` |
+| UI banner | `DEV / MOCK — bukan keluaran model sungguhan` | `DEV / PARTNER ADAPTER — bukan model final` |
+| Selected by | default (`NEXT_PUBLIC_PREDICTION_MODE` unset/`mock`) | `NEXT_PUBLIC_PREDICTION_MODE=partner` + valid endpoint |
 
-> ⚠️ **[DRAFT / PENDING PARTNER CONFIRMATION]**: The 8000ms client timeout, 1500ms recommended SLA, and the 6 error reason codes are author-side prototype choices. Partner may propose different timeout budgets, SLA tiers, error codes, or retry semantics. Author error mapping is forgiving — it treats any non-200 or malformed response as recoverable and never crashes the gameplay loop.
+`partner` without a valid endpoint, or an unrecognised mode string, yields a provider that always fails with `provider-unavailable` — it never falls back to mock output.
 
----
-
-## 5. DRAFT & TBD Items (Explicitly Pending Partner Agreement)
-
-The following items are marked as **DRAFT** and require explicit partner sign-off during the 1 November handoff meeting:
-
-1. **[DRAFT] Authentication Header:** Default is unauthenticated or pre-shared bearer token (`Authorization: Bearer <token>`). Awaiting partner spec.
-2. **[DRAFT] Latency SLA Budget:** Author default client timeout is 8000 ms. Recommended target: `< 1500 ms` p95.
-3. **[DRAFT] Model Version Metadata:** Author proposes optional response header `X-Model-Version: <sha/tag>` or optional candidate-level metadata. Currently ignored by author validator.
-4. **[DRAFT] Confidence Summation:** Softmax output summing to 1.0 is recommended but not strictly enforced by author validator (only individual range `[0, 1]` is enforced).
-5. **[DRAFT] CORS Policy:** Partner endpoint must explicitly allow author client origin headers.
-6. **[DRAFT] Coordinate Normalization:** Bounding box `[0,1]` + aspectRatio (author-side convention) — partner may require different input space.
-7. **[DRAFT] Candidate Count:** Exactly 3 candidates (author-side) — partner may prefer Top-5 or variable count.
-8. **[DRAFT] Label Vocabulary:** 7-label prototype (author-side) — partner may use any vocabulary; unknown labels map to `fallback`.
-9. **[DRAFT] Confidence Normalization:** Range `[0,1]` per candidate (author-side) — partner may output logits, unnormalized scores, or softmax sum=1.
-10. **[DRAFT] Error Reason Codes:** 6 author-defined codes — partner may define different error taxonomy.
+Predictions are not stored server-side by this app. Separately, interaction **events** can be POSTed to a logging endpoint only if `NEXT_PUBLIC_EVENT_ENDPOINT` is configured (default: nothing is sent); see `PARTNER_CONTRACT_ACTUAL.md` section 3.
 
 ---
 
-## 6. Contract Verification Test Suite
+## 4. Error mapping (codes that exist in code)
 
-Author-side verification suite lives at:
+| Scenario | `PredictionError.reason` | UI today |
+| --- | --- | --- |
+| HTTP non-2xx; config-error provider; token provider failed | `provider-unavailable` | Error popup "KENDALA PREDIKSI" with the reason text, "Coba Lagi" and redraw |
+| Client timer fired, or `AbortError`/`TimeoutError` (also while reading the body) | `timeout` | same |
+| Non-JSON body or any rule in section 2 violated | `malformed-response` | same |
+| Network failure / DNS / CORS block / anything else | `unknown` | same |
+| (PROPOSED) label outside level vocabulary with policy `reject` | `out-of-vocabulary` | same |
+
+That is 4 codes plus 1 proposed; earlier drafts said 6. The popup shows the raw reason string; per-reason friendly messages are not implemented (UI work, out of scope here). SLA numbers (8000 ms timeout, "< 1500 ms p95") are author guesses [DRAFT / PENDING PARTNER].
+
+---
+
+## 5. Items pending partner agreement
+
+1. **Auth scheme** (none / runtime token / proxy). No secret may live in the client.
+2. **Latency SLA and timeout budget.**
+3. **Request space**: unit-square strokes (current) vs raster; whether `levelId`/`attemptId`/`contractVersion` and `X-Contract-Version` are wanted.
+4. **Response shape**: exactly 3, descending, unique, `[0,1]` — or Top-K / logits.
+5. **Label vocabulary** and casing; out-of-vocabulary policy (`allow` vs `reject`).
+6. **Model version transport** (`X-Model-Version`, `modelVersion`, none).
+7. **Error body/taxonomy** and retry semantics (`Retry-After`).
+8. **CORS** allow-list, allowed request headers, exposed headers.
+9. **Rate limiting / concurrency.**
+10. **Event transport, identifiers, consent/PII** (see `PARTNER_CONTRACT_ACTUAL.md` section 5).
+
+---
+
+## 6. Verification
+
 ```bash
-tests/prediction/partner-contract.test.ts
+npx vitest run tests/prediction tests/events tests/domain/events.test.ts
+npx tsc --noEmit
 ```
 
-To verify compliance:
-```bash
-npm test tests/prediction/partner-contract.test.ts
-npm run typecheck
-```
+Contract and adapter tests: `tests/prediction/partner-contract.test.ts`, `partner-http.test.ts`, `partner-adapter-contract.test.ts`, `env-factory.test.ts`. See the root `PARTNER_CONTRACT_ACTUAL.md` for the PASS / NOT TESTED table.

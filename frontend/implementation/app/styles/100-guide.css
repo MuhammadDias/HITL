@@ -1,0 +1,46 @@
+/* Momo as the page guide: docked bottom-right, one bubble at a time. Loaded last so it can sit above the kit. */
+.momo-guide {
+  position: fixed; z-index: 880; right: 18px; bottom: 14px; max-width: calc(100vw - 24px);
+  pointer-events: none;
+}
+.momo-guide .momo-chat__extras { pointer-events: auto; }
+.momo-guide .momo-chat__thread { max-width: min(340px, calc(100vw - 340px)); }
+.momo-guide .momo-chat { align-items: flex-end; }
+.momo-guide .momo-chat__col { padding-top: 0; padding-bottom: 14%; }
+/* On the cover Momo is big and her words stand above her head, so they never cover the camera card. */
+.momo-guide--cover { bottom: 6px; right: max(24px, calc((100vw - 1180px) / 2)); }
+.momo-guide--cover .momo-chat { flex-direction: column-reverse; align-items: flex-end; gap: 4px; }
+.momo-guide--cover .momo-chat__col { padding-bottom: 0; align-items: flex-end; }
+.momo-guide--cover .momo-chat__thread { max-width: min(300px, calc(100vw - 48px)); align-items: flex-end; }
+/* The level list has the demo tape in the bottom-right corner: Momo stands above it. */
+#app:has(.bm-page) .momo-guide { bottom: 62px; }
+
+.momo-guide__zzz { position: absolute; right: calc(var(--mg-h, 150px) * 0.42); bottom: calc(var(--mg-h, 150px) * 0.74); width: 60px; height: 70px; pointer-events: none; }
+.momo-guide__zzz i {
+  position: absolute; left: 0; bottom: 0; font-style: normal; font-weight: 900; color: var(--nb-ink); opacity: 0;
+  animation: momo-zzz 3.2s ease-in-out infinite;
+}
+.momo-guide__zzz i:nth-child(1) { font-size: 16px; animation-delay: 0s; }
+.momo-guide__zzz i:nth-child(2) { font-size: 22px; animation-delay: 1s; }
+.momo-guide__zzz i:nth-child(3) { font-size: 30px; animation-delay: 2s; }
+@keyframes momo-zzz {
+  0% { opacity: 0; transform: translate(0, 6px) rotate(-8deg); }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-22px, -46px) rotate(-14deg); }
+}
+
+@media (max-width: 640px) {
+  /* Phones: her words stand above her head and stay clear of the camera window at the bottom-left. */
+  .momo-guide { right: 8px; bottom: 10px; }
+  .momo-guide .momo-chat { flex-direction: column-reverse; align-items: flex-end; gap: 2px; }
+  .momo-guide .momo-chat__col { padding-bottom: 0; align-items: flex-end; }
+  .momo-guide .momo-chat__thread { max-width: calc(100vw - 150px); align-items: flex-end; }
+  .momo-guide .momo-chat__bubble { font-size: 13px; padding: 8px 11px; }
+  .momo-guide--cover { right: 8px; }
+  .momo-guide--cover .momo-chat__thread { max-width: calc(100vw - 32px); }
+  #app:has(.bm-page) .momo-guide { bottom: 44px; }
+  /* Once Momo is awake on the cover she carries the explanation and the next step. */
+  .mode-cover.has-momo-awake .subtext, .mode-cover.has-momo-awake .cover-skip-block { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .momo-guide__zzz i { animation: none; opacity: 1; } .momo-guide__zzz i:nth-child(n+2) { display: none; } }

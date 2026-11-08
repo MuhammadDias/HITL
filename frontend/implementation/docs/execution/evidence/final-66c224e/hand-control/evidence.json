@@ -1,0 +1,60 @@
+{
+  "run": "2026-11-05T03-06-27-858Z",
+  "result": "PASS",
+  "fakeCamera": true,
+  "realHand": "NOT TESTED",
+  "git": {
+    "head": "66c224e4c5c9af20b7d356427400e1f12ffd3a1c",
+    "branch": "claude/pa-sketchbook-universe-fs0dbf",
+    "dirty": true
+  },
+  "checks": [
+    {
+      "name": "opt-in 'Kontrol tangan' is offered only because the shared camera is live",
+      "ok": true
+    },
+    {
+      "name": "hand mode starts and reports a student-readable status (not 'NUI verified')",
+      "ok": true,
+      "detail": "Tangan tidak terlihat (uji coba)"
+    },
+    {
+      "name": "keyboard still moves the character while hand control is on and no hand is tracked",
+      "ok": true,
+      "detail": {
+        "p0": 56.57142857142857,
+        "p1": 256.57142857142856
+      }
+    },
+    {
+      "name": "releasing the key stops the character (hand does not drive it, no stuck input)",
+      "ok": true,
+      "detail": {
+        "p1": 256.57142857142856,
+        "p2": 256.57142857142856
+      }
+    },
+    {
+      "name": "toggling back returns to keyboard control",
+      "ok": true
+    },
+    {
+      "name": "no console/page errors",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "failure": null,
+  "console": [
+    "log: I1105 03:06:28.745000 1880752 gl_context.cc:374] GL version: 3.0 (OpenGL ES 3.0 (WebGL 2.0 (OpenGL ES 3.0 Chromium))), renderer: WebKit WebGL",
+    "warning: W1105 03:06:28.747000 1880752 gl_context.cc:1060] OpenGL error checking is disabled",
+    "log: Graph successfully started running.",
+    "log: Graph finished closing successfully.",
+    "log: I1105 03:06:34.909000 1880752 gl_context_webgl.cc:132] Successfully destroyed WebGL context with handle 1",
+    "log: I1105 03:06:52.080000 1880752 gl_context.cc:374] GL version: 3.0 (OpenGL ES 3.0 (WebGL 2.0 (OpenGL ES 3.0 Chromium))), renderer: WebKit WebGL",
+    "warning: W1105 03:06:52.082000 1880752 gl_context.cc:1060] OpenGL error checking is disabled",
+    "log: Graph successfully started running.",
+    "log: Graph finished closing successfully.",
+    "log: I1105 03:07:05.594000 1880752 gl_context_webgl.cc:132] Successfully destroyed WebGL context with handle 1"
+  ]
+}

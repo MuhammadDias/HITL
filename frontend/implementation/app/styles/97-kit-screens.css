@@ -1,0 +1,203 @@
+/* Neo-sketch kit, part 2: world HUD, world pop-ups, drawing-screen chrome, Top-3 card, sky.
+   Loaded after 96-kit-base.css and after every legacy partial. */
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+/* ======================= World HUD ======================= */
+#screen-gameplay .stage-floating-header.hud { top: 14px; left: 18px; right: 18px; align-items: flex-start; gap: 12px; }
+.hud-plate { display: inline-flex; align-items: center; gap: 10px; padding: 7px 14px 7px 8px; border-radius: 18px; box-shadow: var(--nb-shadow-sm); }
+.hud-plate__mark { position: relative; overflow: hidden; display: block; width: 40px; height: 40px; flex: none; color: var(--nb-ink); background: var(--nb-leaf); border: 2.5px solid var(--nb-ink); border-radius: 50%; }
+.hud-plate__title { margin: 0; font-size: 18px; font-weight: 900; letter-spacing: -.01em; color: var(--nb-ink); white-space: nowrap; }
+.hud-plate__sep { width: 2px; height: 24px; background: rgba(17, 17, 17, .22); border-radius: 2px; }
+.hud-plate .decision-chip { margin: 0; font-size: 15px; padding: 5px 14px 5px 6px; }
+.hud-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+@media (max-width: 760px) {
+  .hud-plate { padding: 5px 10px 5px 6px; gap: 6px; }
+  .hud-plate__mark { width: 30px; height: 30px; }
+  .hud-plate__title { font-size: 14px; }
+  .hud-plate__sep { display: none; }
+  .hud-plate .decision-chip { font-size: 12px; }
+}
+
+/* Floating controls: same card as everything else, not a pill. */
+#screen-gameplay .stage-floating-controls {
+  gap: 10px; padding: 9px 12px; border-radius: 20px; border: var(--nb-border) solid var(--nb-ink); background: var(--nb-paper); box-shadow: var(--nb-shadow);
+}
+#screen-gameplay .stage-floating-controls.placement-controls { flex-direction: column; align-items: center; padding: 12px 18px; }
+.placement-controls__error { color: var(--nb-danger); font-size: 13px; font-weight: 800; }
+.gameplay-controls__row { display: flex; gap: 8px; align-items: center; }
+.gameplay-controls__sep { width: 2px; height: 30px; background: rgba(17, 17, 17, .22); border-radius: 2px; }
+#screen-gameplay .game-input-button { flex-direction: column; gap: 2px; min-width: 62px; min-height: 52px; padding: 6px 8px; font-size: 11px; }
+#screen-gameplay .game-input-button__label { font-size: 11px; font-weight: 800; }
+#screen-gameplay .game-input-button.nb-btn--primary:not(:active):not(.is-pressed) { background: var(--nb-orange) !important; color: var(--nb-ink) !important; }
+.creation-shortcuts, .stage-input-status-chip {
+  position: absolute; z-index: 150; font-size: 12px; font-weight: 800; color: var(--nb-ink);
+}
+.stage-input-status-chip { bottom: 14px; right: 16px; padding: 4px 10px; background: var(--nb-paper); border: 2px solid var(--nb-ink); border-radius: 999px; pointer-events: none; }
+
+/* ======================= World pop-ups ======================= */
+.enter-world-popup {
+  position: absolute; z-index: 320; left: 50%; top: 40%; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: stretch; gap: 10px;
+  width: min(290px, calc(100vw - 32px)); min-width: 0; max-width: none; padding: 22px 16px 14px;
+  animation: pop-center .36s var(--nb-ease-pop) both;
+}
+.enter-world-popup__tape {
+  position: absolute; top: -13px; left: 50%; width: 92px; height: 24px; transform: translateX(-50%) rotate(-3deg);
+  background: repeating-linear-gradient(135deg, rgba(240, 212, 135, .96) 0 9px, rgba(246, 227, 161, .96) 9px 18px);
+  border: 2px solid var(--nb-ink); border-radius: 3px; box-shadow: 1px 2px 0 rgba(17, 17, 17, .35);
+}
+.enter-world-popup__sheet {
+  padding: 8px; border: 2px dashed var(--nb-ink); border-radius: 12px;
+  background: radial-gradient(circle at 1px 1px, rgba(49, 45, 38, .2) 1px, transparent 1.3px) 0 0 / 14px 14px, var(--nb-bg);
+}
+.enter-world-popup .enter-preview { display: block; width: 100%; height: 96px; max-width: none; object-fit: contain; border: 0; border-radius: 6px; background: transparent; }
+.enter-world-popup .enter-label { margin: 0; text-align: center; font-size: 20px; font-weight: 900; letter-spacing: -.01em; color: var(--nb-ink); }
+.enter-world-popup .btn, .enter-world-popup .nb-btn { width: 100%; }
+@keyframes pop-center { from { opacity: 0; transform: translate(-50%, -46%) scale(.9) rotate(-1.5deg); } to { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0); } }
+
+/* Momo in the world: free, big, a chat contact (no box). */
+.world-momo { max-width: min(460px, calc(100vw - 32px)); }
+.world-momo .momo-chat__col { padding-top: 10%; }
+
+/* Success: dim the world, Momo flies in and talks. */
+.world-win { gap: 0; }
+.world-win-momo { display: flex; align-items: flex-start; justify-content: center; max-width: calc(100vw - 32px); }
+.world-win .momo-chat { align-items: flex-start; gap: 14px; }
+.world-win .momo-chat__thread { max-width: min(380px, 52vw); }
+.world-win .momo-chat__bubble { font-size: 17px; }
+.world-win .momo-chat__col { padding-top: 14%; }
+.gesture-cue {
+  display: inline-flex; align-items: center; gap: 10px; margin-top: 4px; padding: 7px 14px 7px 8px; cursor: pointer;
+  font: inherit; font-weight: 900; font-size: 16px; color: var(--nb-ink);
+  background: var(--nb-orange); border: var(--nb-border) solid var(--nb-ink); border-radius: 999px; box-shadow: var(--nb-shadow-sm);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.gesture-cue:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--nb-ink); }
+.gesture-cue:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--nb-ink); }
+.gesture-cue:focus-visible { outline: 3px solid var(--nb-sky); outline-offset: 3px; }
+.gesture-cue__hand { display: grid; place-items: center; width: 44px; height: 44px; background: var(--nb-paper); border: 2.5px solid var(--nb-ink); border-radius: 50%; animation: thumb-nudge 1.6s ease-in-out infinite; }
+.gesture-cue__label { padding-right: 2px; }
+@keyframes thumb-nudge { 0%, 100% { transform: translateY(0) rotate(0); } 40% { transform: translateY(-4px) rotate(-8deg); } 60% { transform: translateY(-1px) rotate(4deg); } }
+
+/* Fail: Momo, softly, with three icon actions. */
+.world-fail { position: absolute; inset: 0; z-index: 300; display: flex; align-items: center; justify-content: center; background: rgba(17, 17, 17, .16); pointer-events: none; animation: fade-in .25s ease-out both; }
+.world-fail .momo-chat { pointer-events: none; }
+.world-fail__actions { display: flex; gap: 8px; flex-wrap: wrap; pointer-events: auto; }
+.world-fail__actions .nb-btn { min-height: 44px; font-size: 14px; padding: 8px 12px; }
+
+/* ======================= Drawing-screen chrome ======================= */
+.nb-toolbar {
+  position: absolute; z-index: 5; right: 18px; top: 50%; transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 9px; padding: 10px;
+  background: var(--nb-leaf); border: var(--nb-border) solid var(--nb-ink); border-radius: 20px; box-shadow: var(--nb-shadow); user-select: none;
+}
+.nb-tool {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  width: 68px; min-height: 68px; padding: 6px 4px; font: inherit; color: var(--nb-ink); cursor: pointer;
+  background: var(--nb-paper); border: 2.5px solid var(--nb-ink); border-radius: 14px;
+  transition: background-color .12s ease;
+}
+.nb-tool:hover { background: #fff; }
+.nb-tool:active { background: var(--nb-leaf-soft); }
+.nb-tool:focus-visible { outline: 3px solid var(--nb-sky); outline-offset: 3px; }
+.nb-tool.is-active { background: var(--nb-orange); cursor: default; }
+.nb-tool__label { font-size: 11px; font-weight: 900; line-height: 1; letter-spacing: .01em; pointer-events: none; }
+
+.drawing-corner { position: absolute; z-index: 130; top: 16px; right: 18px; display: flex; gap: 10px; }
+.drawing-corner .nb-iconbtn { width: 52px; height: 52px; min-height: 0; padding: 0; }
+.drawing-corner .mission-hint-btn { animation: hint-wiggle 5s ease-in-out 2s infinite; }
+@keyframes hint-wiggle { 0%, 92%, 100% { transform: rotate(0); } 94% { transform: rotate(-9deg); } 96% { transform: rotate(8deg); } 98% { transform: rotate(-4deg); } }
+
+.drawing-submit-controls { position: absolute; z-index: 20; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; align-items: center; transition: opacity .2s ease; }
+.drawing-submit-controls.is-idle { opacity: .4; pointer-events: none; }
+.input-switch { display: inline-flex; background: var(--nb-paper); border: var(--nb-border) solid var(--nb-ink); border-radius: 14px; box-shadow: var(--nb-shadow-sm); overflow: hidden; }
+.input-switch button { display: inline-flex; align-items: center; gap: 6px; min-height: 46px; padding: 8px 14px; font: inherit; font-weight: 800; font-size: 15px; color: var(--nb-ink); background: transparent; border: 0; cursor: pointer; }
+.input-switch button + button { border-left: var(--nb-border) solid var(--nb-ink); }
+.input-switch button[aria-pressed="true"] { background: var(--nb-ink); color: var(--nb-paper); }
+.input-switch button:focus-visible { outline: 3px solid var(--nb-sky); outline-offset: -4px; }
+.btn-submit-momo { font-size: 16px; padding: 10px 22px; }
+@media (max-width: 600px) {
+  .drawing-submit-controls { left: auto; right: 12px; bottom: 16px; transform: none; flex-direction: column; align-items: flex-end; z-index: 950; }
+  .nb-toolbar { right: 8px; gap: 6px; padding: 6px; }
+  .nb-tool { width: 56px; min-height: 56px; }
+  .nb-tool__label { font-size: 10px; }
+  .drawing-corner { top: 10px; right: 10px; }
+}
+
+/* ======================= Top-3 card ======================= */
+.prediction-hitl-popup.is-evaluating {
+  width: min(330px, calc(100vw - 56px)) !important; padding: 16px !important; gap: 12px !important; border-radius: 20px !important;
+  border: var(--nb-border) solid var(--nb-ink) !important; box-shadow: var(--nb-shadow) !important;
+  animation: pop-top .34s var(--nb-ease-pop) both;
+}
+@keyframes pop-top { from { opacity: 0; transform: translateY(-10px) scale(.94); } to { opacity: 1; transform: none; } }
+.prediction-hitl-popup.is-evaluating .popup-title { font-size: 21px; font-weight: 900; letter-spacing: -.02em; }
+.prediction-hitl-popup.is-evaluating .popup-candidates .top3 { gap: 8px; }
+.prediction-hitl-popup.is-evaluating .popup-candidates .top3-item {
+  display: grid; grid-template-columns: 30px 1fr auto; grid-template-areas: "rank label star" "bar bar pct"; align-items: center; gap: 4px 8px;
+  padding: 8px 10px; border: 2px solid var(--nb-ink); border-radius: 12px; background: var(--nb-paper); box-shadow: none;
+}
+.prediction-hitl-popup.is-evaluating .popup-candidates .top3-item.top3-item-rank1 { background: var(--nb-leaf-soft); border: 3px solid var(--nb-ink); box-shadow: none; }
+.prediction-hitl-popup .top3-item .rank {
+  grid-area: rank; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; font-size: 15px; font-weight: 900;
+  color: var(--nb-ink); background: var(--nb-yellow); border: 2px solid var(--nb-ink); border-radius: 50%; box-shadow: none;
+}
+.prediction-hitl-popup .top3-item-rank1 .rank { background: var(--nb-orange); }
+.prediction-hitl-popup.is-evaluating .top3-item .label { grid-area: label; font-size: 18px; font-weight: 900; }
+.prediction-hitl-popup .top3-item .rank1-badge { grid-area: star; display: grid; place-items: center; margin: 0; padding: 0; width: 24px; height: 24px; color: var(--nb-orange); background: transparent; }
+.prediction-hitl-popup .top3-item .conf-bar { grid-area: bar; height: 12px; background: #fff; }
+.prediction-hitl-popup .top3-item .conf-fill { background: var(--nb-orange); }
+.prediction-hitl-popup .top3-item-rank1 .conf-fill { background: var(--nb-green); }
+.prediction-hitl-popup .top3-item .conf-num { grid-area: pct; font-size: 14px; min-width: 40px; }
+.prediction-hitl-popup .popup-badge.error-badge { display: inline-flex; align-items: center; gap: 4px; align-self: flex-start; font-size: 12px; text-transform: none; letter-spacing: 0; }
+
+.decision-row { gap: 8px; }
+.decision-row .nb-btn { flex-direction: column; gap: 3px; min-height: 58px; padding: 7px 4px; font-size: 13px; box-shadow: 3px 3px 0 var(--nb-ink); }
+.decision-row .btn-accept { background: var(--nb-green) !important; color: #fffaf0 !important; }
+.decision-row .btn-correct { background: var(--nb-orange) !important; color: var(--nb-ink) !important; }
+.decision-row .btn-override { background: var(--nb-leaf-soft) !important; color: var(--nb-ink) !important; }
+.decision-row .nb-btn.is-selected { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--nb-ink); }
+.subpanel.subpanel-row { border: 2px solid var(--nb-ink); border-radius: 14px; background: var(--nb-paper); box-shadow: none; }
+.subpanel .correct-option { box-shadow: none; }
+.subpanel .correct-option { display: flex; align-items: center; gap: 8px; justify-content: flex-start; min-height: 44px; padding: 6px 10px; background: var(--nb-leaf-soft); font-size: 16px; }
+.correct-option__rank { display: grid; place-items: center; width: 24px; height: 24px; font-size: 13px; background: var(--nb-yellow); border: 2px solid var(--nb-ink); border-radius: 50%; }
+.correct-option__label { flex: 1; text-align: left; }
+.correct-option__pct { font-size: 13px; opacity: .8; }
+.redraw-link { align-self: center !important; }
+
+/* ======================= Cloud band (camera rise only) ======================= */
+.cloud-band { position: absolute; inset: 0; pointer-events: none; }
+.sky-cloud { position: absolute; height: auto; }
+@media (prefers-reduced-motion: reduce) {
+  .gesture-cue__hand, .drawing-corner .mission-hint-btn, .enter-world-popup, .world-fail, .prediction-hitl-popup.is-evaluating { animation: none !important; }
+}
+
+/* ======================= Level intro (world page, story, rise to the sky) ======================= */
+.level-intro { position: fixed; inset: 0; z-index: 1500; overflow: hidden; background: var(--dot-grid-pattern); background-attachment: fixed; }
+.intro-camera { position: absolute; left: 0; top: 0; width: 100%; height: 300%; will-change: transform; }
+.intro-sky, .intro-clouds, .intro-world { position: absolute; left: 0; width: 100%; height: 33.3333%; overflow: hidden; }
+.intro-sky { top: 0; }
+.intro-clouds { top: 33.3333%; }
+.intro-clouds__near { position: absolute; inset: 0; will-change: transform; }
+.intro-world { bottom: 0; }
+.intro-world__art { position: absolute; left: 50%; top: 50%; width: max(100%, 177.78dvh); transform: translate(-50%, -50%); }
+.intro-world__art > * { width: 100%; }
+.intro-momo { position: absolute; left: 28px; top: 24px; z-index: 5; width: min(480px, calc(100vw - 56px)); will-change: transform; pointer-events: none; }
+.intro-momo .momo-chat__extras { pointer-events: auto; }
+.intro-momo .momo-chat__col { transition: opacity .25s ease; }
+.intro-momo.is-flying .momo-chat__col { opacity: 0; }
+.intro-skip { position: absolute; z-index: 6; top: 16px; right: 18px; width: 44px; height: 44px; min-height: 0; padding: 0; opacity: .7; }
+@media (max-width: 600px) { .intro-momo { left: 10px; } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* Thinman as in the game (Character A), used by the intro and the tutorial. */
+.thinman-art { display: block; }
+.thinman-art svg { display: block; width: 100%; height: auto; overflow: visible; }
+.intro-world__art { position: absolute; }
+.intro-thinman { position: absolute; width: 4.6%; transform: translate(-50%, -96.7%); pointer-events: none; }
+.hud-plate__mark .thinman-art { position: absolute; left: 50%; top: 3px; width: 54px; transform: translateX(-50%); }
+@media (max-width: 760px) { .hud-plate__mark .thinman-art { width: 40px; top: 2px; } }
+/* The right-hand tools stay put while Momo's guesses are shown (visual balance); they just rest. */
+.nb-toolbar.is-idle { opacity: .55; }
+.nb-toolbar.is-idle .nb-tool { cursor: default; pointer-events: none; }
+.nb-tool:disabled { cursor: default; }

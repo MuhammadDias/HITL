@@ -9,7 +9,9 @@
  * - Mirror x (1-x) exactly once via indexTipNormalized from hand-gesture.ts
  * - Movement zones: left < 0.35, right > 0.65, center stop (0.35–0.65)
  * - Pinch threshold 0.42 reused from hand-gesture.ts for grab/drag PLACE
- * - Jump: kept false for Level 1 (cross-phase crossing not required/testable)
+ * - Jump: false unless the caller opts in with enableJump (then a held pinch = jump; PROVISIONAL)
+ * - Hysteresis/debounce live in GameplayGestureFilter (zones 0.35/0.65 enter, 0.40/0.60 leave;
+ *   3 stable frames before input after (re)acquiring the hand; tracking loss = instant neutral)
  * 
  * ARCHITECTURE:
  * - Borrows shared camera stream only (getSharedStream) — never opens own camera
@@ -25,22 +27,37 @@
  * - Status string: "initializing" | "tracking" | "tracking-lost" | "camera-unavailable" | "error"
  */
 
-import { FilesetResolver, HandLandmarker, type HandLandmarkerResult } from "@mediapipe/tasks-vision";
+import type { HandLandmarker, HandLandmarkerResult } from "@mediapipe/tasks-vision";
 import type { Landmark } from "./types";
-import { getSharedStream } from "../camera/shared-stream";
-import { evaluateGameplayGesture, type GameplayGestureFrame } from "./gameplay-gesture";
+import { getSharedStream, subscribeSharedStream } from "../camera/shared-stream";
+import { createHandLandmarker, delegateLabel } from "../camera/hand-landmarker";
+import { classifyCameraError, messageFor, type CameraFailureReason } from "../camera/messages";
+import { GameplayGestureFilter, type GameplayGestureFrame } from "./gameplay-gesture";
 
 // Re-export frame type for consumers
 export type GameplayFrame = GameplayGestureFrame;
 
 export type GameplayStatus = "initializing" | "tracking" | "tracking-lost" | "camera-unavailable" | "error";
 
+/** Extra, optional information next to the plain status string (kept separate so onStatus stays a plain string). */
+export interface GameplayDiagnostic {
+  /** MediaPipe backend in use, e.g. "GPU" or "CPU (cadangan)". */
+  delegate?: string;
+  /** Short Indonesian reason (<= 8 words) safe to show a student. Present on failures. */
+  message?: string;
+  reason?: CameraFailureReason;
+}
+
 export interface GameplayHandDriverOptions {
   video: HTMLVideoElement;
   /** Called on every processed frame with gesture data (or neutral on loss) */
   onFrame: (frame: GameplayFrame) => void;
-  /** Called on status changes */
+  /** Called on status CHANGES (deduplicated) */
   onStatus: (status: GameplayStatus) => void;
+  /** Optional diagnostics: chosen delegate on success, student-safe reason on failure. */
+  onDiagnostic?: (info: GameplayDiagnostic) => void;
+  /** Treat a held pinch as jump (gameplay phase only; leave false while placing). */
+  enableJump?: boolean;
   /** WASM root for FilesetResolver; defaults to /mediapipe/wasm */
   wasmRoot?: string;
   /** Model asset path; defaults to /models/hand_landmarker.task */
@@ -51,6 +68,10 @@ const STALLED_FRAME_THRESHOLD_MS = 300;
 const DEFAULT_WASM_ROOT = "/mediapipe/wasm";
 const DEFAULT_MODEL_URL = "/models/hand_landmarker.task";
 
+function neutralFrame(): GameplayFrame {
+  return { tracked: false, cursor: null, pinched: false, input: { left: false, right: false, jump: false } };
+}
+
 export class GameplayHandDriver {
   private landmarker: HandLandmarker | null = null;
   private stream: MediaStream | null = null;
@@ -60,11 +81,31 @@ export class GameplayHandDriver {
   private lastVideoTime = -1;
   private lastProcessTime = 0;
   private generation = 0;
+  private readonly filter: GameplayGestureFilter;
+  private lastStatus: GameplayStatus | null = null;
+  private neutralReported = false;
+  private unsubscribeStream: (() => void) | null = null;
+  private onVisibility: (() => void) | null = null;
 
-  constructor(private readonly options: GameplayHandDriverOptions) {}
+  constructor(private readonly options: GameplayHandDriverOptions) {
+    this.filter = new GameplayGestureFilter({ enableJump: options.enableJump });
+  }
+
+  /** Emit status only when it changes (a 60 fps loop must not re-notify React every frame). */
+  private setStatus(status: GameplayStatus): void {
+    if (status === this.lastStatus) return;
+    this.lastStatus = status;
+    this.options.onStatus(status);
+  }
+
+  private fail(status: "camera-unavailable" | "error", reason: CameraFailureReason): void {
+    this.lastStatus = status;
+    this.options.onStatus(status);
+    this.options.onDiagnostic?.({ reason, message: messageFor(reason) });
+  }
 
   async start(): Promise<void> {
-    const { onStatus, video, wasmRoot = DEFAULT_WASM_ROOT, modelUrl = DEFAULT_MODEL_URL } = this.options;
+    const { video, wasmRoot = DEFAULT_WASM_ROOT, modelUrl = DEFAULT_MODEL_URL } = this.options;
 
     // Idempotent: if already running, do nothing
     if (this.running) return;
@@ -73,79 +114,55 @@ export class GameplayHandDriver {
     this.initAborted = false;
     this.lastVideoTime = -1;
     this.lastProcessTime = performance.now();
+    this.lastStatus = null;
+    this.neutralReported = false;
+    this.filter.reset();
     this.generation++;
     const myGen = this.generation;
+    const stale = () => this.initAborted || !this.running || this.generation !== myGen;
 
     try {
-      console.log('[DRIVER-START] Entry');
-      onStatus("initializing");
+      this.setStatus("initializing");
 
       // Borrow shared stream ONLY — never request new camera access
       const shared = getSharedStream();
-      console.log('[DRIVER-START] shared stream:', !!shared);
       if (!shared || !shared.getVideoTracks().some((t) => t.readyState === "live")) {
-        console.log('[DRIVER-START] shared stream invalid, exiting');
         this.running = false;
-        onStatus("camera-unavailable");
+        this.fail("camera-unavailable", "camera-unavailable");
         return;
       }
       this.stream = shared;
+      this.watchStream(shared);
 
-      // Bind video element to borrowed stream
-      video.srcObject = this.stream;
-      console.log('[DRIVER-START] calling video.play()');
+      // Bind video element to borrowed stream (re-assigning the same stream restarts playback)
+      if (video.srcObject !== this.stream) video.srcObject = this.stream;
       await video.play().catch(() => undefined);
-      console.log('[DRIVER-START] video.play() resolved, initAborted:', this.initAborted);
 
       // Check if init was aborted while awaiting video play
-      if (this.initAborted || !this.running || this.generation !== myGen) {
-        console.log('[DRIVER-START] aborted during video play, exiting early');
+      if (stale()) {
         await this.cleanupLandmarker();
         return;
       }
 
-      // Initialize MediaPipe HandLandmarker
-      console.log('[DRIVER-START] BEFORE FilesetResolver');
-      const vision = await FilesetResolver.forVisionTasks(wasmRoot);
-      console.log('AFTER FilesetResolver, initAborted:', this.initAborted, 'running:', this.running);
+      // GPU first, one CPU retry (see camera/hand-landmarker.ts)
+      const created = await createHandLandmarker({ wasmRoot, modelUrl });
 
-      // Continue to create landmarker even if aborted, so it gets properly closed
-      console.log('BEFORE createFromOptions');
-      let created: HandLandmarker | null = null;
-      try {
-        created = await HandLandmarker.createFromOptions(vision, {
-          baseOptions: { modelAssetPath: modelUrl, delegate: "GPU" },
-          runningMode: "VIDEO",
-          numHands: 1,
-        });
-      } catch (e) {
-        console.log('createFromOptions threw:', e);
-        throw e;
-      }
-
-      console.log('AFTER createFromOptions, created:', created);
       // If aborted during createFromOptions, close the created landmarker immediately
-      if (this.initAborted || !this.running || this.generation !== myGen) {
-        console.log('CLEANING UP LANDMARKER BECAUSE ABORTED', {initAborted: this.initAborted, running: this.running, genMatch: this.generation === myGen, createdExists: !!created});
-        if (created) {
-          console.log('Calling created.close()');
-          try { created.close(); console.log('created.close() done'); } catch (e) { console.log('created.close() error:', e); }
-        }
+      if (stale()) {
+        try { created.landmarker.close(); } catch { /* best-effort */ }
         return;
       }
-      this.landmarker = created;
-      if (this.initAborted || !this.running || this.generation !== myGen) {
-        console.log('CLEANING UP LANDMARKER BECAUSE ABORTED (post-assign)');
-        await this.cleanupLandmarker();
-        return;
-      }
+      this.landmarker = created.landmarker;
 
-      onStatus("tracking");
+      this.setStatus("tracking");
+      this.options.onDiagnostic?.({ delegate: delegateLabel(created) });
+      this.watchVisibility();
       this.loop();
     } catch (err) {
-      console.log('CAUGHT ERR IN START:', err);
+      if (stale()) return; // superseded by stop()/restart: caller already moved on
+      const reason = classifyCameraError(err);
       await this.stop();
-      onStatus(this.classifyError(err));
+      this.fail(reason === "camera-unavailable" || reason === "camera-busy" ? "camera-unavailable" : "error", reason);
     }
   }
 
@@ -155,14 +172,16 @@ export class GameplayHandDriver {
     this.generation++;
     cancelAnimationFrame(this.rafId);
     this.rafId = 0;
+    this.unsubscribeStream?.();
+    this.unsubscribeStream = null;
+    if (this.onVisibility && typeof document !== "undefined") {
+      document.removeEventListener("visibilitychange", this.onVisibility);
+    }
+    this.onVisibility = null;
 
     // Output neutral input immediately on stop
-    this.options.onFrame({
-      tracked: false,
-      cursor: null,
-      pinched: false,
-      input: { left: false, right: false, jump: false },
-    });
+    this.options.onFrame(neutralFrame());
+    this.filter.reset();
 
     // Cleanup landmarker
     await this.cleanupLandmarker();
@@ -171,10 +190,55 @@ export class GameplayHandDriver {
     this.stream = null;
   }
 
+  /** Camera revoked / unplugged / replaced: neutral input and a clear reason, never a stuck direction. */
+  private watchStream(stream: MediaStream): void {
+    this.unsubscribeStream?.();
+    const tracks = stream.getVideoTracks();
+    const onEnded = () => this.onCameraLost();
+    tracks.forEach((t) => t.addEventListener?.("ended", onEnded));
+    const unsub = subscribeSharedStream((current) => {
+      if (current !== stream) this.onCameraLost();
+    });
+    this.unsubscribeStream = () => {
+      unsub();
+      tracks.forEach((t) => t.removeEventListener?.("ended", onEnded));
+    };
+  }
+
+  private onCameraLost(): void {
+    if (!this.running) return;
+    void this.stop().then(() => this.fail("camera-unavailable", "camera-lost"));
+  }
+
+  /** Hidden tab: neutral input immediately (visibilitychange must release held input). */
+  private watchVisibility(): void {
+    if (typeof document === "undefined" || this.onVisibility) return;
+    this.onVisibility = () => {
+      if (document.hidden) this.reportNeutral();
+    };
+    document.addEventListener("visibilitychange", this.onVisibility);
+  }
+
+  private reportNeutral(): void {
+    this.filter.reset();
+    if (!this.neutralReported) {
+      this.neutralReported = true;
+      this.options.onFrame(neutralFrame());
+    }
+    this.setStatus("tracking-lost");
+  }
+
   private loop = (): void => {
     if (!this.running) return;
 
     this.rafId = requestAnimationFrame(this.loop);
+
+    // Hidden tab: no inference, neutral input.
+    if (typeof document !== "undefined" && document.hidden) {
+      this.lastProcessTime = performance.now();
+      this.reportNeutral();
+      return;
+    }
 
     const video = this.options.video;
     if (!this.landmarker || video.readyState < 2) {
@@ -196,52 +260,33 @@ export class GameplayHandDriver {
       result = this.landmarker.detectForVideo(video, now);
     } catch {
       this.running = false;
+      cancelAnimationFrame(this.rafId);
+      this.rafId = 0;
+      this.lastStatus = "error";
       this.options.onStatus("error");
-      this.options.onFrame({
-        tracked: false,
-        cursor: null,
-        pinched: false,
-        input: { left: false, right: false, jump: false },
-      });
+      this.options.onDiagnostic?.({ reason: "tracker-error", message: messageFor("tracker-error") });
+      this.options.onFrame(neutralFrame());
       this.cleanupLandmarkerSync();
       return;
     }
 
-    const landmarks = result.landmarks[0];
-    const frame = evaluateGameplayGesture(landmarks);
+    const landmarks: Landmark[] | undefined = result.landmarks[0];
+    const frame = this.filter.update(landmarks, now);
+    this.neutralReported = false;
     this.options.onFrame(frame);
-
-    // Update status based on tracking state
-    if (frame.tracked) {
-      this.options.onStatus("tracking");
-    } else {
-      this.options.onStatus("tracking-lost");
-    }
+    this.setStatus(frame.tracked ? "tracking" : "tracking-lost");
   };
 
   private checkStalledFrame(): void {
     const now = performance.now();
     if (now - this.lastProcessTime > STALLED_FRAME_THRESHOLD_MS) {
-      // Stalled frame - output neutral input immediately
-      this.options.onFrame({
-        tracked: false,
-        cursor: null,
-        pinched: false,
-        input: { left: false, right: false, jump: false },
-      });
-      this.options.onStatus("tracking-lost");
+      // Stalled frame - output neutral input immediately (once per stall, not every rAF)
+      this.reportNeutral();
     }
   }
 
   private async cleanupLandmarker(): Promise<void> {
-    if (this.landmarker) {
-      try {
-        this.landmarker.close();
-      } catch {
-        // best-effort
-      }
-      this.landmarker = null;
-    }
+    this.cleanupLandmarkerSync();
   }
 
   private cleanupLandmarkerSync(): void {
@@ -253,17 +298,5 @@ export class GameplayHandDriver {
       }
       this.landmarker = null;
     }
-  }
-
-  private classifyError(err: unknown): GameplayStatus {
-    const name = err instanceof DOMException ? err.name : "";
-    const msg = err instanceof Error ? err.message : String(err);
-    if (name === "NotFoundError" || name === "OverconstrainedError" || name === "NotReadableError") {
-      return "camera-unavailable";
-    }
-    if (/model|asset|fileset/i.test(msg)) {
-      return "error";
-    }
-    return "error";
   }
 }

@@ -157,7 +157,7 @@
       #1e2126;
     opacity:0;
     transition:opacity .28s ease .08s;
-  }.camera-prototype-root .toggle-card.on .video-inner{opacity:1}.camera-prototype-root .toggle-card.on.has-stream .video-inner{opacity:0;pointer-events:none}.camera-prototype-root .video-inner::before{
+  }.camera-prototype-root .toggle-card.on .video-inner,.camera-prototype-root .toggle-card.failed .video-inner{opacity:1}.camera-prototype-root .toggle-card.on.has-stream .video-inner{opacity:0;pointer-events:none}.camera-prototype-root .video-inner::before{
     content:"";
     position:absolute;
     inset:0;
@@ -176,7 +176,7 @@
     letter-spacing:.14em;
     opacity:0;
     transition:opacity .22s ease .22s;
-  }.camera-prototype-root .toggle-card.on .rec-dot{opacity:1}.camera-prototype-root .toggle-card.on.has-stream .rec-dot{opacity:1}.camera-prototype-root .rec-dot::before{
+  }/* REC only while a stream is really live (never "on" without a camera) */.camera-prototype-root .toggle-card.on.has-stream .rec-dot{opacity:1}.camera-prototype-root .rec-dot::before{
     content:"";
     width:6px;
     height:6px;
@@ -264,3 +264,20 @@
     font-weight:900;
     pointer-events:none;
   }@media (max-width:640px){.camera-prototype-root{padding:24px 16px}.camera-prototype-root .eyebrow{margin-bottom:48px;font-size:12px}.camera-prototype-root .headline{font-size:clamp(38px,12vw,50px)}.camera-prototype-root .subtext{margin-bottom:42px;font-size:14px}}@media (prefers-reduced-motion:reduce){.camera-prototype-root *,.camera-prototype-root *::before,.camera-prototype-root *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+/* Short status / failure line under the camera card (also visible while the stream is live). */
+.camera-prototype-root .camera-status{
+  position:relative;
+  z-index:2;
+  max-width:260px;
+  margin:6px auto 0;
+  padding:3px 8px;
+  border-radius:6px;
+  background:rgba(0,0,0,.55);
+  color:#ffffff;
+  font-size:11px;
+  font-weight:700;
+  line-height:1.35;
+  text-align:center;
+}
+.camera-prototype-root .camera-status:empty{display:none}

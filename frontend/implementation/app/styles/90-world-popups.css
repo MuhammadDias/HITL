@@ -1,0 +1,47 @@
+/* World pop-ups: enter-world offer, Momo walking in, success card.
+   Part of the ordered globals.css split: keep the import order in app/globals.css. */
+/* ========================================================
+ * World pop-ups (offer to enter the world, Momo walking in, success card). Same tokens as the rest of the app.
+ * ======================================================== */
+.enter-world-popup {
+  position: absolute; z-index: 320; left: 50%; top: 42%; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  min-width: 240px; max-width: min(320px, calc(100vw - 32px)); padding: 14px 16px;
+  background: #fffaf0; border: 2px solid #111111; border-radius: 16px; box-shadow: 4px 4px 0 #111111;
+  animation: world-pop .22s ease-out;
+}
+.enter-world-popup .enter-preview { width: 100%; max-width: 220px; height: 74px; object-fit: contain; border: 1.5px dashed #111111; border-radius: 10px; background: #f7f5ea; }
+.enter-world-popup .enter-label { margin: 0; font-weight: 800; font-size: 16px; color: #111111; }
+.enter-world-popup .btn { width: 100%; }
+
+.world-momo { position: fixed; z-index: 280; pointer-events: none; max-width: min(260px, calc(100vw - 32px)); transition: left .45s ease, top .45s ease; }
+.world-momo-play, .world-momo-fail { left: 24px; top: 76px; }
+
+.world-win { position: absolute; inset: 0; z-index: 330; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; pointer-events: none; }
+.world-win > * { pointer-events: auto; }
+.world-win-momo { animation: momo-walk-in 1.2s cubic-bezier(.22,.8,.3,1) both; }
+.world-win-momo img { display: block; transform-origin: 50% 100%; animation: momo-hop .5s ease-in-out 2 .1s; }
+.world-win-card {
+  position: static !important; transform: none !important; top: auto !important; left: auto !important;
+  min-width: 260px; max-width: min(360px, calc(100vw - 32px)); text-align: center;
+  display: flex; flex-direction: column; gap: 8px; align-items: center;
+  animation: world-pop .3s ease-out .9s both;
+}
+.world-win-card p { margin: 0; font-size: 14px; line-height: 1.4; }
+.world-win-card .summary-literacy-line { font-size: 12px; color: var(--ink-soft, #756f65); font-weight: 600; }
+.world-win-card .overlay-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+
+@keyframes world-pop { from { opacity: 0; transform: translate(-50%, -46%) scale(.96); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+.world-win-card { animation-name: world-fade !important; }
+@keyframes world-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes momo-walk-in { from { transform: translateY(-42vh); opacity: 0; } 15% { opacity: 1; } to { transform: translateY(0); opacity: 1; } }
+@keyframes momo-hop { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-10px) rotate(-4deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .enter-world-popup, .world-win-momo, .world-win-momo img, .world-win-card { animation: none !important; }
+  .world-momo { transition: none; }
+}
+.world-win-card.overlay { margin: 0 !important; }
+.world-momo-place { left: 24px; top: 76px; }
+.prediction-hitl-geometry { width: min(300px, calc(100vw - 56px)) !important; } /* must match .is-evaluating: Momo positions itself from this box */
+.momo-art svg { height: 100%; width: auto; display: block; overflow: visible; }
+

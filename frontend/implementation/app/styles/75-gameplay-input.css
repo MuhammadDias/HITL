@@ -1,0 +1,18 @@
+/* Stickman world pointer/touch controls and compact viewport layout.
+   Part of the ordered globals.css split: keep the import order in app/globals.css. */
+/* Dunia Stickman only: pointer/touch controls and compact viewport layout. */
+#screen-gameplay .game-canvas, #screen-gameplay .game-input-button { touch-action: none; }
+#screen-gameplay .game-input-button { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; min-width: 54px; font-weight: 700; transition: transform 0.06s ease, background-color 0.06s ease, box-shadow 0.06s ease; }
+#screen-gameplay .game-input-button:active, #screen-gameplay .game-input-button.is-pressed { transform: translateY(2px) scale(0.96); box-shadow: 1px 1px 0 #111111 !important; background-color: #23211d !important; color: #fffaf0 !important; }
+#screen-gameplay .game-input-button.btn-primary:active, #screen-gameplay .game-input-button.btn-primary.is-pressed { background-color: #356614 !important; color: #fffaf0 !important; }
+#screen-gameplay .game-control-keys { margin: 0; font-size: 11px; text-align: center; }
+@media (max-width: 600px) {
+ #screen-gameplay .stage-floating-header { left: 10px; right: 10px; top: 10px; flex-wrap: wrap; gap: 8px; }
+ #screen-gameplay .stage-floating-header > div { flex-wrap: wrap; gap: 6px !important; }
+ #screen-gameplay .stage-floating-header h2 { font-size: 15px !important; }
+ #screen-gameplay .stage-floating-header .btn { font-size: 11px; }
+ #screen-gameplay .stage-floating-controls { bottom: 190px; max-width: calc(100vw - 16px); width: max-content; flex-wrap: wrap; justify-content: center; gap: 6px; padding: 8px; border-radius: 14px; }
+ #screen-gameplay .stage-floating-controls > span { font-size: 11px !important; }
+ #screen-gameplay .stage-input-status-chip { bottom: 4px !important; right: 4px !important; max-width: calc(100vw - 8px); font-size: 9px !important; }
+}
+

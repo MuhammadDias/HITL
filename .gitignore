@@ -97,6 +97,8 @@ cloudflared
 
 # Browser test recordings from the frontend's E2E runs (kept in the hitl-momo repo)
 frontend/implementation/docs/evidence/videos/
+frontend/implementation/docs/**/*.webm
+frontend/implementation/docs/**/*.mp4
 
 # Temporary files
 *.tmp

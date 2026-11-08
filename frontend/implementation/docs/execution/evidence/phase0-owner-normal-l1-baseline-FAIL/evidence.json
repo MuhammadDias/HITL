@@ -1,0 +1,378 @@
+{
+  "run": "2026-11-04T21-42-30-604Z",
+  "finished": "2026-11-04T21:42:56.078Z",
+  "port": 3397,
+  "steps": [
+    {
+      "at": "2026-11-04T21:42:30.612Z",
+      "step": "run-start",
+      "detail": {
+        "run": "2026-11-04T21-42-30-604Z",
+        "commit": "54ebec1830760fe0b692d7a40b25ceb041bfdef9",
+        "sourceSha256": "c97aa3bf21c7d23546b7dfb42f89c8c7528d8e74bb4075bccf6ff22533a94222",
+        "runtime": "v22.23.4",
+        "port": 3397,
+        "prediction": "MOCK fixture if configured by application; no API/direct route invocation"
+      }
+    },
+    {
+      "at": "2026-11-04T21:42:30.617Z",
+      "step": "server-process",
+      "detail": {
+        "pid": 1824,
+        "command": "/opt/node22/bin/node",
+        "port": 3397
+      }
+    },
+    {
+      "at": "2026-11-04T21:42:37.880Z",
+      "step": "navigation",
+      "detail": "http://127.0.0.1:3397/"
+    },
+    {
+      "at": "2026-11-04T21:42:38.800Z",
+      "step": "camera-skip-visible",
+      "detail": ""
+    },
+    {
+      "at": "2026-11-04T21:42:38.922Z",
+      "step": "camera-skip-preclick-diagnostic",
+      "detail": {
+        "boundingBox": {
+          "x": 522.859375,
+          "y": 601.078125,
+          "width": 234.28125,
+          "height": 44
+        },
+        "hit": {
+          "tag": "BUTTON",
+          "cls": "camera-skip",
+          "disabled": false,
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "scroll": {
+            "x": 0,
+            "y": 0
+          },
+          "rect": {
+            "x": 522.859375,
+            "y": 601.078125,
+            "width": 234.28125,
+            "height": 44
+          }
+        }
+      }
+    },
+    {
+      "at": "2026-11-04T21:42:39.045Z",
+      "step": "camera-skip-trusted-click",
+      "detail": {
+        "attempt": 1,
+        "at": "2026-11-04T21:42:38.922Z",
+        "completedAt": "2026-11-04T21:42:39.045Z",
+        "method": "Playwright locator.click (ordinary trusted input)",
+        "before": "http://127.0.0.1:3397/onboarding/cam",
+        "after": "http://127.0.0.1:3397/onboarding/number"
+      }
+    },
+    {
+      "at": "2026-11-04T21:42:39.047Z",
+      "step": "camera-skip-transition-confirmed",
+      "detail": {
+        "url": "http://127.0.0.1:3397/onboarding/number",
+        "at": "2026-11-04T21:42:39.047Z"
+      }
+    },
+    {
+      "at": "2026-11-04T21:42:39.066Z",
+      "step": "student-number-visible",
+      "detail": ""
+    },
+    {
+      "at": "2026-11-04T21:42:39.291Z",
+      "step": "student-number-confirm",
+      "detail": ""
+    },
+    {
+      "at": "2026-11-04T21:42:39.305Z",
+      "step": "tutorial-skip-visible",
+      "detail": ""
+    },
+    {
+      "at": "2026-11-04T21:42:39.463Z",
+      "step": "tutorial-skip-click",
+      "detail": ""
+    },
+    {
+      "at": "2026-11-04T21:42:39.626Z",
+      "step": "level1-entry",
+      "detail": "normal locator click"
+    },
+    {
+      "at": "2026-11-04T21:42:39.847Z",
+      "step": "mission-briefing-dismissed",
+      "detail": "normal dialog button click"
+    },
+    {
+      "at": "2026-11-04T21:42:39.862Z",
+      "step": "pre-drag-pointer-hit-test",
+      "detail": {
+        "point": {
+          "x": 358.40000000000003,
+          "y": 374.40000000000003
+        },
+        "canvas": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 1280,
+            "height": 720
+          },
+          "pointerEvents": "auto"
+        },
+        "hit": {
+          "tag": "CANVAS",
+          "cls": "jsx-cf13e47a80b8106c draw-canvas",
+          "testid": "draw-canvas",
+          "insideCanvas": true
+        }
+      }
+    },
+    {
+      "at": "2026-11-04T21:42:40.229Z",
+      "step": "pointer-drawing",
+      "detail": "mouse down/move/up"
+    },
+    {
+      "at": "2026-11-04T21:42:40.237Z",
+      "step": "post-draw-dom-event-diagnostic",
+      "detail": {
+        "url": "http://127.0.0.1:3397/level1",
+        "canvas": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 1280,
+            "height": 720
+          },
+          "hit": {
+            "tag": "CANVAS",
+            "cls": "jsx-cf13e47a80b8106c draw-canvas",
+            "testid": "draw-canvas"
+          },
+          "dataset": {
+            "strokeCount": "1",
+            "pointCount": "19"
+          }
+        },
+        "submit": {
+          "disabled": false,
+          "rect": {
+            "x": 705.40625,
+            "y": 656,
+            "width": 161.65625,
+            "height": 44
+          }
+        },
+        "active": "position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20; display: flex; gap: 8px; flex-wrap: wrap; opacity: 1; pointer-events: auto;"
+      }
+    },
+    {
+      "at": "2026-11-04T21:42:40.296Z",
+      "step": "submit",
+      "detail": "normal click"
+    },
+    {
+      "at": "2026-11-04T21:42:41.115Z",
+      "step": "top3",
+      "detail": {
+        "count": 3,
+        "labels": [
+          "balok",
+          "papan",
+          "batu"
+        ],
+        "fixture": "Prediction provenance MOCK/unverified; not REAL claim"
+      }
+    },
+    {
+      "at": "2026-11-04T21:42:41.147Z",
+      "step": "decision-balok",
+      "detail": {
+        "type": "Accept",
+        "rank": 1,
+        "label": "balok"
+      }
+    },
+    {
+      "at": "2026-11-04T21:42:48.098Z",
+      "step": "placement-pre-drag-read-only",
+      "detail": {
+        "placementBefore": {
+          "phase": "placing",
+          "x": 92.57142857142857,
+          "y": 260.10204081632656,
+          "w": 130.6122448979592,
+          "h": 19.591836734693878,
+          "geometry": {
+            "stage": 1,
+            "sceneIndex": 1,
+            "source": {
+              "width": 490,
+              "height": 325
+            },
+            "world": {
+              "width": 800,
+              "height": 450
+            },
+            "platforms": [
+              {
+                "id": "stage-1-left-cliff",
+                "x": 0,
+                "y": 279.6938775510204,
+                "w": 251.42857142857144,
+                "h": 210.6122448979592
+              },
+              {
+                "id": "stage-1-right-cliff",
+                "x": 584.4897959183673,
+                "y": 273.16326530612247,
+                "w": 215.51020408163265,
+                "h": 217.14285714285714
+              }
+            ],
+            "hazards": [],
+            "spawn": {
+              "x": 68.57142857142857,
+              "y": 279.6938775510204
+            },
+            "goal": {
+              "x": 728.1632653061224,
+              "y": 233.9795918367347,
+              "w": 39.183673469387756,
+              "h": 39.183673469387756
+            },
+            "object": {
+              "w": 130.6122448979592,
+              "h": 19.591836734693878
+            },
+            "killY": 531.1224489795918
+          },
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 1280,
+            "height": 720
+          }
+        },
+        "start": {
+          "x": 252.60408163265308,
+          "y": 431.8367346938776
+        },
+        "target": {
+          "x": 640,
+          "y": 415.99999999999994
+        },
+        "preTarget": {
+          "screen": {
+            "x": 640,
+            "y": 415.99999999999994
+          },
+          "world": {
+            "x": 400,
+            "y": 260
+          },
+          "hit": "game-canvas"
+        }
+      }
+    },
+    {
+      "at": "2026-11-04T21:42:50.943Z",
+      "step": "placement-pointer-drag",
+      "detail": "trusted ordinary mouse down/move/up"
+    },
+    {
+      "at": "2026-11-04T21:42:51.649Z",
+      "step": "placement-post-drag-read-only",
+      "detail": {
+        "placementAfter": {
+          "phase": "placing",
+          "x": 334.6938775510205,
+          "y": 250.20408163265307,
+          "w": 130.6122448979592,
+          "h": 19.591836734693878,
+          "committedCount": 0,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 1280,
+            "height": 720
+          }
+        },
+        "confirmEnabled": true,
+        "confirmDisabled": false
+      }
+    },
+    {
+      "at": "2026-11-04T21:42:52.575Z",
+      "step": "placement-confirm",
+      "detail": "normal visible UI button click"
+    },
+    {
+      "at": "2026-11-04T21:42:52.937Z",
+      "step": "placement-committed-read-only",
+      "detail": {
+        "phase": "gameplay",
+        "commitX": 334.6938775510205,
+        "commitY": 250.20408163265307,
+        "commitCount": 1,
+        "objectX": 334.6938775510205,
+        "objectY": 250.20408163265307,
+        "grounded": true
+      }
+    },
+    {
+      "at": "2026-11-04T21:42:54.102Z",
+      "step": "adaptive-ground-approach",
+      "detail": {
+        "label": "approach-left-cliff",
+        "targetX": 180,
+        "observed": {
+          "x": 168.57142857142856,
+          "y": 239.69,
+          "vx": 0,
+          "grounded": true,
+          "phase": "gameplay",
+          "settled": false,
+          "outcome": null
+        },
+        "release": {
+          "at": "2026-11-04T21:42:54.002Z",
+          "x": 168.57142857142856,
+          "vx": 0,
+          "sampleMs": 559,
+          "lead": 56.57
+        },
+        "keyDownAt": "2026-11-04T21:42:53.362Z",
+        "keyUpAt": "2026-11-04T21:42:54.102Z",
+        "input": "ArrowRight; telemetry/speed/observed-sample lead-gated release",
+        "overshootEvidenceWorldUnits": 56.57
+      }
+    },
+    {
+      "at": "2026-11-04T21:42:55.838Z",
+      "step": "BLOCKER",
+      "detail": "Error: jump 1: no verified landing; {\"before\":{\"x\":184.57142857142856,\"y\":239.69,\"vx\":0,\"grounded\":true,\"phase\":\"gameplay\",\"settled\":false,\"outcome\":null},\"airborne\":{\"x\":284.57142857142856,\"y\":172.13,\"vx\":0,\"grounded\":false,\"phase\":\"gameplay\",\"settled\":false,\"outcome\":null},\"rightRelease\":null,\"latest\":{\"x\":378.6938775510205,\"y\":545.29,\"vx\":0,\"grounded\":false,\"phase\":\"gameplay\",\"settled\":true,\"outcome\":\"fail\"}}\n    at jumpTo (file:///home/user/hitl-momo/implementation/e2e/owner-normal-l1.mjs:132:31)\n    at async main (file:///home/user/hitl-momo/implementation/e2e/owner-normal-l1.mjs:142:2)"
+    }
+  ],
+  "consoleAndPageErrors": [],
+  "networkErrors": [],
+  "video": {
+    "path": "/home/user/hitl-momo/implementation/docs/evidence/videos/owner-normal-l1/2026-11-04T21-42-30-604Z/page@58d1c1936834db911a294cd58e4136cf.webm",
+    "sha256": "eee0e17b366eda3e0fd94776884b6d7aebbc1362c867961f4f3b31b87876087f",
+    "size": 2635350
+  },
+  "result": "BLOCKED / NOT ACCEPTANCE"
+}

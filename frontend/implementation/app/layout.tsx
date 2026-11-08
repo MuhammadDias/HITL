@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import "./level-ribbon-bookmark.css";
 
 export const metadata: Metadata = {
   title: "Sketchbook Universe — DEV BUILD (author-side)",

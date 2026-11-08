@@ -1,0 +1,67 @@
+/* Gameplay stage viewport, floating header and floating controls.
+   Part of the ordered globals.css split: keep the import order in app/globals.css. */
+/* Gameplay Stage: FULLSCREEN RETINA CRISP VIEWPORT (Matches MacBook Pro Wireframe) */
+#screen-gameplay.screen {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: #e8efe3 !important;
+  background-image: radial-gradient(circle at 1px 1px, rgba(49, 45, 38, 0.16) 1px, transparent 1.2px) !important;
+  background-size: 22px 22px !important;
+  overflow: hidden !important;
+  z-index: 100 !important;
+  display: block !important;
+}
+
+#screen-gameplay .game-canvas {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  object-fit: fill !important;
+  display: block !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  image-rendering: auto !important;
+}
+
+/* Floating minimal UI overlay across the top */
+#screen-gameplay .stage-floating-header {
+  position: absolute;
+  top: 16px;
+  left: 24px;
+  right: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  z-index: 200;
+}
+#screen-gameplay .stage-floating-header * {
+  pointer-events: auto;
+}
+
+/* Floating bottom placement / gameplay controls */
+#screen-gameplay .stage-floating-controls {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: rgba(247, 245, 234, 0.95);
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(35, 33, 29, 0.18);
+  box-shadow: 0 4px 16px rgba(55, 31, 13, 0.12);
+  z-index: 200;
+}

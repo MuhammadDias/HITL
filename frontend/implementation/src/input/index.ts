@@ -4,6 +4,7 @@ import { attachPointerDriver, strokesToDrawingInput } from "./pointer-input";
 import { HandDrawingDriver } from "./mediapipe-input";
 import { evaluateGesture, mapToCanvas, type CursorState } from "./hand-gesture";
 import { PointSmoother } from "./smoothing";
+import { DRAWING_MODE_EVENT, HAND_STATUS_EVENT, messageFor } from "../camera/messages";
 
 /**
  * TASK 06 — Drawing workspace orchestrator.
@@ -51,6 +52,7 @@ export class DrawingSurface {
       if (!this.video) return { kind: "error", reason: "camera-unavailable" };
       try {
         this.detachPointer?.();
+        this.detachPointer = null; // must be nulled or attachPointer() later no-ops and pointer drawing stays dead
         this.handDriver = new HandDrawingDriver({
           canvas: this.canvas,
           video: this.video,
@@ -58,15 +60,19 @@ export class DrawingSurface {
           modelUrl: this.options.modelUrl ?? "/models/hand_landmarker.task",
           onStatus: (s) => {
             this.updateHandCursorFromStatus(s);
-            this.options.onStatusChange?.(s);
+            this.publishStatus(s);
+            // The hand driver swallows its own start errors (permission denied, model/tracker failure).
+            // Never leave the student without any input: fall back to pointer, keep the error visible.
+            if (s.kind === "error") void this.fallbackToPointer();
           },
           onRender: () => {
             this.render();
             this.reportInkChange();
           },
+          // The driver always calls onRender right after onCursor for a landmark frame:
+          // only record the cursor here so a frame costs ONE canvas redraw, not two.
           onCursor: (c) => {
             this.cursor = c;
-            this.render();
           },
         });
         await this.handDriver.start();
@@ -74,8 +80,9 @@ export class DrawingSurface {
         // Any construction failure falls back to pointer without restart.
         await this.stopHand();
         this.attachPointer();
-        const status: HandInputStatus = { kind: "error", reason: "tracker-error" };
-        this.options.onStatusChange?.(status);
+        const status: HandInputStatus = { kind: "error", reason: "tracker-error", message: messageFor("tracker-error") };
+        this.publishStatus(status);
+        this.announcePointerFallback();
         return status;
       }
     }
@@ -105,12 +112,42 @@ export class DrawingSurface {
     );
   }
 
+  private async fallbackToPointer(): Promise<void> {
+    const d = this.handDriver;
+    this.handDriver = null;
+    try { await d?.stop(); } catch { /* best-effort */ }
+    this.cursor = null;
+    this.attachPointer();
+    this.render();
+    this.announcePointerFallback();
+  }
+
+  private lastStatusKey = "";
+
+  /** Deduplicated status fan-out: per-frame "ready"/"drawing" repeats must not spam React/HUD listeners. */
+  private publishStatus(status: HandInputStatus): void {
+    const key = JSON.stringify(status);
+    if (key === this.lastStatusKey) return;
+    this.lastStatusKey = key;
+    this.options.onStatusChange?.(status);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent(HAND_STATUS_EVENT, { detail: status }));
+    }
+  }
+
+  /** Tell the toolbar/camera card that the student is back on the pointer (keeps their toggles truthful). */
+  private announcePointerFallback(): void {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent(DRAWING_MODE_EVENT, { detail: "pointer" }));
+    }
+  }
+
   private async stopHand(): Promise<void> {
     if (this.handDriver) {
       const d = this.handDriver;
       this.handDriver = null;
       await d.stop();
-      this.options.onStatusChange?.({ kind: "idle" });
+      this.publishStatus({ kind: "idle" });
     }
     this.cursor = null;
     this.attachPointer();

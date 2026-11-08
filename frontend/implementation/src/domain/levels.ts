@@ -1,4 +1,4 @@
-﻿import type { LevelContext } from "./types";
+import type { LevelContext } from "./types";
 
 /**
  * DEV / PLACEHOLDER LEVEL DATA — temporary fixtures only.
@@ -60,8 +60,8 @@ const STAGE_1: LevelDefinition = makeLevel({
     { labelId: "tangga", displayName: "Tangga", icon: "🪜" },
   ],
   summary: {
-    gameplay: "Kamu berhasil membuat jalur untuk Stickman menyeberangi celah!",
-    literacy: "AI memberi tebakan. Kamu yang memastikan apakah tebakannya sesuai dengan gambarmu dan kebutuhan level.",
+    gameplay: "Kamu berhasil membuat jalur untuk {character} menyeberangi celah!",
+    literacy: "AI hanya menebak. Kamu yang memutuskan.",
   },
 });
 
@@ -71,7 +71,7 @@ const STAGE_2: LevelDefinition = makeLevel({
   stage: 2,
   cyclesRequired: 2,
   title: "Bab 2 · Menara Lipatan",
-  task: "Halaman terlipat ke atas. Susun pijakan agar Stickman mencapai dataran yang lebih tinggi.",
+  task: "Halaman terlipat ke atas. Susun pijakan agar {character} mencapai dataran yang lebih tinggi.",
   stageEmphasis: "Bandingkan Top-3 dan confidence — jangan berasumsi ranking pertama selalu yang paling tepat.",
   scene: {
     groundEndX: 300,
@@ -94,7 +94,7 @@ const STAGE_2: LevelDefinition = makeLevel({
   ],
   summary: {
     gameplay: "Kamu berhasil menemukan jalan ke halaman atas!",
-    literacy: "Bandingkan beberapa kemungkinan tebakan AI, bukan hanya tebakan pertama. Confidence tinggi bukan jaminan benar.",
+    literacy: "Bandingkan ketiga tebakan. Persen tinggi belum tentu benar.",
   },
 });
 
@@ -129,7 +129,7 @@ const STAGE_3: LevelDefinition = makeLevel({
   ],
   summary: {
     gameplay: "Kamu berhasil keluar dari Lorong Kabut!",
-    literacy: "Confidence tinggi tidak menjamin hasil AI sesuai. Periksa gambarnya dan konsekuensi penggunaannya di level ini.",
+    literacy: "Persen tinggi tidak menjamin benar. Periksa gambar dan akibatnya.",
   },
 });
 

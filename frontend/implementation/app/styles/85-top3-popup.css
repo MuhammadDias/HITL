@@ -1,0 +1,221 @@
+/* HITL Top-3 floating prediction popup and its compact variant.
+   Part of the ordered globals.css split: keep the import order in app/globals.css. */
+/* ========================================================
+ * HITL Top-3 Floating Prediction Popup (Tactile Papercraft)
+ * ======================================================== */
+.prediction-hitl-popup,
+.prediction-hitl-geometry {
+  position: absolute !important;
+  top: 24px !important;
+  left: 28px !important;
+  width: min(440px, calc(100vw - 56px)) !important;
+  max-height: calc(100vh - 48px) !important;
+  overflow-y: auto !important;
+  z-index: 100 !important;
+  background: #fffaf0 !important;
+  border: 2px solid #111111 !important;
+  border-radius: 18px !important;
+  box-shadow: 4px 4px 0 #111111 !important;
+  padding: 18px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  font-family: inherit !important;
+  pointer-events: auto !important;
+  box-sizing: border-box !important;
+}
+
+.prediction-hitl-popup.is-predicting {
+  width: min(340px, calc(100vw - 56px)) !important;
+  align-items: center !important;
+  text-align: center !important;
+  padding: 24px 20px !important;
+  gap: 12px !important;
+}
+
+.prediction-hitl-popup.is-error {
+  width: min(380px, calc(100vw - 56px)) !important;
+  border-color: #d94336 !important;
+  gap: 12px !important;
+}
+
+.prediction-hitl-popup .popup-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prediction-hitl-popup .popup-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.prediction-hitl-popup .popup-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #111111;
+  letter-spacing: -0.02em;
+}
+
+.prediction-hitl-popup .popup-lead {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #756f65;
+  line-height: 1.4;
+}
+
+.prediction-hitl-popup .popup-desc {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4f5646;
+}
+
+.prediction-hitl-popup .popup-badge {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid #111;
+}
+
+.prediction-hitl-popup .popup-badge.dev-badge {
+  background: #fff3cd;
+  border-color: #e0c36a;
+  color: #6b5518;
+}
+
+.prediction-hitl-popup .popup-badge.error-badge {
+  background: #fdecea;
+  border-color: #d94336;
+  color: #d94336;
+}
+
+.prediction-hitl-popup .popup-actions-error {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  width: 100%;
+}
+
+.prediction-hitl-popup .popup-actions-error .btn {
+  flex: 1;
+}
+
+.prediction-hitl-popup .popup-candidates .top3 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.prediction-hitl-popup .popup-candidates .top3-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1.5px solid #111;
+  border-radius: 10px;
+  background: #f7f5ea;
+  box-shadow: 2px 2px 0 #111;
+}
+
+.prediction-hitl-popup .popup-candidates .top3-item.top3-item-rank1 {
+  background: #eff3db;
+  border: 2px solid #4a8c1f;
+  box-shadow: 2px 2px 0 #4a8c1f;
+}
+
+.rank1-badge {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  background: #4a8c1f;
+  color: #fff;
+  padding: 1px 6px;
+  border-radius: 999px;
+  vertical-align: middle;
+}
+
+.prediction-hitl-popup .popup-decision .decision-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prediction-hitl-popup .decision-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.prediction-hitl-popup .decision-tab {
+  flex: 1;
+  font-size: 11px;
+  padding: 8px 6px;
+  text-align: center;
+}
+
+.prediction-hitl-popup .btn-wujudkan-objek,
+.prediction-hitl-popup [data-testid="btn-wujudkan-objek"] {
+  width: 100%;
+  font-size: 14px;
+  padding: 10px 16px;
+}
+
+
+/* Measure the accepted result box before it is presented; never a loading card. */
+.prediction-hitl-geometry {
+  visibility: hidden !important;
+  pointer-events: none !important;
+  height: 1px !important;
+  min-height: 0 !important;
+  padding-block: 0 !important;
+  border-block-width: 0 !important;
+}
+.momo-prediction-source {
+  display: block;
+  margin: 6px 0 0 54px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #6b5518;
+}
+
+/* ========================================================
+ * Compact Top-3 popup + decision row (size/spacing only: same palette, outlines and shadows as above)
+ * ======================================================== */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.prediction-hitl-popup.is-evaluating {
+  width: min(300px, calc(100vw - 56px)) !important;
+  padding: 12px !important;
+  gap: 8px !important;
+  border-radius: 14px !important;
+}
+.prediction-hitl-popup.is-evaluating .popup-title { font-size: 15px; }
+.prediction-hitl-popup.is-evaluating .popup-lead { font-size: 11px; }
+.prediction-hitl-popup.is-evaluating .popup-badge { font-size: 9px; padding: 2px 6px; }
+.prediction-hitl-popup.is-evaluating .popup-candidates .top3 { gap: 5px; }
+.prediction-hitl-popup.is-evaluating .popup-candidates .top3-item { padding: 4px 8px; border-radius: 8px; gap: 6px; }
+.prediction-hitl-popup.is-evaluating .top3-item .label { font-size: 14px; }
+.prediction-hitl-popup.is-evaluating .popup-decision .decision-panel,
+.prediction-hitl-popup.is-evaluating .side-panel { gap: 8px; min-width: 0; flex-basis: auto; }
+.decision-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.decision-row .btn { min-height: 38px; padding: 6px 4px; font-size: 13px; line-height: 1.15; box-shadow-width: 0; }
+.decision-row .btn-accept, .decision-row .btn-correct, .decision-row .btn-override { box-shadow: 2px 2px 0 #111111; }
+.decision-row .btn:disabled { opacity: .55; cursor: default; }
+.subpanel.subpanel-row { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px; border-radius: 12px; box-shadow: 2px 2px 0 #111111; }
+.subpanel.subpanel-row .correct-option { flex: 1 1 45%; padding: 6px 8px; font-size: 13px; }
+.subpanel.subpanel-row select { flex: 1 1 55%; padding: 6px 8px; font-size: 13px; }
+.subpanel.subpanel-row .btn-primary { padding: 6px 12px; min-height: 34px; font-size: 13px; }
+.subpanel.subpanel-row .feedback { flex-basis: 100%; min-height: 0; font-size: 12px; }
+.prediction-hitl-popup.is-evaluating .redraw-link { align-self: center; min-height: 30px; padding: 3px 10px; font-size: 12px; border-width: 1.5px !important; }
+

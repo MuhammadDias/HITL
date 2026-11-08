@@ -1,0 +1,74 @@
+{
+  "run": "2026-11-05T08-01-16-432Z",
+  "git": {
+    "head": "b658b356ce6bfb4c29685e3b10f085aa93860b1e",
+    "branch": "can",
+    "dirty": true
+  },
+  "fakeCamera": true,
+  "stages": {
+    "cameraIntro": {
+      "bodyText": "Mode demo: tebakan masih simulasi\nSKETCHBOOK UNIVERSE PRESENT\nLambaikan Tanganmu!\n\nAngkat tanganmu setinggi dada dan lambaikan ke kamera buat bangunin Momo.\nPastikan tanganmu kelihatan jelas di kotak ya!\n\nMenunggu lambaian tanganmu...\nREC\nKamera Aktif\nDeteksi tangan siap · GPU\nfake_device_0\nLewati & Pilih Nomor Absen",
+      "videoPlaying": {
+        "readyState": 4,
+        "hasStream": true,
+        "w": 600,
+        "h": 480
+      }
+    },
+    "modeButtonVisible": true,
+    "handModeAfter9s": {
+      "buttonText": "Kamera",
+      "bodyStatusLines": [
+        "Kamera",
+        "Kamera Aktif",
+        "Tangan tidak terlihat."
+      ]
+    },
+    "pointerDrawAfterHandMode": {
+      "strokeCount": "1"
+    }
+  },
+  "network": [
+    {
+      "url": "/mediapipe/wasm/vision_wasm_internal.js",
+      "status": 200
+    },
+    {
+      "url": "/mediapipe/wasm/vision_wasm_internal.wasm",
+      "status": 200
+    },
+    {
+      "url": "/models/hand_landmarker.task",
+      "status": 200
+    },
+    {
+      "url": "/mediapipe/wasm/vision_wasm_internal.js",
+      "status": 200
+    },
+    {
+      "url": "/mediapipe/wasm/vision_wasm_internal.wasm",
+      "status": 200
+    },
+    {
+      "url": "/models/hand_landmarker.task",
+      "status": 200
+    }
+  ],
+  "console": [
+    "log: I1105 08:01:17.306000 1880752 gl_context.cc:374] GL version: 3.0 (OpenGL ES 3.0 (WebGL 2.0 (OpenGL ES 3.0 Chromium))), renderer: WebKit WebGL",
+    "warning: W1105 08:01:17.308000 1880752 gl_context.cc:1060] OpenGL error checking is disabled",
+    "log: Graph successfully started running.",
+    "warning: [.WebGL-0x29ec008d5a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x29ec008d5a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x29ec008d5a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x29ec008d5a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)",
+    "log: Graph finished closing successfully.",
+    "log: I1105 08:01:28.824000 1880752 gl_context_webgl.cc:132] Successfully destroyed WebGL context with handle 1",
+    "log: I1105 08:01:31.850000 1880752 gl_context.cc:374] GL version: 3.0 (OpenGL ES 3.0 (WebGL 2.0 (OpenGL ES 3.0 Chromium))), renderer: WebKit WebGL",
+    "warning: W1105 08:01:31.853000 1880752 gl_context.cc:1060] OpenGL error checking is disabled",
+    "log: Graph successfully started running.",
+    "log: Graph finished closing successfully.",
+    "log: I1105 08:01:45.704000 1880752 gl_context_webgl.cc:132] Successfully destroyed WebGL context with handle 1"
+  ]
+}
