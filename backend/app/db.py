@@ -79,7 +79,9 @@ def init_db() -> None:
 
 @contextmanager
 def connect() -> Iterator[sqlite3.Connection]:
-    conn = sqlite3.connect(DB_PATH)
+    # FastAPI may open a request's connection in one worker thread and use or close it in
+    # another; each connection still serves a single request at a time, so this is safe.
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     try:
