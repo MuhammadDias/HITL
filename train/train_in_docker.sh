@@ -27,10 +27,15 @@ docker run -d --name hitl-train --gpus all \
     pip install --no-cache-dir --user --quiet "tensorflow[and-cuda]==2.21.0" scikit-learn
     # TensorFlow does not look in the user site for the pip CUDA libs: point the loader at them.
     export LD_LIBRARY_PATH="$(python -c "import glob, os, site; print(\":\".join(glob.glob(os.path.join(site.getusersitepackages(), \"nvidia\", \"*\", \"lib\"))))")${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+    # XLA needs libdevice (nvvm/libdevice/libdevice.10.bc) and ptxas from the pip nvcc package.
+    NVCC_DIR="$(python -c "import os, site; print(os.path.join(site.getusersitepackages(), \"nvidia\", \"cuda_nvcc\"))")"
+    export XLA_FLAGS="--xla_gpu_cuda_data_dir=$NVCC_DIR"
+    export PATH="$NVCC_DIR/bin:$PATH"
+    ls "$NVCC_DIR/nvvm/libdevice/libdevice.10.bc"
     python -c "import tensorflow as tf; g=tf.config.list_physical_devices(\"GPU\"); print(\"GPU:\", g); assert g, \"GPU tidak terdeteksi\""
     # Skip the download when a previous run already built the raw dataset.
     if [ -f data/quickdraw_raw.npz ]; then echo "Dataset sudah ada, lewati download"; else python train/01_download_dataset.py; fi
-    python train/02_preprocess_data.py
+    if [ -f data/processed_data.npz ]; then echo "Data hasil preprocess sudah ada, lewati preprocess"; else python train/02_preprocess_data.py; fi
     python train/06_train_mobilenetv2.py
     echo "TRAINING SELESAI"
   '
