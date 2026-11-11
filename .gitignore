@@ -106,3 +106,6 @@ frontend/implementation/docs/**/*.mp4
 *.tmp
 *.swp
 *~
+
+# Home dir used by train/train_in_docker.sh (pip/keras caches)
+.train-home/

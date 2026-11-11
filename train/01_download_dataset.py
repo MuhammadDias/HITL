@@ -1,4 +1,5 @@
 # 01_download_dataset.py
+import os
 import numpy as np
 import urllib.request
 import urllib.parse
@@ -21,7 +22,13 @@ def download_category(category, n_samples):
     
     data = np.load(filepath)
     idx = np.random.choice(len(data), min(n_samples, len(data)), replace=False)
-    return data[idx]
+    sample = data[idx]
+    # The full file (~100 MB per category) is not needed after sampling; keep it
+    # only with KEEP_NPY=1 so 20 categories don't need ~2 GB of extra disk.
+    if os.getenv('KEEP_NPY') != '1':
+        del data
+        filepath.unlink()
+    return sample
 
 def main():
     np.random.seed(RANDOM_SEED)
