@@ -18,12 +18,15 @@ docker rm -f hitl-train >/dev/null 2>&1 || true
 docker run -d --name hitl-train --gpus all \
   --user "$(id -u):$(id -g)" \
   -e HOME=/work/.train-home -e PYTHONPATH=/work -e PYTHONUNBUFFERED=1 \
+  -e NVIDIA_DRIVER_CAPABILITIES=compute,utility \
   -v "$PWD":/work -w /work \
   --entrypoint bash \
   "$IMAGE" -c '
     set -e
     mkdir -p "$HOME"
     pip install --no-cache-dir --user --quiet "tensorflow[and-cuda]==2.21.0" scikit-learn
+    # TensorFlow does not look in the user site for the pip CUDA libs: point the loader at them.
+    export LD_LIBRARY_PATH="$(python -c "import glob, os, site; print(\":\".join(glob.glob(os.path.join(site.getusersitepackages(), \"nvidia\", \"*\", \"lib\"))))")${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
     python -c "import tensorflow as tf; g=tf.config.list_physical_devices(\"GPU\"); print(\"GPU:\", g); assert g, \"GPU tidak terdeteksi\""
     python train/01_download_dataset.py
     python train/02_preprocess_data.py
