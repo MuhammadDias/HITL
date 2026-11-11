@@ -5,7 +5,38 @@ from pathlib import Path
 # ================================================================
 # EDIT SESUAI KEBUTUHAN
 # ================================================================
-CATEGORIES = [
+# Kategori Quick, Draw! (nama Inggris = nama file dataset) -> label bahasa Indonesia
+# yang dikirim backend ke game. Urutan menentukan indeks output model.
+LABELS_ID = {
+    # bisa dipijak
+    'ladder': 'tangga',
+    'stairs': 'anak tangga',
+    'bridge': 'jembatan',
+    'bench': 'bangku',
+    'table': 'meja',
+    'skateboard': 'papan luncur',
+    # berbahaya
+    'cactus': 'kaktus',
+    'campfire': 'api unggun',
+    'lightning': 'petir',
+    'saw': 'gergaji',
+    'knife': 'pisau',
+    'sword': 'pedang',
+    'snake': 'ular',
+    'spider': 'laba-laba',
+    # netral / pengecoh
+    'fence': 'pagar',
+    'zigzag': 'zigzag',
+    'line': 'garis',
+    'cloud': 'awan',
+    'bucket': 'ember',
+    'umbrella': 'payung',
+}
+CATEGORIES = list(LABELS_ID)
+
+# Kategori model lama (sebelum v0.6.0). Dipakai backend untuk model yang belum
+# punya file <model>.labels.json, supaya label model lama tidak tertukar.
+LEGACY_CATEGORIES = [
     'apple', 'banana', 'bicycle', 'bird', 'book',
     'car', 'cat', 'cloud', 'dog', 'fish',
     'flower', 'house', 'moon', 'star', 'sun',

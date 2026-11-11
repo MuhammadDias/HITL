@@ -14,8 +14,11 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-# 2. Impor CATEGORIES langsung dari config (BUKAN train.config)
-from config import CATEGORIES, NUM_CLASSES
+# 2. Impor label dari config (BUKAN train.config)
+import json
+import re
+
+from config import LEGACY_CATEGORIES
 
 DEFAULT_MODEL = str(ROOT_DIR / "weights" / "model_4_mobilenetv2_best.keras")
 
@@ -134,12 +137,33 @@ def load_model():
     # Warm-up menggunakan input shape (1, 28, 28, 1)
     dummy_input = np.zeros((1, 28, 28, 1), dtype=np.float32)
     model.predict(dummy_input, verbose=0)
-    return model
+
+    labels = _load_labels(model_path)
+    n_out = int(model.output_shape[-1])
+    if len(labels) != n_out:
+        raise RuntimeError(f"Model punya {n_out} output tetapi daftar label berisi {len(labels)}.")
+    print(f"Label model: {', '.join(labels)}")
+    return model, labels
+
+
+def _load_labels(model_path: str) -> List[str]:
+    """Label per indeks output: dari <model>.labels.json hasil training, atau daftar lama.
+
+    weights/model_4_mobilenetv2_best.keras -> weights/model_4_mobilenetv2.labels.json
+    """
+    stem = re.sub(r"(_best|_latest)?\.keras$", "", model_path)
+    path = Path(f"{stem}.labels.json")
+    if not path.exists():
+        print("Label model: file .labels.json tidak ada, memakai kategori lama (LEGACY_CATEGORIES)")
+        return list(LEGACY_CATEGORIES)
+    data = json.loads(path.read_text())
+    labels_id = data.get("labels_id", {})
+    return [labels_id.get(c, c) for c in data["categories"]]
 
 
 def predict_from_drawing(drawing: dict) -> List[dict]:
     """Jalankan inferensi dari JSON drawing dan kembalikan top-3 hasil prediksi."""
-    model = load_model()
+    model, labels = load_model()
     image = drawing_to_tensor(drawing)            # (28, 28, 1)
     image_batch = np.expand_dims(image, axis=0)    # (1, 28, 28, 1)
 
@@ -148,7 +172,7 @@ def predict_from_drawing(drawing: dict) -> List[dict]:
 
     candidates = []
     for idx in top3_idx:
-        label = CATEGORIES[int(idx)]
+        label = labels[int(idx)]
         candidates.append(
             {
                 "label": label,

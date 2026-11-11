@@ -18,6 +18,24 @@ git checkout main        # kembali ke versi terbaru
 
 ---
 
+## [v0.6.0] - 2026-11-11
+
+### Ditambahkan
+- **Kategori baru yang relevan dengan game** (20 kelas Quick, Draw!) dengan label bahasa Indonesia di `config.py`
+  (`LABELS_ID`): tangga, jembatan, bangku, kaktus, gergaji, ular, pagar, zigzag, dan lainnya, termasuk pasangan
+  bentuk mirip untuk melatih murid memvalidasi tebakan AI.
+- Training menyimpan `weights/<model>.labels.json`; backend memakai file itu untuk memetakan output model ke label.
+- `docs/USULAN-LABEL-LEVEL.md`: usulan `behaviorMap` per level untuk tim frontend.
+
+### Diubah
+- Backend mengirim label bahasa Indonesia untuk model yang punya `.labels.json`. Model lama (tanpa file itu) tetap
+  memakai label lama, jadi server yang sedang jalan tidak berubah sampai model baru dipasang.
+- Backend menolak start kalau jumlah label tidak sama dengan jumlah output model.
+
+### Perlu dilakukan
+- Training ulang model di server GPU dengan kategori baru (dari nol, lihat `DEPLOY.md`).
+- Tim frontend menyesuaikan `levels.ts` sesuai `docs/USULAN-LABEL-LEVEL.md`.
+
 ## [v0.5.1] - 2026-11-08
 
 ### Diperbaiki
@@ -135,6 +153,7 @@ digabung tanpa menghilangkan fitur kelas dan dashboard.
 - Backend FastAPI dengan endpoint `POST /predict` (Top-3 + confidence).
 - Frontend game awal (`frontend/implementation`).
 
+[v0.6.0]: https://github.com/MuhammadDias/HITL/compare/v0.5.1...v0.6.0
 [v0.5.1]: https://github.com/MuhammadDias/HITL/compare/v0.5.0...v0.5.1
 [v0.5.0]: https://github.com/MuhammadDias/HITL/compare/v0.4.1...v0.5.0
 [v0.4.1]: https://github.com/MuhammadDias/HITL/compare/v0.4.0...v0.4.1

@@ -261,6 +261,10 @@ venv-train/bin/python train/06_train_mobilenetv2.py
 ```
 
 - Lepas dari tmux tanpa menghentikan training: tekan `Ctrl+B` lalu `D`. Masuk lagi: `tmux attach -t training`.
+- **Ganti kategori (mis. pertama kali pakai kategori v0.6.0)?** Wajib training dari nol: pindahkan model lama ke
+  `weights/backup/` dulu (lihat poin berikut), lalu jalankan **ketiga** script, termasuk `01` dan `02`, karena datasetnya
+  berubah. Training menulis `weights/model_4_mobilenetv2.labels.json`; backend memakai file itu untuk label bahasa
+  Indonesia. Model tanpa file itu dianggap model lama dan memakai label lama.
 - Training **melanjutkan** dari model yang sudah ada (`_latest` / `_best`) kalau file itu ada. Untuk training dari nol,
   pindahkan dulu `weights/model_4_mobilenetv2_latest.keras` dan `weights/model_4_mobilenetv2_best.keras` ke
   `weights/backup/`.

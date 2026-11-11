@@ -5,7 +5,8 @@ from tensorflow import keras
 from tensorflow.keras import layers, callbacks
 import time
 import os
-from config import DIR_WEIGHTS, BATCH_SIZE, EPOCHS
+import json
+from config import DIR_WEIGHTS, BATCH_SIZE, EPOCHS, CATEGORIES, LABELS_ID
 
 # ================================================================
 # GPU OPTIMIZATION UNTUK RTX
@@ -133,7 +134,14 @@ def train_and_save(
     print(f'{"+"*55}')
 
     t0 = time.time()
-    
+
+    # Simpan daftar label di samping model, supaya backend memetakan output model
+    # ke label yang benar (urutan = indeks output).
+    labels_path = DIR_WEIGHTS / f'{model_name}.labels.json'
+    labels_path.write_text(json.dumps(
+        {'categories': CATEGORIES, 'labels_id': LABELS_ID}, ensure_ascii=False, indent=2))
+    print(f'  Labels     : weights/{labels_path.name}')
+
     # [RESUME LOGIC] Cek apakah ada checkpoint sebelumnya
     latest_path = str(DIR_WEIGHTS / f'{model_name}_latest.keras')
     best_path = str(DIR_WEIGHTS / f'{model_name}_best.keras')
