@@ -5,20 +5,25 @@
 #   bash train/train_in_docker.sh          # start
 #   docker logs -f hitl-train              # follow progress (Ctrl+C only stops watching)
 #   docker stop hitl-train                 # cancel
+#
+# Reuses the backend image (already has TensorFlow 2.21) and adds only the NVIDIA
+# CUDA pip libraries (~3 GB, kept in .train-home/ so they install once). The
+# official tensorflow:*-gpu image is ~8 GB, too big for a small server disk.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-IMAGE="${TRAIN_IMAGE:-tensorflow/tensorflow:2.21.0-gpu}"   # same TF version as the backend
+IMAGE="${TRAIN_IMAGE:-hitl-backend}"
 
 docker rm -f hitl-train >/dev/null 2>&1 || true
 docker run -d --name hitl-train --gpus all \
   --user "$(id -u):$(id -g)" \
   -e HOME=/work/.train-home -e PYTHONPATH=/work -e PYTHONUNBUFFERED=1 \
   -v "$PWD":/work -w /work \
-  "$IMAGE" bash -c '
+  --entrypoint bash \
+  "$IMAGE" -c '
     set -e
     mkdir -p "$HOME"
-    pip install --no-cache-dir --user --quiet scikit-learn
+    pip install --no-cache-dir --user --quiet "tensorflow[and-cuda]==2.21.0" scikit-learn
     python -c "import tensorflow as tf; g=tf.config.list_physical_devices(\"GPU\"); print(\"GPU:\", g); assert g, \"GPU tidak terdeteksi\""
     python train/01_download_dataset.py
     python train/02_preprocess_data.py
