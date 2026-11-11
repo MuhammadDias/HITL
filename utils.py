@@ -56,7 +56,13 @@ def create_dataset(X, y, batch_size, is_training=True, target_size=None, num_cha
     if is_training:
         dataset = dataset.shuffle(buffer_size=2048)
     
+    is_uint8 = getattr(X, 'dtype', None) == np.uint8
+
     def process_image(image, label):
+        # Data uint8 (0-255) dari 02_preprocess_data.py -> float32 [0, 1]
+        if is_uint8:
+            image = tf.cast(image, tf.float32) / 255.0
+
         # Resize jika diperlukan
         if target_size:
             image = tf.image.resize(image, target_size)

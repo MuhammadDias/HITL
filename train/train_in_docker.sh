@@ -28,7 +28,8 @@ docker run -d --name hitl-train --gpus all \
     # TensorFlow does not look in the user site for the pip CUDA libs: point the loader at them.
     export LD_LIBRARY_PATH="$(python -c "import glob, os, site; print(\":\".join(glob.glob(os.path.join(site.getusersitepackages(), \"nvidia\", \"*\", \"lib\"))))")${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
     python -c "import tensorflow as tf; g=tf.config.list_physical_devices(\"GPU\"); print(\"GPU:\", g); assert g, \"GPU tidak terdeteksi\""
-    python train/01_download_dataset.py
+    # Skip the download when a previous run already built the raw dataset.
+    if [ -f data/quickdraw_raw.npz ]; then echo "Dataset sudah ada, lewati download"; else python train/01_download_dataset.py; fi
     python train/02_preprocess_data.py
     python train/06_train_mobilenetv2.py
     echo "TRAINING SELESAI"
