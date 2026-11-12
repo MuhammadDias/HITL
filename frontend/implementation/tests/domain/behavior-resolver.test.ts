@@ -32,11 +32,18 @@ describe("behavior resolver (FR-09)", () => {
     });
   });
 
-  it("context-aware: same label differs across levels (no global semantics)", () => {
-    const l1 = LEVELS.find((l) => l.levelId === "stage-1-foundation")!;
-    const l3 = LEVELS.find((l) => l.levelId === "stage-3-validation")!;
-    expect(resolveBehavior("ular", l1).behavior).toBe("unresolved");
-    expect(resolveBehavior("ular", l3).behavior).toBe("danger");
+  it("context-aware: behavior comes from the level's own map (no global semantics in the resolver)", () => {
+    const other: LevelContext = { ...LEVEL, behaviorMap: { papan: "danger" } };
+    expect(resolveBehavior("papan", LEVEL).behavior).toBe("solid");
+    expect(resolveBehavior("papan", other).behavior).toBe("danger");
+  });
+
+  it("the three game levels share one rule for the model's labels", () => {
+    for (const level of LEVELS) {
+      expect(resolveBehavior("pedang", level).behavior).toBe("danger");
+      expect(resolveBehavior("bangku", level).behavior).toBe("solid");
+      expect(resolveBehavior("pagar", level).behavior).toBe("unresolved");
+    }
   });
 
   it("Level 2 maps tangga as solid scaffold", () => {

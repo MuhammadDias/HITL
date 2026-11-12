@@ -38,6 +38,29 @@ export interface LevelDefinition extends LevelContext {
   };
 }
 
+/**
+ * One behavior rule for every level, using the partner model's labels
+ * (config.py LABELS_ID in MuhammadDias/HITL). The challenge comes from the AI
+ * confusing look-alikes (tangga/pagar, gergaji/zigzag, ular/garis), not from
+ * rules that change per level. Labels not listed are neutral (no collision).
+ */
+const MODEL_BEHAVIOR_MAP: LevelDefinition["behaviorMap"] = {
+  jembatan: "solid",
+  tangga: "solid",
+  "anak tangga": "solid",
+  bangku: "solid",
+  meja: "solid",
+  "papan luncur": "solid",
+  kaktus: "danger",
+  "api unggun": "danger",
+  petir: "danger",
+  gergaji: "danger",
+  pisau: "danger",
+  pedang: "danger",
+  ular: "danger",
+  "laba-laba": "danger",
+};
+
 /** Stage 1 — Foundation: draw → prediction → decision → consequence. */
 const STAGE_1: LevelDefinition = makeLevel({
   levelId: "stage-1-foundation",
@@ -46,15 +69,7 @@ const STAGE_1: LevelDefinition = makeLevel({
   title: "Bab 1 · Jembatan Pertama",
   task: "Gambar satu objek untuk menyeberangi celah di buku.",
   stageEmphasis: "Pahami alur dasar: gambar → tebakan AI → keputusanmu → konsekuensi.",
-  // Labels follow the partner model (config.py LABELS_ID in MuhammadDias/HITL).
-  behaviorMap: {
-    jembatan: "solid",
-    tangga: "solid",
-    bangku: "solid",
-    meja: "solid",
-    kaktus: "danger",
-    "api unggun": "danger",
-  },
+  behaviorMap: MODEL_BEHAVIOR_MAP,
   vocabulary: ["jembatan", "tangga", "bangku", "meja", "kaktus", "api unggun", "awan", "ember"],
   catalog: [
     { labelId: "jembatan", displayName: "Jembatan", icon: "🌉" },
@@ -82,16 +97,7 @@ const STAGE_2: LevelDefinition = makeLevel({
     gapWidth: 180,
     goalX: 680,
   },
-  // Look-alike pairs on purpose: tangga/pagar/anak tangga, gergaji/zigzag/petir, ular/garis.
-  behaviorMap: {
-    tangga: "solid",
-    "anak tangga": "solid",
-    jembatan: "solid",
-    "papan luncur": "solid",
-    gergaji: "danger",
-    petir: "danger",
-    ular: "danger",
-  },
+  behaviorMap: MODEL_BEHAVIOR_MAP,
   vocabulary: ["tangga", "anak tangga", "pagar", "jembatan", "papan luncur", "gergaji", "zigzag", "petir", "ular", "garis"],
   catalog: [
     { labelId: "tangga", displayName: "Tangga", icon: "🪜" },
@@ -122,16 +128,7 @@ const STAGE_3: LevelDefinition = makeLevel({
     gapWidth: 220,
     goalX: 720,
   },
-  // A "safe-looking" top guess (pisau/pedang/ular) is dangerous here: validate first.
-  behaviorMap: {
-    jembatan: "solid",
-    tangga: "solid",
-    meja: "solid",
-    pisau: "danger",
-    pedang: "danger",
-    ular: "danger",
-    "laba-laba": "danger",
-  },
+  behaviorMap: MODEL_BEHAVIOR_MAP,
   vocabulary: ["jembatan", "tangga", "meja", "bangku", "pisau", "pedang", "ular", "garis", "laba-laba", "payung"],
   catalog: [
     { labelId: "jembatan", displayName: "Jembatan", icon: "🌉" },

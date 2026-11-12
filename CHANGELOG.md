@@ -18,6 +18,16 @@ git checkout main        # kembali ke versi terbaru
 
 ---
 
+## [v0.7.1] - 2026-11-13
+
+### Diubah
+- **Satu aturan perilaku objek untuk semua level** (`MODEL_BEHAVIOR_MAP` di `levels.ts`):
+  - bisa dipijak: jembatan, tangga, anak tangga, bangku, meja, papan luncur
+  - berbahaya: kaktus, api unggun, petir, gergaji, pisau, pedang, ular, laba-laba
+  - netral (tembus): pagar, zigzag, garis, awan, ember, payung
+  Sebelumnya aturan berbeda per level (mis. pedang tembus di Level 2), yang membingungkan murid. Tantangan HITL kini
+  datang dari AI yang tertukar bentuk mirip, bukan dari aturan yang berganti.
+
 ## [v0.7.0] - 2026-11-13
 
 ### Ditambahkan
@@ -173,6 +183,7 @@ digabung tanpa menghilangkan fitur kelas dan dashboard.
 - Backend FastAPI dengan endpoint `POST /predict` (Top-3 + confidence).
 - Frontend game awal (`frontend/implementation`).
 
+[v0.7.1]: https://github.com/MuhammadDias/HITL/compare/v0.7.0...v0.7.1
 [v0.7.0]: https://github.com/MuhammadDias/HITL/compare/v0.6.0...v0.7.0
 [v0.6.0]: https://github.com/MuhammadDias/HITL/compare/v0.5.1...v0.6.0
 [v0.5.1]: https://github.com/MuhammadDias/HITL/compare/v0.5.0...v0.5.1
