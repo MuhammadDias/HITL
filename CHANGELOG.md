@@ -18,6 +18,26 @@ git checkout main        # kembali ke versi terbaru
 
 ---
 
+## [v0.7.0] - 2026-11-13
+
+### Ditambahkan
+- **Model baru** MobileNetV2 dengan 20 kategori game (label bahasa Indonesia), dilatih di server GPU (2× RTX A5000):
+  akurasi test **94,34%**, Top-3 **98,32%** (1,2 juta gambar; berhenti otomatis di epoch 47, model terbaik epoch 37).
+
+### Diubah
+- **Level game memakai label model** (`frontend/implementation/src/domain/levels.ts`), sesuai
+  `docs/USULAN-LABEL-LEVEL.md`, sehingga objek hasil tebakan AI bisa dipijak atau berbahaya:
+  - Bab 1: jembatan, tangga, bangku, meja = bisa dipijak; kaktus, api unggun = berbahaya.
+  - Bab 2 (ambiguitas): tangga, anak tangga, jembatan, papan luncur = bisa dipijak; gergaji, petir, ular = berbahaya;
+    pagar dan zigzag sengaja jadi pengecoh yang tidak bisa dipijak.
+  - Bab 3 (validasi): jembatan, tangga, meja = bisa dipijak; pisau, pedang, ular, laba-laba = berbahaya.
+- Ikon objek dan teks tutorial memakai label baru; test frontend disesuaikan (559 test lulus).
+- Training: pipeline berjalan di container GPU (`train/train_in_docker.sh`), preprocessing hemat RAM (uint8).
+
+### Deploy
+- Backend **harus di-build ulang** (`docker compose up -d --build`): kode pembaca `.labels.json` ikut dibungkus di
+  image. Tanpa itu, model baru tampil dengan label lama (mis. "apple" padahal "tangga").
+
 ## [v0.6.0] - 2026-11-11
 
 ### Ditambahkan
@@ -153,6 +173,7 @@ digabung tanpa menghilangkan fitur kelas dan dashboard.
 - Backend FastAPI dengan endpoint `POST /predict` (Top-3 + confidence).
 - Frontend game awal (`frontend/implementation`).
 
+[v0.7.0]: https://github.com/MuhammadDias/HITL/compare/v0.6.0...v0.7.0
 [v0.6.0]: https://github.com/MuhammadDias/HITL/compare/v0.5.1...v0.6.0
 [v0.5.1]: https://github.com/MuhammadDias/HITL/compare/v0.5.0...v0.5.1
 [v0.5.0]: https://github.com/MuhammadDias/HITL/compare/v0.4.1...v0.5.0

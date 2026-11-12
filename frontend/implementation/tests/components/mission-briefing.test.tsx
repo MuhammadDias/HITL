@@ -28,9 +28,9 @@ describe("MissionBriefing Component", () => {
     expect(screen.getByText(/Di depan ada celah/i)).toBeTruthy();
     // Momo speaks the hint
     expect(screen.getByTestId("mission-chat").textContent).toContain("Di depan ada celah");
-    // Examples (papan, balok, tangga derived from L1)
-    expect(screen.getByText(/Balok/i)).toBeTruthy();
-    expect(screen.getByText(/Papan/i)).toBeTruthy();
+    // Examples (jembatan, tangga, bangku derived from L1)
+    expect(screen.getByText(/Jembatan/i)).toBeTruthy();
+    expect(screen.getByText(/Bangku/i)).toBeTruthy();
     expect(screen.getByText(/Tangga/i)).toBeTruthy();
     // Primary CTA
     const startBtn = screen.getByRole("button", { name: /Mulai Menggambar/i });

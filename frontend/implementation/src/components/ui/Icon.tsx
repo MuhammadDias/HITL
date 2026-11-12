@@ -64,12 +64,12 @@ export const ICON_NAMES = Object.keys(GLYPHS) as IconName[];
 /** Map a level catalog label to an object glyph; unknown labels fall back to a pencil. */
 export function objectIconFor(labelId: string): IconName {
   switch (labelId) {
-    case "balok": return "block";
-    case "papan": return "plank";
-    case "tangga": return "ladder";
-    case "duri": return "spike";
+    case "balok": case "bangku": case "meja": return "block";
+    case "papan": case "jembatan": case "papan luncur": return "plank";
+    case "tangga": case "anak tangga": case "pagar": return "ladder";
+    case "duri": case "kaktus": case "gergaji": case "zigzag": case "petir": return "spike";
     case "batu": return "rock";
-    case "tali": return "rope";
+    case "tali": case "ular": case "garis": return "rope";
     case "ember": return "bucket";
     default: return "pencil";
   }

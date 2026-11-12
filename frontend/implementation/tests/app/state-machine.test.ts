@@ -21,7 +21,7 @@ function makeFlow(stageId: string) {
   const level = getLevel(stageId)!;
   const rec = recordingSink();
   const provider = new MockPredictionProvider({
-    vocabulary: ["papan", "batu", "tangga", "tali"],
+    vocabulary: ["jembatan", "kaktus", "tangga", "ular"],
     stage: level.stage,
     latencyMs: 0,
   });
@@ -88,7 +88,7 @@ describe("FlowController — PRD §13 vertical slice (TASK 02/03)", () => {
     expect(() => ctx.flow.decideOverride("   ")).toThrow();
     expect(ctx.flow.getSnapshot()).toEqual(before);
 
-    const alt = ["papan", "batu", "tangga", "tali"].find((v) => !top3.includes(v))!;
+    const alt = ["jembatan", "kaktus", "tangga", "ular"].find((v) => !top3.includes(v))!;
     ctx.flow.decideOverride(alt);
     expect(ctx.flow.decision).toEqual({ type: "override", finalLabel: alt });
     expect(ctx.flow.phase).toBe("falling");
@@ -140,13 +140,13 @@ describe("FlowController — PRD §13 vertical slice (TASK 02/03)", () => {
     const c = makeFlow("stage-3-validation");
     c.flow.enterLevel(c.level);
     await c.flow.submitDrawing(INK);
-    let top3HasTali = c.flow.prediction!.candidates.some((x) => x.label === "tali");
-    while (top3HasTali) {
+    let top3HasUlar = c.flow.prediction!.candidates.some((x) => x.label === "ular");
+    while (top3HasUlar) {
       c.flow.requestRedraw("evaluation");
       await c.flow.submitDrawing(INK);
-      top3HasTali = c.flow.prediction!.candidates.some((x) => x.label === "tali");
+      top3HasUlar = c.flow.prediction!.candidates.some((x) => x.label === "ular");
     }
-    c.flow.decideOverride("tali");
+    c.flow.decideOverride("ular");
     expect(c.flow.behavior).toBe("danger");
     c.flow.completeFall();
     c.flow.commitPlacement();
@@ -160,7 +160,7 @@ describe("FlowController — PRD §13 vertical slice (TASK 02/03)", () => {
     c.flow.enterLevel(c.level);
     await c.flow.submitDrawing(INK);
     let top3 = c.flow.prediction!.candidates.map((x) => x.label);
-    let alt = ["papan", "batu", "tangga", "tali"].find((v) => !top3.includes(v))!;
+    let alt = ["jembatan", "kaktus", "tangga", "ular"].find((v) => !top3.includes(v))!;
     c.flow.decideOverride(alt);
     c.flow.completeFall();
     c.flow.commitPlacement();

@@ -1,7 +1,7 @@
 # Usulan: label model ↔ level game (bahasa Indonesia)
 
 **Untuk:** tim frontend (`lustresense/hitl-momo`, file `implementation/src/domain/levels.ts`)
-**Status:** usulan, perlu disepakati sebelum `levels.ts` diubah.
+**Status:** sudah diterapkan di v0.7.0 (`levels.ts`, ikon objek, teks tutorial, test).
 
 ## Masalah
 

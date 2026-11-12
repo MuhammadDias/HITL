@@ -54,11 +54,11 @@ describe("mission-config domain", () => {
     expect(config.examples.length).toBeGreaterThan(0);
     // Derived from actual level 1 catalog & behaviorMap (only solid stepping objects for L1)
     const exampleLabels = config.examples.map((e) => e.labelId);
-    expect(exampleLabels).toContain("papan");
-    expect(exampleLabels).toContain("balok");
+    expect(exampleLabels).toContain("jembatan");
+    expect(exampleLabels).toContain("bangku");
     expect(exampleLabels).toContain("tangga");
-    // Batu is danger in L1, should not be suggested as crossing aid
-    expect(exampleLabels).not.toContain("batu");
+    // Kaktus is danger in L1, should not be suggested as crossing aid
+    expect(exampleLabels).not.toContain("kaktus");
   });
 
   it("interpolates configured character name in stage 2 and 3", () => {
@@ -66,9 +66,9 @@ describe("mission-config domain", () => {
     expect(configL2.stage).toBe(2);
     expect(configL2.title).toBe("Bantu Pahlawan naik lebih tinggi!");
     expect(configL2.instruction).toContain("Pahlawan");
-    // Duri is danger in L2, excluded from climbing examples
+    // Gergaji is danger in L2, excluded from climbing examples
     const l2Labels = configL2.examples.map((e) => e.labelId);
-    expect(l2Labels).not.toContain("duri");
+    expect(l2Labels).not.toContain("gergaji");
     expect(l2Labels).toContain("tangga");
 
     const configL3 = getMissionConfigForLevel(level3, "   ");
@@ -76,10 +76,10 @@ describe("mission-config domain", () => {
     // whitespace falls back to Stickman
     expect(configL3.title).toBe("Bantu Stickman memilih jalan aman!");
     expect(configL3.instruction).toContain("Stickman");
-    // Tali is danger in L3, excluded from safe route examples
+    // Ular is danger in L3, excluded from safe route examples
     const l3Labels = configL3.examples.map((e) => e.labelId);
-    expect(l3Labels).not.toContain("tali");
-    expect(l3Labels).toContain("papan");
+    expect(l3Labels).not.toContain("ular");
+    expect(l3Labels).toContain("jembatan");
   });
 
   it("handles empty catalog or empty manifest gracefully with zero examples", () => {

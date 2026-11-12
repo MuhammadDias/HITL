@@ -484,7 +484,7 @@ export function TutorialBrochure({ onStart, onSkip, characterDisplayName }: Tuto
 
   const pages: Array<{ title: string; copy: string; cta: string; ctaIcon: IconName }> = [
     { title: `Kenalin ${characterName}`, copy: "Dia mau menyeberangi buku gambar ini. Geser tanganmu ke kanan dan kiri buat ajak dia jalan ke bendera.", cta: "Lanjut", ctaIcon: "arrow-right" },
-    { title: "Pijakan aman, atau bahaya", copy: `Gambar benda padat kayak balok atau tangga biar ${characterName} bisa lewat. Hindari benda tajam kayak duri atau pisau biar bukunya nggak sobek.`, cta: "Lanjut", ctaIcon: "arrow-right" },
+    { title: "Pijakan aman, atau bahaya", copy: `Gambar benda padat kayak jembatan atau tangga biar ${characterName} bisa lewat. Hindari benda tajam kayak kaktus atau pisau biar bukunya nggak sobek.`, cta: "Lanjut", ctaIcon: "arrow-right" },
     { title: "Coba gestur tanganmu", copy: "Coret di kanvas pakai jarimu, lalu coba hapus, mundur, dan maju. Tiap gestur yang kamu coba akan tercentang.", cta: "Mulai Level 1", ctaIcon: "play" },
   ];
 

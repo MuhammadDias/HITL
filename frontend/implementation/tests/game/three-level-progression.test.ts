@@ -23,10 +23,10 @@ describe("three-level puzzle geometry & solvability verification", () => {
     expect(g.spawn.x).toBeLessThan(200);
     expect(g.goal.x).toBeGreaterThan(600);
 
-    expect(resolveBehavior("papan", l1).behavior).toBe("solid");
-    expect(resolveBehavior("balok", l1).behavior).toBe("solid");
+    expect(resolveBehavior("jembatan", l1).behavior).toBe("solid");
+    expect(resolveBehavior("bangku", l1).behavior).toBe("solid");
     expect(resolveBehavior("tangga", l1).behavior).toBe("solid");
-    expect(resolveBehavior("batu", l1).behavior).toBe("danger");
+    expect(resolveBehavior("kaktus", l1).behavior).toBe("danger");
   });
 
   it("Level 2 (Ambiguity/Vertical): requires height positioning to reach elevated roof goal", () => {
@@ -50,13 +50,13 @@ describe("three-level puzzle geometry & solvability verification", () => {
     };
     expect(integratedPlacementAllowed(stepPlank, g, [])).toBe(true);
 
-    expect(resolveBehavior("papan", l2).behavior).toBe("solid");
-    expect(resolveBehavior("balok", l2).behavior).toBe("solid");
+    expect(resolveBehavior("jembatan", l2).behavior).toBe("solid");
+    expect(resolveBehavior("anak tangga", l2).behavior).toBe("solid");
     expect(resolveBehavior("tangga", l2).behavior).toBe("solid");
-    expect(resolveBehavior("duri", l2).behavior).toBe("danger");
+    expect(resolveBehavior("gergaji", l2).behavior).toBe("danger");
   });
 
-  it("Level 3 (Critical Hazard): spikes on ground, context-aware mapping maps tali to danger", () => {
+  it("Level 3 (Critical Hazard): spikes on ground, context-aware mapping maps ular to danger", () => {
     const l3 = LEVELS[2]!;
     expect(l3.stage).toBe(3);
     const g = getStageGeometry(3);
@@ -64,8 +64,8 @@ describe("three-level puzzle geometry & solvability verification", () => {
     expect(g.hazards.length).toBeGreaterThan(0);
     expect(g.hazards[0]!.id).toContain("spike");
 
-    expect(resolveBehavior("tali", l3).behavior).toBe("danger");
-    expect(resolveBehavior("papan", l3).behavior).toBe("solid");
+    expect(resolveBehavior("ular", l3).behavior).toBe("danger");
+    expect(resolveBehavior("jembatan", l3).behavior).toBe("solid");
     expect(resolveBehavior("tangga", l3).behavior).toBe("solid");
   });
 });
