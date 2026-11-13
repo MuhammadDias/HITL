@@ -11,6 +11,7 @@ Struktur:
 - `app/dashboard.py`: API dashboard (sekolah, akun guru, kelas, jawaban murid, export)
 - `app/classroom.py`: API publik untuk murid yang membuka link kelas
 - `app/reports.py`: statistik per kelas, render gambar jawaban, export CSV/ZIP
+- `app/difficulty.py`: kesulitan AI per level (pengaburan tebakan), diatur dari dashboard superadmin
 - `create_superadmin.py`: membuat / reset password akun superadmin
 
 ---
@@ -112,6 +113,7 @@ Superadmin superadmin@sekolah.id siap. Database: .../backend/data/momo.sqlite
    ```env
    NEXT_PUBLIC_PREDICTION_MODE=partner
    NEXT_PUBLIC_PREDICTION_ENDPOINT=http://localhost:8000/predict
+   NEXT_PUBLIC_PREDICTION_SEND_CONTEXT=1
    ```
 
    Alamat backend untuk link kelas dan pengiriman jawaban diambil otomatis dari `NEXT_PUBLIC_PREDICTION_ENDPOINT`. Kalau backend-nya beda alamat, tambahkan `NEXT_PUBLIC_API_URL=...`.
@@ -165,10 +167,13 @@ Superadmin superadmin@sekolah.id siap. Database: .../backend/data/momo.sqlite
 2. **Daftarkan sekolah:** isi *Nama sekolah* (alamat boleh dikosongkan), lalu klik **Daftarkan**. Halaman detail sekolah akan terbuka.
 3. **Buat akun guru:** di bagian *Akun guru (admin)*, isi *Nama guru*, *Email*, dan *Password awal* (min. 8 karakter), lalu klik **Buat akun guru**. Berikan email dan password ini ke guru tersebut.
 4. **Pantau sekolah:** di detail sekolah terlihat semua kelas (dengan rata-rata persentase murid), daftar semua murid (bisa difilter per kelas), dan akun guru.
-5. **Export data per kelas:** di tabel *Kelas*, klik **CSV** atau **ZIP**. Tombol yang sama juga ada di halaman detail kelas.
+5. **Kesulitan AI** (menu kiri): aktifkan dan atur tingkat kesulitan 0–100 per level. Makin tinggi, confidence
+   tebakan makin rata dan tebakan #1 makin sering tertukar dengan bentuk mirip (jawaban asli tetap di #1/#2).
+   Berlaku untuk semua kelas, langsung tanpa restart.
+6. **Export data per kelas:** di tabel *Kelas*, klik **CSV** atau **ZIP**. Tombol yang sama juga ada di halaman detail kelas.
    - **CSV**: satu baris per jawaban, berisi sekolah, kelas, nomor absen, nama, level, waktu, keputusan, label akhir, ketiga tebakan beserta confidence, dan nama file gambar.
    - **ZIP**: `data.csv` ditambah folder `gambar/` yang berisi PNG setiap jawaban.
-6. **Semua Kelas** (menu kiri) menampilkan kelas dari semua sekolah. Superadmin juga bisa membuat kelas dari sini dengan memilih sekolahnya.
+7. **Semua Kelas** (menu kiri) menampilkan kelas dari semua sekolah. Superadmin juga bisa membuat kelas dari sini dengan memilih sekolahnya.
 
 ---
 

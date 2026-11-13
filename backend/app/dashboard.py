@@ -17,6 +17,7 @@ from .auth import (
     verify_password,
 )
 from .db import get_db
+from .difficulty import LEVELS, MAX_SWAP_PROBABILITY, MAX_TEMPERATURE_GAIN, get_settings, save_settings
 from .reports import DECISION_LABELS, class_stats, export_csv, export_zip, render_drawing_png
 
 router = APIRouter(prefix="/api")
@@ -310,3 +311,39 @@ def export_class_zip(
         media_type="application/zip",
         headers={"Content-Disposition": f'attachment; filename="{_export_filename(c, "zip")}"'},
     )
+
+
+# ---------------------------------------------------------------- AI difficulty (superadmin)
+
+
+class LevelDifficultyBody(BaseModel):
+    level_id: str
+    enabled: bool
+    difficulty: int = Field(ge=0, le=100)
+
+
+class DifficultySettingsBody(BaseModel):
+    levels: list[LevelDifficultyBody] = Field(min_length=1, max_length=len(LEVELS))
+
+
+@router.get("/settings/difficulty")
+def get_difficulty_settings(_: sqlite3.Row = Depends(current_user), conn: sqlite3.Connection = Depends(get_db)):
+    return {
+        "levels": get_settings(conn),
+        # Lets the dashboard preview the effect with the same formulas the backend uses.
+        "formula": {"temperature_gain": MAX_TEMPERATURE_GAIN, "swap_probability": MAX_SWAP_PROBABILITY},
+    }
+
+
+@router.put("/settings/difficulty")
+def put_difficulty_settings(
+    body: DifficultySettingsBody,
+    _: sqlite3.Row = Depends(require_superadmin),
+    conn: sqlite3.Connection = Depends(get_db),
+):
+    known = {level_id for level_id, _ in LEVELS}
+    unknown = [item.level_id for item in body.levels if item.level_id not in known]
+    if unknown:
+        raise HTTPException(status_code=400, detail=f"Level tidak dikenal: {', '.join(unknown)}")
+    save_settings(conn, [item.model_dump() for item in body.levels])
+    return {"levels": get_settings(conn)}

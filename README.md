@@ -151,6 +151,7 @@ Untuk game murid, buat `frontend/implementation/.env.local` supaya game memakai 
 ```env
 NEXT_PUBLIC_PREDICTION_MODE=partner
 NEXT_PUBLIC_PREDICTION_ENDPOINT=http://localhost:8000/predict
+NEXT_PUBLIC_PREDICTION_SEND_CONTEXT=1
 ```
 
 Untuk dashboard admin, salin file contohnya:

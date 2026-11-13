@@ -18,6 +18,26 @@ git checkout main        # kembali ke versi terbaru
 
 ---
 
+## [v0.8.0] - 2026-11-13
+
+### Ditambahkan
+- **Kesulitan AI per level (beta)**: backend mengaburkan tebakan model sesuai level yang dimainkan
+  (`backend/app/difficulty.py`). Model tidak berubah. Dua efek yang makin kuat seiring angka kesulitan 0–100:
+  confidence tebakan diratakan, dan dengan peluang tertentu tebakan #1 tertukar dengan bentuk mirip
+  (tangga↔pagar, gergaji↔zigzag, pisau↔pedang) sementara jawaban asli turun ke #2. Hasil stabil untuk gambar
+  yang sama ("Coba lagi" tidak mengubah tebakan).
+- Halaman **Kesulitan AI** di dashboard superadmin (`/kesulitan`): aktif/nonaktif dan tingkat kesulitan per level,
+  dengan perkiraan efeknya. Berlaku langsung untuk tebakan berikutnya tanpa restart.
+- API: `GET/PUT /api/settings/difficulty`; `POST /predict` menerima `levelId` dan membalas `difficulty` yang dipakai.
+
+### Diubah
+- Game dibangun dengan `NEXT_PUBLIC_PREDICTION_SEND_CONTEXT=1` (Docker dan `.env.local`) agar mengirim level ke
+  backend. Tanpa itu, kesulitan per level tidak berlaku (tebakan asli).
+
+### Deploy
+- `docker compose up -d --build` (backend, game, dan dashboard berubah). Semua level **nonaktif** sampai diaktifkan
+  di dashboard; usulan awal: Bab 1 = 0, Bab 2 = 40, Bab 3 = 70.
+
 ## [v0.7.1] - 2026-11-13
 
 ### Diubah
@@ -183,6 +203,7 @@ digabung tanpa menghilangkan fitur kelas dan dashboard.
 - Backend FastAPI dengan endpoint `POST /predict` (Top-3 + confidence).
 - Frontend game awal (`frontend/implementation`).
 
+[v0.8.0]: https://github.com/MuhammadDias/HITL/compare/v0.7.1...v0.8.0
 [v0.7.1]: https://github.com/MuhammadDias/HITL/compare/v0.7.0...v0.7.1
 [v0.7.0]: https://github.com/MuhammadDias/HITL/compare/v0.6.0...v0.7.0
 [v0.6.0]: https://github.com/MuhammadDias/HITL/compare/v0.5.1...v0.6.0

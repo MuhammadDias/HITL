@@ -37,6 +37,7 @@ services:
         NEXT_PUBLIC_PREDICTION_MODE: partner
         NEXT_PUBLIC_PREDICTION_ENDPOINT: ${PUBLIC_URL:?set PUBLIC_URL in .env}/predict
         NEXT_PUBLIC_DRAW_INPUT_MODE: ${DRAW_INPUT_MODE:-pointer}
+        NEXT_PUBLIC_PREDICTION_SEND_CONTEXT: "1"
     image: hitl-web
     restart: unless-stopped
     environment:

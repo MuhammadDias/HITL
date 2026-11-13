@@ -66,6 +66,13 @@ CREATE TABLE IF NOT EXISTS submissions (
     created_at       TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS level_difficulty (
+    level_id    TEXT PRIMARY KEY,
+    enabled     INTEGER NOT NULL DEFAULT 0,
+    difficulty  INTEGER NOT NULL DEFAULT 0 CHECK (difficulty BETWEEN 0 AND 100),
+    updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_submissions_class ON submissions(class_id);
 CREATE INDEX IF NOT EXISTS idx_submissions_student ON submissions(student_id);
 """
