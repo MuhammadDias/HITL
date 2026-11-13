@@ -18,6 +18,15 @@ git checkout main        # kembali ke versi terbaru
 
 ---
 
+## [v0.8.1] - 2026-11-13
+
+### Dokumentasi
+- `README.md`: struktur folder, daftar 20 kategori game beserta perilakunya, arsitektur terbaru, model aktif
+  (94,34%), dan ringkasan kesulitan AI.
+- `DEPLOY.md`: training di server lewat `train/train_in_docker.sh` (tanpa sudo/venv/tmux), menyalin model ke
+  laptop, quick tunnel Cloudflare (termasuk format `PUBLIC_URL` yang benar), dan troubleshooting
+  `provider-unavailable`.
+
 ## [v0.8.0] - 2026-11-13
 
 ### Ditambahkan
@@ -203,6 +212,7 @@ digabung tanpa menghilangkan fitur kelas dan dashboard.
 - Backend FastAPI dengan endpoint `POST /predict` (Top-3 + confidence).
 - Frontend game awal (`frontend/implementation`).
 
+[v0.8.1]: https://github.com/MuhammadDias/HITL/compare/v0.8.0...v0.8.1
 [v0.8.0]: https://github.com/MuhammadDias/HITL/compare/v0.7.1...v0.8.0
 [v0.7.1]: https://github.com/MuhammadDias/HITL/compare/v0.7.0...v0.7.1
 [v0.7.0]: https://github.com/MuhammadDias/HITL/compare/v0.6.0...v0.7.0

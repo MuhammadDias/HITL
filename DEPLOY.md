@@ -213,62 +213,51 @@ Kalau terpaksa memperbaiki langsung di server (mis. bug mendesak saat kelas berj
 
 ## Training model di server (GPU)
 
-Training butuh GPU supaya cepat, jadi lakukan di server. Training berjalan **di luar Docker**, di virtualenv sendiri;
-backend di Docker cukup memakai CPU untuk menebak gambar.
+Training butuh GPU supaya cepat, jadi lakukan di server. Training berjalan di **container Docker terpisah** lewat
+`train/train_in_docker.sh`: tidak butuh sudo, venv, atau tmux, dan tetap jalan walaupun SSH putus atau laptop
+dimatikan. Script memakai image `hitl-backend` (TensorFlow sama dengan backend) dan memasang library CUDA sekali ke
+`.train-home/` (±3 GB).
 
-### 1. Cek GPU (sekali)
-
-```bash
-nvidia-smi                       # harus menampilkan GPU dan versi driver
-```
-
-### 2. Siapkan environment training (sekali)
+### 1. Cek GPU dan disk (sekali)
 
 ```bash
-cd ~/HITL
-python3 -m venv venv-train
-venv-train/bin/pip install -r train/requirements.txt
-venv-train/bin/python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
+nvidia-smi
+docker run --rm --gpus all nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi   # Docker bisa memakai GPU?
+df -h /                                                                       # butuh ±5 GB kosong
 ```
 
-Baris terakhir harus menampilkan GPU, mis. `[PhysicalDevice(name='/physical_device:GPU:0', device_type='GPU')]`.
-Kalau hasilnya `[]`, training akan jalan di CPU dan sangat lambat. Biasanya penyebabnya driver NVIDIA belum terpasang.
+Perintah kedua harus menampilkan tabel GPU. Kalau error, NVIDIA Container Toolkit belum terpasang (butuh admin).
+Image `hitl-backend` harus sudah ada (artinya `docker compose up -d --build` sudah pernah dijalankan).
 
-> Versi TensorFlow/Keras di `train/requirements.txt` sengaja disamakan dengan backend. Model hasil training dengan
-> versi lain bisa gagal dimuat oleh backend.
+### 2. Backup model yang sedang dipakai
 
-### 3. Backup model yang sedang dipakai
-
-Training **menimpa** `weights/model_4_mobilenetv2_best.keras`, file yang dipakai backend. Simpan dulu salinannya:
+Training **menimpa** `weights/model_4_mobilenetv2_best.keras`, file yang dipakai backend. Pindahkan dulu:
 
 ```bash
 mkdir -p weights/backup
-cp weights/model_4_mobilenetv2_best.keras weights/backup/model_4_mobilenetv2_$(date +%F).keras
+mv weights/model_4_mobilenetv2_*.keras weights/backup/
 ```
 
-### 4. Jalankan training di `tmux`
+Kalau file `_best`/`_latest` dibiarkan, training **melanjutkan** model itu, bukan mulai dari nol.
 
-Training bisa berjam-jam. Jalankan di `tmux` supaya tidak mati kalau koneksi SSH putus, dan sebaiknya **di luar
-jam kelas** (training memakai banyak CPU, RAM, dan disk).
+### 3. Jalankan training
 
 ```bash
-tmux new -s training
-cd ~/HITL
-export PYTHONPATH=.             # script di train/ meng-import config.py dari root
-venv-train/bin/python train/01_download_dataset.py     # sekali saja; dataset disimpan di data/
-venv-train/bin/python train/02_preprocess_data.py      # sekali saja, atau setelah ganti kategori/jumlah sampel
-venv-train/bin/python train/06_train_mobilenetv2.py
+bash train/train_in_docker.sh
+docker logs -f hitl-train          # Ctrl+C hanya berhenti menonton; training tetap jalan
 ```
 
-- Lepas dari tmux tanpa menghentikan training: tekan `Ctrl+B` lalu `D`. Masuk lagi: `tmux attach -t training`.
-- **Ganti kategori (mis. pertama kali pakai kategori v0.6.0)?** Wajib training dari nol: pindahkan model lama ke
-  `weights/backup/` dulu (lihat poin berikut), lalu jalankan **ketiga** script, termasuk `01` dan `02`, karena datasetnya
-  berubah. Training menulis `weights/model_4_mobilenetv2.labels.json`; backend memakai file itu untuk label bahasa
-  Indonesia. Model tanpa file itu dianggap model lama dan memakai label lama.
-- Training **melanjutkan** dari model yang sudah ada (`_latest` / `_best`) kalau file itu ada. Untuk training dari nol,
-  pindahkan dulu `weights/model_4_mobilenetv2_latest.keras` dan `weights/model_4_mobilenetv2_best.keras` ke
-  `weights/backup/`.
-- Pengaturan kategori, jumlah sampel, epoch, dan batch size ada di `config.py` (ubah di laptop, push, lalu `git pull`).
+Urutan di log: pemasangan library CUDA (beberapa menit tanpa output) → `GPU: [...]` → download dataset →
+`✅ Processed data saved!` → `Epoch 1/50 ...` → **`TRAINING SELESAI`**.
+
+- Durasi di 2× RTX A5000: ±16 menit per epoch, total ±12 jam (berhenti otomatis lewat early stopping).
+- Download dan preprocess dilewati kalau `data/quickdraw_raw.npz` / `data/processed_data.npz` sudah ada.
+  **Ganti kategori di `config.py`? Hapus dulu `data/*.npz`**, kalau tidak training memakai dataset lama.
+- Training menulis `weights/model_4_mobilenetv2.labels.json`; backend memakai file itu untuk label bahasa Indonesia.
+- Pengaturan kategori, jumlah sampel, epoch, dan batch size ada di `config.py`; pembagian train/val/test di
+  `train/02_preprocess_data.py` (ubah di laptop, push, lalu `git pull`).
+- Training memakai RAM ±3 GB dan disk ±5 GB. Pantau dengan `df -h /`; hentikan dengan `docker stop hitl-train`.
+- Setelah selesai, `rm -rf .train-home && docker rm hitl-train` membebaskan ±3 GB (dipasang ulang otomatis nanti).
 
 ### 5. Pakai model baru
 
@@ -276,8 +265,11 @@ Model terbaik tersimpan di `weights/model_4_mobilenetv2_best.keras`. Muat ulang 
 
 ```bash
 docker compose restart backend
-docker compose logs backend | grep "Loading model"
+docker compose logs backend | grep -E "Loading model|Label model"
 ```
+
+Harus muncul `Label model: tangga, anak tangga, jembatan, ...`. Kalau tidak ada baris `Label model`, image backend
+masih versi lama: build ulang dengan `docker compose up -d --build backend`.
 
 Coba gambar beberapa objek di game. Kalau hasilnya lebih buruk, **kembalikan model lama**:
 
@@ -286,13 +278,21 @@ cp weights/backup/model_4_mobilenetv2_2026-11-08.keras weights/model_4_mobilenet
 docker compose restart backend
 ```
 
+### 5b. Simpan salinan model
+
+Model hasil training hanya ada di server. Salin ke laptop (dari WSL) supaya tidak hilang:
+
+```bash
+scp dayes@SERVER:~/HITL/weights/model_4_mobilenetv2_best.keras dayes@SERVER:~/HITL/weights/model_4_mobilenetv2.labels.json ~/project/test-training/weights/
+```
+
 ### 6. Simpan model ke GitHub (opsional)
 
 Folder `weights/` ikut tersimpan di git. Kalau model baru sudah dipastikan bagus, commit dari server supaya laptop
 dan GitHub punya model yang sama:
 
 ```bash
-git add weights/model_4_mobilenetv2_best.keras
+git add weights/model_4_mobilenetv2_best.keras weights/model_4_mobilenetv2.labels.json
 git commit -m "chore(model): retrain MobileNetV2 (akurasi XX%)"
 git push
 ```
@@ -319,6 +319,31 @@ cloudflared tunnel --url http://localhost:80          # atau named tunnel ke htt
 
 HTTPS diurus oleh Cloudflare, jadi Caddy cukup melayani HTTP.
 
+### Quick tunnel (tanpa domain, untuk tes/demo)
+
+```bash
+docker run -d --name hitl-tunnel --restart unless-stopped --network host \
+  cloudflare/cloudflared:latest tunnel --no-autoupdate --url http://localhost:${HTTP_PORT:-80}
+sleep 15
+docker logs hitl-tunnel 2>&1 | grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' | tail -1
+```
+
+Salin alamatnya ke `.env` **persis** (satu `https://`, tanpa path dan tanpa `/` di akhir), lalu build ulang
+game dan dashboard saja:
+
+```env
+PUBLIC_URL=https://xxxx-xxxx.trycloudflare.com
+```
+
+```bash
+docker compose up -d --build --no-deps web admin
+```
+
+- Alamat quick tunnel **berganti setiap tunnel restart** (server reboot, `docker start hitl-tunnel`, dsb.). Ulangi
+  langkah di atas dan bagikan ulang link kelas dari dashboard.
+- Tunnel jalan di server: menutup SSH atau mematikan laptop tidak mematikannya.
+- Untuk alamat tetap, pakai named tunnel dengan domain (gratis di Cloudflare, domain berbayar) atau Tailscale Funnel.
+
 ## Mencoba di laptop
 
 Dengan Docker Desktop menyala, `.env` berisi `PUBLIC_URL=http://localhost` dan `SITE_ADDRESS=:80`, lalu
@@ -333,6 +358,7 @@ Dengan Docker Desktop menyala, `.env` berisi `PUBLIC_URL=http://localhost` dan `
 | `backend` tidak pernah `healthy` | Lihat `docker compose logs backend`. Biasanya RAM kurang (TensorFlow butuh ±1–2 GB) atau file model tidak ada di `weights/`. |
 | HTTPS gagal / browser bilang tidak aman | DNS domain belum menunjuk ke server, atau port 80/443 tertutup. Cek `docker compose logs web`. |
 | `bind: address already in use` di port 80 | Ada web server lain (nginx/apache) di server. Matikan, atau isi `HTTP_PORT=8080` di `.env`. |
+| Game: "Momo belum bisa menebak — provider-unavailable" | `PUBLIC_URL` salah ketik (mis. `https:https://…` atau ada path di belakang). Perbaiki lalu `docker compose up -d --build --no-deps web admin`. |
 | Game: "AI gagal menebak" | `PUBLIC_URL` di `.env` tidak sama dengan alamat yang dibuka. Perbaiki lalu `docker compose up -d --build`. |
 | Dashboard: "Tidak bisa menghubungi backend" | Sama seperti di atas: `PUBLIC_URL` harus persis alamat yang dibuka di browser (termasuk `http`/`https`). |
 | Build gagal karena kehabisan memori | Tambah swap di server, atau build per service: `docker compose build backend`, lalu `admin`, lalu `web`. |

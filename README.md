@@ -29,17 +29,20 @@ Mau dipasang di server? Ikuti **[DEPLOY.md](DEPLOY.md)** (Docker Compose, satu a
 
 ```
 test-training/
-├── train/               # Script training & eksperimen model
-├── weights/             # Model hasil training (.keras)
-├── data/                # Dataset raw & processed (.npy / .npz)
-├── backend/             # FastAPI: inference model + API dashboard + database SQLite
+├── train/               # Script training (download, preprocess, MobileNetV2) + train_in_docker.sh
+├── weights/             # Model (.keras) + daftar label (.labels.json)
+├── data/                # Dataset hasil download & preprocess (.npz, tidak masuk git)
+├── backend/             # FastAPI: tebakan model, kesulitan AI, API dashboard, database SQLite
 ├── frontend/
-│   ├── implementation/  # Next.js web app (game murid)
-│   └── admin/           # Next.js dashboard guru & superadmin
+│   ├── implementation/  # Next.js: game murid (dari repo tim lustresense/hitl-momo)
+│   └── admin/           # Next.js: dashboard guru & superadmin
+├── deploy/              # Caddyfile (reverse proxy Docker)
+├── docs/                # Catatan desain, mis. USULAN-LABEL-LEVEL.md
 ├── archive_unused/      # File lama / tidak aktif
-├── config.py
-├── utils.py
-├── run-all.py
+├── config.py            # Kategori + label bahasa Indonesia, pengaturan training
+├── utils.py             # Helper training
+├── docker-compose.yml   # Deploy server (lihat DEPLOY.md)
+├── CHANGELOG.md         # Riwayat versi
 └── requirements.txt
 ```
 
@@ -62,44 +65,38 @@ test-training/
 
 Data diambil dari **[Quick, Draw! Dataset](https://quickdraw.withgoogle.com/data)** oleh Google — jutaan sketsa dari ratusan kategori yang digambar secara online.
 
-Kategori yang dipakai: `airplane`, `apple`, `banana`, `bicycle`, `bird`, `book`, `car`, `cat`, `chair`, `cloud`, `dog`, `fish`, `flower`, `house`, `moon`, `mountain`, `sailboat`, `star`, `sun`, `tree`, dan lainnya.
+Dipakai **20 kategori** yang relevan dengan game, **60.000 gambar per kategori** (total 1,2 juta; dibagi 75% train,
+15% validasi, 10% test). Backend mengirim label **bahasa Indonesia** (`LABELS_ID` di `config.py`):
+
+| Perilaku di game | Label (kategori dataset) |
+|---|---|
+| Bisa dipijak | tangga (ladder), anak tangga (stairs), jembatan (bridge), bangku (bench), meja (table), papan luncur (skateboard) |
+| Berbahaya | kaktus (cactus), api unggun (campfire), petir (lightning), gergaji (saw), pisau (knife), pedang (sword), ular (snake), laba-laba (spider) |
+| Netral / pengecoh | pagar (fence), zigzag, garis (line), awan (cloud), ember (bucket), payung (umbrella) |
+
+Beberapa pasangan sengaja mirip bentuknya (tangga↔pagar, gergaji↔zigzag, ular↔garis, pisau↔pedang) supaya murid
+terlatih memeriksa tebakan AI, bukan langsung percaya.
 
 ---
 
 ## 🏗️ Arsitektur
 
 ```
-[Quick Draw Dataset]
-       │
-       ▼
- 01_download → 02_preprocess
-       │
-       ▼
- Training Scripts (03–08)
- ┌──────────────────────┐
- │ Custom CNN           │
- │ EfficientNet         │
- │ SqueezeNet           │
- │ MobileNetV2          │
- │ ResNet18             │
- │ SketchNN             │
- └──────────────────────┘
-       │
-       ▼
-  weights/*.keras
-       │
-  ┌────┴─────────────────────┐
-  ▼                          ▼
-Backend (FastAPI)        Frontend (Next.js)
-/predict endpoint        Canvas / Kamera
-       │                         │
-       └──────────┬──────────────┘
-                  ▼
-           Hasil Top-3 Class
-                  │
-                  ▼
-           Game World (KAPLAY)
+[Quick, Draw! Dataset]
+        │  train/01_download → 02_preprocess → 06_train_mobilenetv2  (GPU, lihat DEPLOY.md)
+        ▼
+weights/model_4_mobilenetv2_best.keras + .labels.json
+        │
+        ▼
+Backend (FastAPI) ──── POST /predict ◀──────────── Game murid (Next.js + KAPLAY)
+  ├─ model → Top-3 + confidence                    gambar → "Tebak Gambarku"
+  ├─ kesulitan AI per level (pengaburan)           Terima / Pilih lain / Bukan semua
+  ├─ SQLite: sekolah, kelas, murid, jawaban ◀────── POST /api/submissions (link kelas)
+  └─ API dashboard ◀──────────────────────────────── Dashboard guru & superadmin (Next.js)
 ```
+
+Di server, ketiganya berjalan di Docker di balik satu reverse proxy (Caddy): `/` game, `/admin` dashboard,
+`/api` · `/predict` · `/health` backend.
 
 ---
 
@@ -262,16 +259,26 @@ venv/bin/python train/06_train_mobilenetv2.py   # menimpa weights/model_4_mobile
 
 ---
 
-## 📊 Model yang Tersedia
+## 📊 Model
+
+**Model aktif: MobileNetV2** (`weights/model_4_mobilenetv2_best.keras` + `model_4_mobilenetv2.labels.json`), 20
+kategori game: akurasi test **94,34%**, Top-3 **98,32%** (dilatih di 2× RTX A5000, ±11,7 jam). Backend memakai
+model ini secara default; ganti lewat `MODEL_FILE` di `.env` (lihat [DEPLOY.md](DEPLOY.md)).
+
+Model lain di `weights/` adalah hasil eksperimen awal dengan kategori lama (tanpa `.labels.json`, jadi backend
+memberinya label lama):
 
 | Model | File |
 |---|---|
 | Custom CNN | `model_1_custom_cnn_best.keras` |
 | EfficientNet | `model_2_efficientnet_best.keras` |
-| SqueezeNet | `model_3_squeezenet_best.keras` |
-| MobileNetV2 | `model_4_mobilenetv2_best.keras` |
 | ResNet18 | `model_5_resnet18_best.keras` |
-| SketchNN | `model_6_sketchnn_best.keras` |
+
+## 🎚️ Kesulitan AI per level (beta)
+
+Superadmin bisa mengaktifkan dan mengatur tingkat kesulitan (0–100) tiap level di dashboard (**Kesulitan AI**).
+Model tidak berubah; backend meratakan confidence dan kadang menukar tebakan #1 dengan bentuk mirip, sementara
+jawaban asli tetap di #1/#2. Detail: [backend/README.md](backend/README.md).
 
 ---
 
