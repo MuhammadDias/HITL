@@ -18,6 +18,23 @@ git checkout main        # kembali ke versi terbaru
 
 ---
 
+## [v0.9.0] - 2026-11-13
+
+### Ditambahkan
+- **Perbandingan 6 arsitektur** pada data yang sama dengan model final: `train/train_all_models.sh` melatih Custom CNN,
+  SketchNN, SqueezeNet, ResNet-18, dan EfficientNet-B0 satu per satu di satu GPU, lalu `train/compare_models.py`
+  membuat tabel (akurasi, Top-3, F1 makro, ukuran, parameter, waktu inferensi, lama training) dan grafik.
+- Riwayat training per epoch disimpan ke `output/training/<model>_history.csv` dan hasil akhirnya ke
+  `<model>_result.json` untuk semua training berikutnya.
+- `train/evaluate_model.py`, `train/evaluate_legacy_models.py`, `backend/tests/blackbox.py`, `docs/DIAGRAM.md`,
+  `docs/DOKUMENTASI-TEKNIS.md` (evaluasi, pengujian, dan diagram untuk proposal).
+
+### Diubah
+- Script training kelima arsitektur dipindah dari `archive_unused/` ke `train/` dan diperbaiki: Custom CNN memakai
+  loss yang sesuai label one-hot, ResNet-18 memakai input 56×56×1 sesuai datanya, EfficientNet-B0 menerima piksel
+  0–255 seperti yang diharapkan arsitekturnya.
+- `create_dataset()` memproses per batch, bukan per gambar (hasil identik, CPU tidak lagi menghambat GPU).
+
 ## [v0.8.1] - 2026-11-13
 
 ### Dokumentasi
@@ -212,6 +229,7 @@ digabung tanpa menghilangkan fitur kelas dan dashboard.
 - Backend FastAPI dengan endpoint `POST /predict` (Top-3 + confidence).
 - Frontend game awal (`frontend/implementation`).
 
+[v0.9.0]: https://github.com/MuhammadDias/HITL/compare/v0.8.1...v0.9.0
 [v0.8.1]: https://github.com/MuhammadDias/HITL/compare/v0.8.0...v0.8.1
 [v0.8.0]: https://github.com/MuhammadDias/HITL/compare/v0.7.1...v0.8.0
 [v0.7.1]: https://github.com/MuhammadDias/HITL/compare/v0.7.0...v0.7.1

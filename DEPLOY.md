@@ -259,6 +259,24 @@ Urutan di log: pemasangan library CUDA (beberapa menit tanpa output) → `GPU: [
 - Training memakai RAM ±3 GB dan disk ±5 GB. Pantau dengan `df -h /`; hentikan dengan `docker stop hitl-train`.
 - Setelah selesai, `rm -rf .train-home && docker rm hitl-train` membebaskan ±3 GB (dipasang ulang otomatis nanti).
 
+### 4b. Latih ulang dan bandingkan semua arsitektur (opsional, untuk laporan)
+
+Untuk perbandingan yang adil, lima arsitektur lain (Custom CNN, SketchNN, SqueezeNet, ResNet-18, EfficientNet-B0)
+dilatih dengan dataset, kategori, dan pembagian data yang sama dengan MobileNetV2 final, satu per satu di satu GPU:
+
+```bash
+bash train/train_all_models.sh
+docker logs -f hitl-train          # tiap model diawali "===== MULAI", akhir: "PERBANDINGAN SELESAI"
+```
+
+- MobileNetV2 aktif **tidak** dilatih ulang dan tidak tersentuh; model lama berkategori lama dipindah ke
+  `weights/backup/legacy/`.
+- Bisa memakan beberapa hari. Aplikasi tetap jalan, tetapi CPU/RAM server sibuk. Kalau satu model gagal, antrean
+  lanjut ke model berikutnya.
+- Hasil: `output/training/` (riwayat per epoch CSV + hasil JSON per model) dan `output/comparison/`
+  (`comparison.md` tabel perbandingan, `curves_*.png` grafik akurasi/loss per epoch, `val_accuracy_all.png`).
+- Mau membuat ulang tabelnya saja: `TRAIN_SCRIPTS=" " AFTER_SCRIPT=train/compare_models.py bash train/train_in_docker.sh`.
+
 ### 5. Pakai model baru
 
 Model terbaik tersimpan di `weights/model_4_mobilenetv2_best.keras`. Muat ulang backend:

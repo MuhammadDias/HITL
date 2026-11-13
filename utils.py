@@ -6,7 +6,10 @@ from tensorflow.keras import layers, callbacks
 import time
 import os
 import json
-from config import DIR_WEIGHTS, BATCH_SIZE, EPOCHS, CATEGORIES, LABELS_ID
+from config import DIR_WEIGHTS, DIR_OUTPUT, BATCH_SIZE, EPOCHS, CATEGORIES, LABELS_ID
+
+# Per-epoch history (CSV) and final result (JSON) of every training run.
+DIR_TRAINING_LOG = DIR_OUTPUT / 'training'
 
 # ================================================================
 # GPU OPTIMIZATION UNTUK RTX
@@ -57,38 +60,35 @@ def create_dataset(X, y, batch_size, is_training=True, target_size=None, num_cha
         dataset = dataset.shuffle(buffer_size=2048)
     
     is_uint8 = getattr(X, 'dtype', None) == np.uint8
+    kx = tf.constant([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=tf.float32)[:, :, tf.newaxis, tf.newaxis]
+    ky = tf.constant([[-1, -2, -1], [0, 0, 0], [1, 2, 1]], dtype=tf.float32)[:, :, tf.newaxis, tf.newaxis]
 
-    def process_image(image, label):
+    # Works on whole batches (B, H, W, C): one op per batch instead of per image keeps the
+    # CPU from bottlenecking the GPU. Same per-image result as the old per-sample version.
+    def process_batch(images, labels):
         # Data uint8 (0-255) dari 02_preprocess_data.py -> float32 [0, 1]
-        if is_uint8:
-            image = tf.cast(image, tf.float32) / 255.0
+        images = tf.cast(images, tf.float32) / 255.0 if is_uint8 else tf.cast(images, tf.float32)
 
         # Resize jika diperlukan
         if target_size:
-            image = tf.image.resize(image, target_size)
-        
-        # Tambahkan Sobel edge jika diminta (untuk SketchNN)
-        if sobel_edge:
-            kx = tf.constant([[-1,0,1],[-2,0,2],[-1,0,1]], dtype=tf.float32)[:,:,tf.newaxis,tf.newaxis]
-            ky = tf.constant([[-1,-2,-1],[0,0,0],[1,2,1]], dtype=tf.float32)[:,:,tf.newaxis,tf.newaxis]
-            t = tf.cast(image, tf.float32)
-            # t shape is (H, W, 1) -> but conv2d needs (1, H, W, 1)
-            t_batch = t[tf.newaxis, ...]
-            gx = tf.nn.conv2d(t_batch, kx, strides=1, padding='SAME')
-            gy = tf.nn.conv2d(t_batch, ky, strides=1, padding='SAME')
-            mag = tf.sqrt(gx**2 + gy**2)
-            mag = mag / (tf.reduce_max(mag) + 1e-8)
-            # Concatenate raw image + edge map
-            image = tf.concat([image, mag[0]], axis=-1)
-        
-        # Konversi ke RGB jika 3 channel diminta (dan bukan SketchNN)
-        elif num_channels == 3 and image.shape[-1] == 1:
-            image = tf.image.grayscale_to_rgb(image)
-            
-        return image, label
+            images = tf.image.resize(images, target_size)
 
-    dataset = dataset.map(process_image, num_parallel_calls=tf.data.AUTOTUNE)
-    dataset = dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)
+        # Tambahkan Sobel edge jika diminta (untuk SketchNN), dinormalisasi per gambar
+        if sobel_edge:
+            gx = tf.nn.conv2d(images, kx, strides=1, padding='SAME')
+            gy = tf.nn.conv2d(images, ky, strides=1, padding='SAME')
+            mag = tf.sqrt(gx**2 + gy**2)
+            mag = mag / (tf.reduce_max(mag, axis=[1, 2, 3], keepdims=True) + 1e-8)
+            images = tf.concat([images, mag], axis=-1)
+
+        # Konversi ke RGB jika 3 channel diminta (dan bukan SketchNN)
+        elif num_channels == 3 and images.shape[-1] == 1:
+            images = tf.image.grayscale_to_rgb(images)
+
+        return images, labels
+
+    dataset = dataset.batch(batch_size)
+    dataset = dataset.map(process_batch, num_parallel_calls=tf.data.AUTOTUNE).prefetch(tf.data.AUTOTUNE)
     return dataset
 
 class ScalarMetricsCallback(keras.callbacks.Callback):
@@ -117,6 +117,8 @@ def get_callbacks(model_name: str):
             monitor='val_accuracy', patience=10,
             restore_best_weights=True, verbose=1
         ),
+        # append=True keeps the history across resumed runs.
+        callbacks.CSVLogger(str(DIR_TRAINING_LOG / f'{model_name}_history.csv'), append=True),
     ]
 
 def train_and_save(
@@ -140,6 +142,7 @@ def train_and_save(
     print(f'{"+"*55}')
 
     t0 = time.time()
+    DIR_TRAINING_LOG.mkdir(parents=True, exist_ok=True)
 
     # Simpan daftar label di samping model, supaya backend memetakan output model
     # ke label yang benar (urutan = indeks output).
@@ -208,6 +211,18 @@ def train_and_save(
     print(f'     Top-3 Accuracy: {top3*100:.2f}%')
     print(f'     Waktu training: {elapsed:.1f} menit')
     print(f'     Weights saved : weights/{model_name}.weights.h5')
+
+    epochs_run = len(history.history.get('loss', []))
+    (DIR_TRAINING_LOG / f'{model_name}_result.json').write_text(json.dumps({
+        'model': model_name,
+        'test_accuracy': float(acc),
+        'test_top3_accuracy': float(top3),
+        'test_loss': float(loss),
+        'minutes': round(elapsed, 1),
+        'epochs_run': initial_epoch + epochs_run,
+        'params': int(model.count_params()),
+        'finished_at': time.strftime('%Y-%m-%d %H:%M:%S'),
+    }, indent=2))
 
     return {
         'name': model_name,

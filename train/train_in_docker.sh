@@ -2,9 +2,12 @@
 # Train the model inside a GPU Docker container (no sudo, venv or tmux needed).
 # The container runs in the background, so it keeps going after SSH disconnects.
 #
-#   bash train/train_in_docker.sh          # start
+#   bash train/train_in_docker.sh          # start (download, preprocess, MobileNetV2)
 #   docker logs -f hitl-train              # follow progress (Ctrl+C only stops watching)
 #   docker stop hitl-train                 # cancel
+#
+# TRAIN_SCRIPTS="train/03_train_custom_cnn.py ..." runs those scripts instead of
+# 06_train_mobilenetv2.py, one after another (see train/train_all_models.sh).
 #
 # Reuses the backend image (already has TensorFlow 2.21) and adds only the NVIDIA
 # CUDA pip libraries (~3 GB, kept in .train-home/ so they install once). The
@@ -19,12 +22,14 @@ docker run -d --name hitl-train --gpus all \
   --user "$(id -u):$(id -g)" \
   -e HOME=/work/.train-home -e PYTHONPATH=/work -e PYTHONUNBUFFERED=1 \
   -e NVIDIA_DRIVER_CAPABILITIES=compute,utility \
+  -e TRAIN_SCRIPTS="${TRAIN_SCRIPTS:-train/06_train_mobilenetv2.py}" \
+  -e AFTER_SCRIPT="${AFTER_SCRIPT:-}" \
   -v "$PWD":/work -w /work \
   --entrypoint bash \
   "$IMAGE" -c '
     set -e
     mkdir -p "$HOME"
-    pip install --no-cache-dir --user --quiet "tensorflow[and-cuda]==2.21.0" scikit-learn
+    pip install --no-cache-dir --user --quiet "tensorflow[and-cuda]==2.21.0" scikit-learn matplotlib
     # TensorFlow does not look in the user site for the pip CUDA libs: point the loader at them.
     export LD_LIBRARY_PATH="$(python -c "import glob, os, site; print(\":\".join(glob.glob(os.path.join(site.getusersitepackages(), \"nvidia\", \"*\", \"lib\"))))")${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
     # XLA needs libdevice (nvvm/libdevice/libdevice.10.bc) and ptxas from the pip nvcc package.
@@ -36,7 +41,12 @@ docker run -d --name hitl-train --gpus all \
     # Skip the download when a previous run already built the raw dataset.
     if [ -f data/quickdraw_raw.npz ]; then echo "Dataset sudah ada, lewati download"; else python train/01_download_dataset.py; fi
     if [ -f data/processed_data.npz ]; then echo "Data hasil preprocess sudah ada, lewati preprocess"; else python train/02_preprocess_data.py; fi
-    python train/06_train_mobilenetv2.py
+    for script in $TRAIN_SCRIPTS; do
+      echo "===== MULAI $script ($(date "+%Y-%m-%d %H:%M"))"
+      # One failing model must not stop the rest of the queue.
+      python "$script" || echo "===== GAGAL $script"
+    done
+    if [ -n "$AFTER_SCRIPT" ]; then python "$AFTER_SCRIPT"; fi
     echo "TRAINING SELESAI"
   '
 echo "Training berjalan di container hitl-train. Pantau dengan: docker logs -f hitl-train"
