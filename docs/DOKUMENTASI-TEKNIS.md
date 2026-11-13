@@ -193,8 +193,28 @@ keliru secara wajar, sehingga siswa terdorong memeriksa tebakan alih-alih langsu
 |---|---|
 | Akurasi (tebakan peringkat 1 benar) | **94,34%** |
 | Akurasi Top-3 (jawaban benar ada di tiga tebakan) | **98,32%** |
+| F1-score makro | **94,33%** |
+| F1-score berbobot | **94,33%** |
+| Ukuran berkas model | ±19 MB |
 | Epoch terbaik / dihentikan | 37 / 47 |
 | Durasi pelatihan | ±11,7 jam |
+
+Nilai F1 makro yang hampir sama dengan akurasi menunjukkan performa yang merata antar kelas (data uji seimbang,
+6.000 gambar per kelas). Rincian per kelas, *confusion matrix*, dan daftar kesalahan dihasilkan oleh
+`train/evaluate_model.py` ke folder `output/evaluation/`.
+
+**Pasangan kelas yang paling sering tertukar** (data uji, persentase dari kelas sebenarnya):
+
+| Label sebenarnya | Diprediksi sebagai | Jumlah | Persentase | Dampak di permainan |
+|---|---|---|---|---|
+| bangku | meja | 682 | 11,37% | Tidak berdampak (keduanya bisa dipijak) |
+| zigzag | petir | 382 | 6,37% | **Berdampak**: objek netral menjadi berbahaya |
+| pisau | pedang | 315 | 5,25% | Tidak berdampak (keduanya berbahaya) |
+| meja | bangku | 290 | 4,83% | Tidak berdampak (keduanya bisa dipijak) |
+| pedang | pisau | 282 | 4,70% | Tidak berdampak (keduanya berbahaya) |
+
+Hasil ini mengonfirmasi sebagian asumsi desain tentang pasangan berbentuk mirip (pisau–pedang, zigzag–petir),
+dan menunjukkan pasangan yang tidak diantisipasi (bangku–meja) sebagai sumber kesalahan terbesar.
 
 Akurasi Top-3 relevan secara khusus bagi rancangan HITL, karena siswa selalu ditunjukkan tiga tebakan: pada
 98,32% kasus jawaban yang benar tersedia untuk dipilih.
@@ -261,6 +281,38 @@ kesulitannya dinonaktifkan, backend mengembalikan tebakan asli model.
 | `GET/PUT /api/settings/difficulty` | baca: akun; ubah: superadmin | Pengaturan kesulitan AI per level |
 
 Dokumentasi interaktif seluruh endpoint tersedia otomatis di `/docs` (Swagger UI) pada server backend.
+
+### 6.1 Hasil pengujian black-box
+
+Pengujian dijalankan di server terhadap backend dengan basis data uji terpisah (`backend/tests/blackbox.py`,
+13 November 2026).
+
+| No | Skenario | Hasil yang diharapkan | Hasil | Status |
+|---|---|---|---|---|
+| 1 | Pemeriksaan status layanan | 200, status ok | 200 | Berhasil |
+| 2 | Prediksi gambar tangga | 200, tepat 3 kandidat | tangga 97,5%, anak tangga 0,7%, pagar 0,2% | Berhasil |
+| 3 | Login dengan kata sandi salah | 401 | 401 | Berhasil |
+| 4 | Guru mengakses kelas sekolah lain | 404 | 404 | Berhasil |
+| 5 | Tautan kelas tidak valid | 404 | 404 | Berhasil |
+| 6 | Nomor absen melebihi jumlah siswa | 400 | 400 | Berhasil |
+| 7 | Terima / Pilih lain / Bukan semua tercatat | Masing-masing tercatat | 1 / 1 / 1 | Berhasil |
+| 8 | Nomor absen sama dari perangkat lain | Tetap 1 siswa, nama diperbarui | ID sama, nama diperbarui | Berhasil |
+| 9 | Export CSV dan ZIP | CSV + ZIP berisi gambar; guru ditolak | CSV 3 baris, ZIP 3 PNG, guru 403 | Berhasil |
+| 10 | Hapus kelas | Kelas dan tautannya tidak ditemukan | 204, lalu 404 | Berhasil |
+
+**10 dari 10 skenario berhasil.**
+
+### 6.2 Waktu respons prediksi
+
+50 permintaan `POST /predict` per kondisi setelah satu permintaan pemanasan, diukur dari sisi klien:
+
+| Kondisi jaringan | Rata-rata | Median | Minimum | P95 | Maksimum |
+|---|---|---|---|---|---|
+| Lokal di server | 65,8 ms | 64,0 ms | 56,7 ms | 81,7 ms | 102,9 ms |
+| Publik lewat Cloudflare Tunnel | 222,4 ms | 193,8 ms | 175,5 ms | 394,8 ms | 519,1 ms |
+
+Waktu inferensi model sendiri berada di kisaran 60 ms; selisih pada akses publik berasal dari jaringan dan tunnel.
+Kedua kondisi berada jauh di bawah satu detik, sehingga jeda menunggu tebakan tidak mengganggu alur permainan.
 
 ## 7. Basis Data
 
